@@ -3,15 +3,14 @@
 namespace App\Services;
 
 use App\DataObjects\QualificationResult;
-use App\DataObjects\MortgageTerm;
 use App\Services\Mortgage\PresentValue;
+use App\DataObjects\MortgageTerm;
 use Brick\Math\RoundingMode;
 use Jarouche\Financial\PMT;
-use Jarouche\Financial\PV;
 use Whitecube\Price\Price;
 use Brick\Money\Money;
 
-class MortgageCalculatorService
+class PurchasePlanCalculator
 {
     public function __construct(
         protected float $principal,
@@ -32,15 +31,12 @@ class MortgageCalculatorService
 
         $monthly = Money::of($base, 'PHP', roundingMode: RoundingMode::CEILING);
 
-        // Add-on fees
-        $totalAddOn = array_reduce($this->addOnFees, fn ($carry, Money $fee) => $carry->plus($fee), Money::of(0, 'PHP'));
-
-        // Deductibles
-        $totalDeductible = array_reduce($this->deductibleFees, fn ($carry, Money $fee) => $carry->plus($fee), Money::of(0, 'PHP'));
+        $totalAddOn = array_reduce($this->addOnFees, fn($carry, Money $fee) => $carry->plus($fee), Money::of(0, 'PHP'));
+        $totalDeductible = array_reduce($this->deductibleFees, fn($carry, Money $fee) => $carry->plus($fee), Money::of(0, 'PHP'));
 
         return (new Price($monthly))
             ->addModifier('add-ons', $totalAddOn)
-            ->addModifier('deductibles', fn ($modifier) => $modifier->subtract($totalDeductible));
+            ->addModifier('deductibles', fn($modifier) => $modifier->subtract($totalDeductible));
     }
 
     public function incomeRequirement(): Money
@@ -53,9 +49,12 @@ class MortgageCalculatorService
     public function presentValue(): Price
     {
         $pmt = $this->monthlyAmortization()->inclusive()->getAmount()->toFloat();
-        $pv = new PV($this->interestRate / 12, $this->term->months(), $pmt);
+        $pv = new \Jarouche\Financial\PV($this->interestRate / 12, $this->term->months(), $pmt);
+        $value = round($pv->evaluate(), 2);
 
-        return new Price(Money::of($pv->evaluate(), 'PHP', roundingMode: RoundingMode::CEILING));
+        return new Price(
+            Money::of($value, 'PHP', roundingMode: RoundingMode::CEILING)
+        );
     }
 
     public function addAddOnFee(string $label, float $amount): static
@@ -73,7 +72,7 @@ class MortgageCalculatorService
     public function computeRequiredEquity(Money $actualDisposable): Price
     {
         $presentValue = (new PresentValue)
-            ->setPayment($actualDisposable->getAmount()->toFloat()) // ← FIXED
+            ->setPayment($actualDisposable->getAmount()->toFloat())
             ->setTerm($this->term)
             ->setInterestRate($this->interestRate)
             ->getDiscountedValue();
@@ -106,14 +105,5 @@ class MortgageCalculatorService
             income_required: $this->incomeRequirement(),
             disposable_income: $actual
         );
-    }
-
-    public function computeMonthlyAmortization(): float
-    {
-        $rate = $this->interestRate / 12;
-        $months = $this->term->months();
-        $pmt = new PMT($rate, $months, $this->principal);
-
-        return round($pmt->evaluate(), 2);
     }
 }

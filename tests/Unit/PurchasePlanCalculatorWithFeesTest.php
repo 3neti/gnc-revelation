@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\MortgageCalculatorService;
+use App\Services\PurchasePlanCalculator;
 use App\DataObjects\MortgageTerm;
 use Brick\Money\Money;
 use Whitecube\Price\Price;
@@ -11,8 +11,8 @@ dataset('fee qualification cases', function () {
             1_200_000, 0.05, 20, 40000, 0.35,
             ['fire insurance' => 500, 'MRI' => 300],
             ['promo' => 200],
-            0.0, // <- expected amortization (to fill)
-            14000.0, // <- expected disposable
+            0.0, // <- expected amortization (to fill later)
+            14000.0,
             true,
         ],
         'mid-range with fees qualifies' => [
@@ -50,7 +50,7 @@ dataset('fee qualification cases', function () {
     ];
 });
 
-it('calculates amortization and evaluates qualification with fees correctly', function (
+it('calculates amortization and evaluates qualification with fees correctly (PurchasePlanCalculator)', function (
     float $principal,
     float $interest,
     int $term,
@@ -62,7 +62,7 @@ it('calculates amortization and evaluates qualification with fees correctly', fu
     float $expectedDisposable,
     bool $expectedToQualify
 ) {
-    $calc = new MortgageCalculatorService(
+    $calc = new PurchasePlanCalculator(
         principal: $principal,
         interestRate: $interest,
         term: new MortgageTerm($term),
@@ -83,6 +83,6 @@ it('calculates amortization and evaluates qualification with fees correctly', fu
     expect($result->qualifies)->toBe($expectedToQualify)
         ->and($result->disposable_income->getAmount()->toFloat())->toBeCloseTo($expectedDisposable, 0.01)
         ->and($result->monthly_amortization)->toBeInstanceOf(Price::class)
-        // ->and($result->monthly_amortization->inclusive()->getAmount()->toFloat())->toBeCloseTo($expectedAmortization, 0.01) // Fill in expected
+        // ->and($result->monthly_amortization->inclusive()->getAmount()->toFloat())->toBeCloseTo($expectedAmortization, 0.01) // Fill if needed
         ->and($result->income_required)->toBeInstanceOf(Money::class);
 })->with('fee qualification cases');

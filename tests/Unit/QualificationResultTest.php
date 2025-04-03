@@ -1,9 +1,9 @@
 <?php
 
-use App\Services\MortgageCalculatorService;
+use App\Services\PurchasePlanCalculator;
 use App\DataObjects\MortgageTerm;
-use Brick\Money\Money;
 use Whitecube\Price\Price;
+use Brick\Money\Money;
 
 dataset('qualification cases', function () {
     return [
@@ -18,7 +18,7 @@ dataset('qualification cases', function () {
     ];
 });
 
-it('evaluates mortgage qualification results correctly', function (
+it('evaluates mortgage qualification results correctly (using PurchasePlanCalculator)', function (
     float $principal,
     float $interest,
     int $term,
@@ -31,7 +31,7 @@ it('evaluates mortgage qualification results correctly', function (
     float $expectedEquity,
     float $equityPrecision
 ) {
-    $calc = new MortgageCalculatorService(
+    $calc = new PurchasePlanCalculator(
         principal: $principal,
         interestRate: $interest,
         term: new MortgageTerm($term),
