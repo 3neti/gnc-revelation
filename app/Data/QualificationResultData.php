@@ -1,12 +1,12 @@
 <?php
 
-namespace App\DataObjects;
+namespace App\Data;
 
+use Spatie\LaravelData\Data;
 use Whitecube\Price\Price;
 use Brick\Money\Money;
 
-/** @deprecated  */
-readonly class QualificationResult
+class QualificationResultData extends Data
 {
     public function __construct(
         public bool $qualifies,

@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\DataObjects\QualificationResult;
 use App\Services\Mortgage\PresentValue;
+use App\Data\QualificationResultData;
 use App\DataObjects\MortgageTerm;
 use Brick\Math\RoundingMode;
 use Jarouche\Financial\PMT;
@@ -84,7 +84,7 @@ class PurchasePlanCalculator
         );
     }
 
-    public function getQualificationResult(Money $actualDisposable): QualificationResult
+    public function getQualificationResult(Money $actualDisposable): QualificationResultData
     {
         $amort = $this->monthlyAmortization();
         $actual = $actualDisposable;
@@ -96,7 +96,7 @@ class PurchasePlanCalculator
         $qualifies = $gap <= 0;
         $equity = $this->computeRequiredEquity($actual);
 
-        return new QualificationResult(
+        return new QualificationResultData(
             qualifies: $qualifies,
             gap: round($gap, 2),
             suggested_equity: $equity,
