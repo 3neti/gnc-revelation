@@ -1,5 +1,7 @@
 <?php
 
+use Brick\Math\RoundingMode;
+
 return [
     'defaults' => [
         'buyer' => [
@@ -58,4 +60,6 @@ return [
     'default_seller_code' => env('DEFAULT_SELLER_CODE', 'AA537'),
     'default_disposable_income_multiplier' => env('DEFAULT_DISPOSABLE_INCOME_MULTIPLIER', 0.35),
     'default_buffer_margin' => env('DEFAULT_BUFFER_MARGIN', 0.1),
+    'rounding_mode' => env('MONEY_ROUNDING_MODE', RoundingMode::CEILING),
+    'default_currency' => env('DEFAULT_CURRENCY', 'PHP'),
 ];

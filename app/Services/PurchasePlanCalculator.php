@@ -2,108 +2,121 @@
 
 namespace App\Services;
 
-use App\Services\Mortgage\PresentValue;
+use App\ValueObjects\{DownPayment, Equity, FeeCollection};
 use App\Data\QualificationResultData;
 use App\DataObjects\MortgageTerm;
 use Brick\Math\RoundingMode;
-use Jarouche\Financial\PMT;
 use Whitecube\Price\Price;
 use Brick\Money\Money;
 
 class PurchasePlanCalculator
 {
     public function __construct(
-        protected float $principal,
-        protected float $interestRate,
-        protected MortgageTerm $term,
-        protected float $disposableMultiplier = 0.30,
-        protected array $addOnFees = [],
-        protected array $deductibleFees = [],
+        public DownPayment $downPayment,
+        public float $interestRate,
+        public MortgageTerm $term,
+        public FeeCollection $fees = new FeeCollection(),
+        public float $disposableMultiplier = 0.35,
     ) {}
 
     public function monthlyAmortization(): Price
     {
-        $monthlyInterestRate = $this->interestRate / 12;
-        $n = $this->term->months();
-        $base = ($monthlyInterestRate > 0)
-            ? (new PMT($monthlyInterestRate, $n, $this->principal))->evaluate()
-            : $this->principal / $n;
+        $loanable = $this->downPayment->loanable()->getAmount()->toFloat();
+        $months = $this->term->months();
+        $monthlyRate = round($this->interestRate / 12, 15);
 
-        $monthly = Money::of($base, 'PHP', roundingMode: RoundingMode::CEILING);
+        $baseMonthly = $monthlyRate === 0
+            ? $loanable / $months
+            : ($loanable * $monthlyRate) / (1 - pow(1 + $monthlyRate, -$months));
 
-        $totalAddOn = array_reduce($this->addOnFees, fn($carry, Money $fee) => $carry->plus($fee), Money::of(0, 'PHP'));
-        $totalDeductible = array_reduce($this->deductibleFees, fn($carry, Money $fee) => $carry->plus($fee), Money::of(0, 'PHP'));
+        $netFees = $this->fees->netFees()->getAmount()->toFloat();
+        $netMonthly = $baseMonthly + $netFees;
 
-        return (new Price($monthly))
-            ->addModifier('add-ons', $totalAddOn)
-            ->addModifier('deductibles', fn($modifier) => $modifier->subtract($totalDeductible));
+        return new Price(Money::of(round($netMonthly, 2), 'PHP'));
     }
 
     public function incomeRequirement(): Money
     {
         return $this->monthlyAmortization()
             ->inclusive()
-            ->dividedBy($this->disposableMultiplier, roundingMode: RoundingMode::CEILING);
+            ->dividedBy($this->disposableMultiplier, roundingMode: RoundingMode::HALF_UP);
     }
 
     public function presentValue(): Price
     {
-        $pmt = $this->monthlyAmortization()->inclusive()->getAmount()->toFloat();
-        $pv = new \Jarouche\Financial\PV($this->interestRate / 12, $this->term->months(), $pmt);
-        $value = round($pv->evaluate(), 2);
+        $monthly = $this->monthlyAmortization()->inclusive()->getAmount()->toFloat();
+        $monthlyRate = $this->interestRate / 12;
+        $months = $this->term->months();
 
-        return new Price(
-            Money::of($value, 'PHP', roundingMode: RoundingMode::CEILING)
-        );
+        $pv = $monthly * ((1 - pow(1 + $monthlyRate, -$months)) / $monthlyRate);
+
+        return new Price(Money::of(round($pv, 2), 'PHP'));
     }
 
-    public function addAddOnFee(string $label, float $amount): static
+    public function computeRequiredEquity(Money $actualDisposable): Equity
     {
-        $this->addOnFees[$label] = Money::of($amount, 'PHP');
-        return $this;
+        $monthly = $this->monthlyAmortization()->inclusive()->getAmount()->toFloat();
+        $actual = $actualDisposable->getAmount()->toFloat();
+        $months = $this->term->months();
+        $monthlyRate = $this->interestRate / 12;
+        $netFees = $this->fees->netFees()->getAmount()->toFloat();
+
+        $affordableMonthly = max(0, $actual - $netFees);
+
+        $affordableLoan = $monthlyRate === 0
+            ? $affordableMonthly * $months
+            : $affordableMonthly * (1 - pow(1 + $monthlyRate, -$months)) / $monthlyRate;
+
+        $suggestedLoanable = Money::of(round($affordableLoan, 2), 'PHP');
+
+        return Equity::fromRequired($this->downPayment->tcp(), $suggestedLoanable);
     }
 
-    public function addDeductibleFee(string $label, float $amount): static
+//    public function computeRequiredEquity(Money $actualDisposable): Price
+//    {
+//        $monthly = $this->monthlyAmortization()->inclusive()->getAmount()->toFloat();
+//        $actual = $actualDisposable->getAmount()->toFloat();
+//        $months = $this->term->months();
+//        $monthlyRate = $this->interestRate / 12;
+//        $netFees = $this->fees->netFees()->getAmount()->toFloat();
+//
+//        // Compute the most the borrower can afford in monthly payment
+//        $affordableMonthly = max(0, $actual - $netFees);
+//
+//        // Compute the affordable loanable amount
+//        $affordableLoan = $monthlyRate === 0
+//            ? $affordableMonthly * $months
+//            : $affordableMonthly * (1 - pow(1 + $monthlyRate, -$months)) / $monthlyRate;
+//
+//        $suggestedLoanable = Money::of(round($affordableLoan, 2), 'PHP');
+//        $requiredEquity = $this->downPayment->tcp()->minus($suggestedLoanable);
+//
+//        // 💡 Always return a positive equity suggestion, never negative
+//        return new Price(Money::of(max(0, $requiredEquity->getAmount()->toFloat()), 'PHP'));
+//    }
+
+    public function getQualificationResultFromGrossIncome(float $grossIncome): QualificationResultData
     {
-        $this->deductibleFees[$label] = Money::of($amount, 'PHP');
-        return $this;
-    }
-
-    public function computeRequiredEquity(Money $actualDisposable): Price
-    {
-        $presentValue = (new PresentValue)
-            ->setPayment($actualDisposable->getAmount()->toFloat())
-            ->setTerm($this->term)
-            ->setInterestRate($this->interestRate)
-            ->getDiscountedValue();
-
-        $diff = max(0, $this->principal - $presentValue->inclusive()->getAmount()->toFloat());
-
-        return new Price(
-            Money::of($diff, 'PHP', roundingMode: RoundingMode::CEILING)
-        );
+        $actualDisposable = Money::of($grossIncome * $this->disposableMultiplier, 'PHP');
+        return $this->getQualificationResult($actualDisposable);
     }
 
     public function getQualificationResult(Money $actualDisposable): QualificationResultData
     {
         $amort = $this->monthlyAmortization();
-        $actual = $actualDisposable;
+        $incomeRequired = $this->incomeRequirement();
 
-        $amortValue = $amort->inclusive()->getAmount()->toFloat();
-        $disposableValue = $actual->getAmount()->toFloat();
-
-        $gap = max(0, $amortValue - $disposableValue);
-        $qualifies = $gap <= 0;
-        $equity = $this->computeRequiredEquity($actual);
+        $qualifies = $actualDisposable->isGreaterThanOrEqualTo($amort->inclusive());
+        $gap = max(0, round($amort->inclusive()->getAmount()->toFloat() - $actualDisposable->getAmount()->toFloat(), 2));
 
         return new QualificationResultData(
             qualifies: $qualifies,
-            gap: round($gap, 2),
-            suggested_equity: $equity,
+            gap: $gap,
+            suggested_equity: $this->computeRequiredEquity($actualDisposable),
             reason: $qualifies ? 'Sufficient disposable income' : 'Disposable income below amortization',
             monthly_amortization: $amort,
-            income_required: $this->incomeRequirement(),
-            disposable_income: $actual
+            income_required: $incomeRequired,
+            disposable_income: $actualDisposable
         );
     }
 }

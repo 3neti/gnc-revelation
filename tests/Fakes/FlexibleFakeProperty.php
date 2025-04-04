@@ -3,29 +3,46 @@
 namespace Tests\Fakes;
 
 use App\Contracts\PropertyInterface;
+use App\Support\MoneyFactory;
 use Whitecube\Price\Price;
-use Brick\Money\Money;
 
 class FlexibleFakeProperty implements PropertyInterface
 {
     public function __construct(
-        protected float $loanable,
-        protected float $interest,
-        protected ?float $required_buffer_margin = 0.1,
+        protected float  $total_contract_price,
+        protected ?float $interest = null,
+        protected ?float $income_requirement_multiplier = 0.35,
+        protected ?float $loanable_amount = null,
+        protected ?float $bufferMargin = 0.10,
     ) {}
+
+    public function getTotalContractPrice(): Price
+    {
+        return MoneyFactory::price($this->total_contract_price);
+    }
 
     public function getLoanableAmount(): Price
     {
-        return new Price(Money::of($this->loanable, 'PHP'));
+        return Price::of($this->loanable_amount, 'PHP');
     }
 
-    public function getInterestRate(): float
+    public function getInterestRate(): ?float
     {
         return $this->interest;
     }
 
     public function getRequiredBufferMargin(): ?float
     {
-       return $this->required_buffer_margin;
+        return $this->bufferMargin;
     }
+
+    public function getIncomeRequirementMultiplier(): ?float
+    {
+        return $this->income_requirement_multiplier;
+    }
+
+    public function getPercentLoanable(): ?float { return null; }
+    public function getAppraisalValue(): ?float { return null; }
+    public function getProcessingFee(): ?Price { return null; }
+    public function getPercentMiscellaneousFees(): ?float { return null; }
 }
