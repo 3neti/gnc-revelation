@@ -20,7 +20,7 @@ final class MortgageComputation
 
     public function getMonthlyAmortization(): Price
     {
-        $principal = $this->inputs->loanable->total_contract_price->inclusive()->getAmount()->toFloat();
+        $principal = $this->getLoanableAmount();
         $months = $this->inputs->balance_payment->bp_term * 12;
         $monthlyRate = round($this->inputs->balance_payment->bp_interest_rate / 12, 15);
 
@@ -59,7 +59,7 @@ final class MortgageComputation
         $actualDownpayment = $tcp * $percentDp;
 
         $affordableLoan = $this->getPresentValueFromDisposable()->inclusive()->getAmount()->toFloat();
-        $requiredLoanable = $tcp - $actualDownpayment;
+        $requiredLoanable = $this->getLoanableAmount();
 
         $gap = max(0, $requiredLoanable - $affordableLoan);
 
@@ -70,14 +70,15 @@ final class MortgageComputation
     {
         $monthly = $this->getMonthlyAmortization();
         $affordableLoan = $this->getPresentValueFromDisposable()->inclusive()->getAmount()->toFloat();
-        $requiredLoanable = $this->getRequiredLoanableAmount();
+        $requiredLoanable = $this->getLoanableAmount();
 
         $gap = max(0, $requiredLoanable - $affordableLoan);
         $qualifies = $gap <= 0;
         $suggestedEquity = MoneyFactory::priceWithPrecision($gap);
 
         $tcp = $this->inputs->loanable->total_contract_price->inclusive()->getAmount()->toFloat();
-        $actualDownPayment = $this->inputs->loanable->down_payment->percent_dp * $tcp;
+        $percentDp = $this->inputs->loanable->down_payment->percent_dp ?? 0.0;
+        $actualDownPayment = $tcp * $percentDp;
         $suggestedDownPercent = ($tcp - $affordableLoan) / $tcp;
         $requiredDownPaymentAmount = $tcp - $affordableLoan;
 
@@ -94,14 +95,41 @@ final class MortgageComputation
             required_loanable: $requiredLoanable,
             affordable_loanable: $affordableLoan,
             required_down_payment: MoneyFactory::priceWithPrecision($requiredDownPaymentAmount),
+            required_cash_out: MoneyFactory::priceWithPrecision($this->getCashOut()),
+            balance_miscellaneous_fee: MoneyFactory::priceWithPrecision($this->getBalanceMiscellaneousFee()),
+            monthly_miscellaneous_fee_share: MoneyFactory::priceWithPrecision($this->getMonthlyMiscellaneousFeeShare()),
         );
     }
 
     public function getRequiredLoanableAmount(): float
     {
-        return $this->inputs->loanable->total_contract_price->inclusive()->getAmount()->toFloat()
-            - ($this->inputs->loanable->down_payment->percent_dp ?? 0.0)
-            * $this->inputs->loanable->total_contract_price->inclusive()->getAmount()->toFloat();
+        return $this->getLoanableAmount();
+    }
+
+    public function getBalanceMiscellaneousFee(): float
+    {
+        $tcp = $this->inputs->loanable->total_contract_price->inclusive()->getAmount()->toFloat();
+        $percentDp = $this->inputs->loanable->down_payment->percent_dp ?? 0.0;
+        $percentMF = $this->inputs->fees->percent_mf ?? 0.0;
+
+        return (1 - $percentDp) * $percentMF * $tcp;
+    }
+
+    public function getCashOut(): float
+    {
+        $tcp = $this->inputs->loanable->total_contract_price->inclusive()->getAmount()->toFloat();
+        $percentDp = $this->inputs->loanable->down_payment->percent_dp ?? 0.0;
+        $percentMF = $this->inputs->fees->percent_mf ?? 0.0;
+
+        return ($percentDp * $tcp) + ($percentDp * $percentMF * $tcp);
+    }
+
+    public function getLoanableAmount(): float
+    {
+        $tcp = $this->inputs->loanable->total_contract_price->inclusive()->getAmount()->toFloat();
+        $percentDp = $this->inputs->loanable->down_payment->percent_dp ?? 0.0;
+
+        return ($tcp * (1 - $percentDp)) + $this->getBalanceMiscellaneousFee();
     }
 
     protected function getNetMonthlyAddOns(): Price
@@ -110,5 +138,13 @@ final class MortgageComputation
         $fire = $this->inputs->monthly_payment_add_ons?->annual_fire_insurance ?? 0.0;
 
         return MoneyFactory::priceWithPrecision($mri + $fire);
+    }
+
+    public function getMonthlyMiscellaneousFeeShare(): Price
+    {
+        $balanceMf = $this->getBalanceMiscellaneousFee();
+        $months = $this->inputs->balance_payment->bp_term * 12;
+
+        return MoneyFactory::priceWithPrecision($balanceMf / $months);
     }
 }

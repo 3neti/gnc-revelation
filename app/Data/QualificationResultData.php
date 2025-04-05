@@ -21,5 +21,8 @@ class QualificationResultData extends Data
         public float  $required_loanable,
         public float  $affordable_loanable,
         public Price  $required_down_payment,
+        public Price $required_cash_out,
+        public Price $balance_miscellaneous_fee,
+        public Price $monthly_miscellaneous_fee_share
     ) {}
 }

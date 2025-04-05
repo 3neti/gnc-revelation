@@ -291,3 +291,83 @@ it('returns qualification result for unqualified borrower with required equity',
         ->and($result->suggested_down_payment_percent)->toBeGreaterThan($downPaymentPercent)
         ->and($result->required_down_payment->inclusive()->getAmount()->toFloat())->toBeCloseTo($tcp - $result->affordable_loanable, 0.01);
 });
+
+it('computes required cash out and balance miscellaneous fee correctly', function () {
+    $tcp = 1_000_000;
+    $downPaymentPercent = 0.10;
+    $percentMiscFee = 0.085;
+    $gmi = 17_000;
+    $multiplier = 0.35;
+    $interest = 0.0625;
+    $termYears = 21;
+
+    $buyer = new FlexibleFakeBuyer(
+        gross_monthly_income: $gmi,
+        joint_maximum_term_allowed: $termYears
+    );
+
+    $property = new FlexibleFakeProperty(
+        total_contract_price: $tcp
+    );
+
+    $order = new FlexibleFakeOrder(
+        interest: $interest,
+        percent_down_payment: $downPaymentPercent,
+        income_requirement_multiplier: $multiplier,
+        percent_miscellaneous_fees: $percentMiscFee,
+    );
+
+    $inputs = InputsData::fromBooking($buyer, $property, $order);
+    $service = new MortgageComputation($inputs);
+    $result = $service->getQualificationResult();
+
+    $expectedDownPayment = $tcp * $downPaymentPercent; // 100,000
+    $expectedUpfrontMF = $downPaymentPercent * $percentMiscFee * $tcp; // 8,500
+    $expectedCashOut = $expectedDownPayment + $expectedUpfrontMF; // 108,500
+
+    $expectedBalanceMF = (1 - $downPaymentPercent) * $percentMiscFee * $tcp; // 76,500
+
+    expect($result->required_cash_out)->toBeInstanceOf(Price::class)
+        ->and($result->required_cash_out->inclusive()->getAmount()->toFloat())
+        ->toBeCloseTo($expectedCashOut, 0.01)
+        ->and($result->balance_miscellaneous_fee->inclusive()->getAmount()->toFloat())
+        ->toBeCloseTo($expectedBalanceMF, 0.01);
+});
+
+it('computes monthly share of miscellaneous fee correctly', function () {
+    $tcp = 1_000_000;
+    $downPaymentPercent = 0.10;
+    $percentMiscFee = 0.085;
+    $termYears = 21;
+    $gmi = 17_000;
+    $multiplier = 0.35;
+    $interest = 0.0625;
+
+    $buyer = new FlexibleFakeBuyer(
+        gross_monthly_income: $gmi,
+        joint_maximum_term_allowed: $termYears
+    );
+
+    $property = new FlexibleFakeProperty(
+        total_contract_price: $tcp
+    );
+
+    $order = new FlexibleFakeOrder(
+        interest: $interest,
+        percent_down_payment: $downPaymentPercent,
+        income_requirement_multiplier: $multiplier,
+        percent_miscellaneous_fees: $percentMiscFee,
+    );
+
+    $inputs = InputsData::fromBooking($buyer, $property, $order);
+    $service = new MortgageComputation($inputs);
+
+    $monthlyMF = $service->getMonthlyMiscellaneousFeeShare();
+
+    $expectedBalanceMF = (1 - $downPaymentPercent) * $percentMiscFee * $tcp;
+    $expectedMonthlyShare = $expectedBalanceMF / ($termYears * 12);
+
+    expect($monthlyMF)->toBeInstanceOf(Price::class)
+        ->and($monthlyMF->inclusive()->getAmount()->toFloat())
+        ->toBeCloseTo($expectedMonthlyShare, 0.01);
+});
