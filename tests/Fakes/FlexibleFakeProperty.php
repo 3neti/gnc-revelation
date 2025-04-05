@@ -18,12 +18,12 @@ class FlexibleFakeProperty implements PropertyInterface
 
     public function getTotalContractPrice(): Price
     {
-        return MoneyFactory::price($this->total_contract_price);
+        return MoneyFactory::priceWithPrecision($this->total_contract_price);
     }
 
     public function getLoanableAmount(): Price
     {
-        return Price::of($this->loanable_amount, 'PHP');
+        return MoneyFactory::priceWithPrecision($this->loanable_amount);
     }
 
     public function getInterestRate(): ?float

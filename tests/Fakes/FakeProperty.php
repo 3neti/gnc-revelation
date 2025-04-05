@@ -22,4 +22,34 @@ class FakeProperty implements PropertyInterface
     {
         return 0.1;
     }
+
+    public function getTotalContractPrice(): Price
+    {
+        // TODO: Implement getTotalContractPrice() method.
+    }
+
+    public function getIncomeRequirementMultiplier(): ?float
+    {
+        // TODO: Implement getIncomeRequirementMultiplier() method.
+    }
+
+    public function getPercentLoanable(): ?float
+    {
+        // TODO: Implement getPercentLoanable() method.
+    }
+
+    public function getAppraisalValue(): ?float
+    {
+        // TODO: Implement getAppraisalValue() method.
+    }
+
+    public function getProcessingFee(): ?Price
+    {
+        // TODO: Implement getProcessingFee() method.
+    }
+
+    public function getPercentMiscellaneousFees(): ?float
+    {
+        // TODO: Implement getPercentMiscellaneousFees() method.
+    }
 }

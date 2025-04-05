@@ -216,3 +216,78 @@ it('computes required equity correctly with a 10% down payment', function () {
         ->and($equity->toPrice()->inclusive()->getAmount()->toFloat())
         ->toBeCloseTo($expectedEquity, 0.01);
 });
+
+it('returns qualification result for qualified borrower with no equity gap', function () {
+    $tcp = 926_500.00;
+    $gmi = 17_000;
+    $multiplier = 0.35;
+    $interest = 0.0625;
+    $termYears = 21;
+    $downPaymentPercent = 0.10;
+
+    $buyer = new FlexibleFakeBuyer(
+        gross_monthly_income: $gmi,
+        joint_maximum_term_allowed: $termYears
+    );
+
+    $property = new FlexibleFakeProperty(
+        total_contract_price: $tcp
+    );
+
+    $order = new FlexibleFakeOrder(
+        interest: $interest,
+        percent_down_payment: $downPaymentPercent,
+        income_requirement_multiplier: $multiplier,
+    );
+
+    $inputs = InputsData::fromBooking($buyer, $property, $order);
+    $service = new MortgageComputation($inputs);
+
+    $result = $service->getQualificationResult();
+
+    expect($result->qualifies)->toBeTrue()
+        ->and($result->gap)->toBe(0.0)
+        ->and($result->suggested_equity->isZero())->toBeTrue()
+        ->and($result->actual_down_payment)->toBeCloseTo($tcp * $downPaymentPercent, 0.01)
+        ->and($result->required_loanable + $result->actual_down_payment)->toBeCloseTo($tcp, 0.01)
+        ->and($result->suggested_down_payment_percent)->toBeLessThanOrEqual($downPaymentPercent)
+        ->and($result->required_down_payment->inclusive()->getAmount()->toFloat())->toBeLessThanOrEqual($result->actual_down_payment)
+    ;
+});
+
+it('returns qualification result for unqualified borrower with required equity', function () {
+    $tcp = 1_025_670.10; // ~2.5% higher
+    $gmi = 17_000;
+    $multiplier = 0.35;
+    $interest = 0.0625;
+    $termYears = 21;
+    $downPaymentPercent = 0.10;
+
+    $buyer = new FlexibleFakeBuyer(
+        gross_monthly_income: $gmi,
+        joint_maximum_term_allowed: $termYears
+    );
+
+    $property = new FlexibleFakeProperty(
+        total_contract_price: $tcp
+    );
+
+    $order = new FlexibleFakeOrder(
+        interest: $interest,
+        percent_down_payment: $downPaymentPercent,
+        income_requirement_multiplier: $multiplier,
+    );
+
+    $inputs = InputsData::fromBooking($buyer, $property, $order);
+    $service = new MortgageComputation($inputs);
+
+    $result = $service->getQualificationResult();
+
+    expect($result->qualifies)->toBeFalse()
+        ->and($result->suggested_equity->inclusive()->getAmount()->toFloat())->toBeGreaterThan(0)
+        ->and($result->gap)->toBeGreaterThan(0)
+        ->and($result->actual_down_payment)->toBeCloseTo($tcp * $downPaymentPercent, 0.01)
+        ->and($result->required_loanable + $result->actual_down_payment)->toBeCloseTo($tcp, 0.01)
+        ->and($result->suggested_down_payment_percent)->toBeGreaterThan($downPaymentPercent)
+        ->and($result->required_down_payment->inclusive()->getAmount()->toFloat())->toBeCloseTo($tcp - $result->affordable_loanable, 0.01);
+});
