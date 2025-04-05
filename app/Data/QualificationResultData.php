@@ -23,6 +23,7 @@ class QualificationResultData extends Data
         public Price  $required_down_payment,
         public Price $required_cash_out,
         public Price $balance_miscellaneous_fee,
-        public Price $monthly_miscellaneous_fee_share
+        public Price $monthly_miscellaneous_fee_share,
+        public MonthlyAmortizationBreakdownData $monthly_amortization_breakdown,
     ) {}
 }

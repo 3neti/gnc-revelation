@@ -371,3 +371,116 @@ it('computes monthly share of miscellaneous fee correctly', function () {
         ->and($monthlyMF->inclusive()->getAmount()->toFloat())
         ->toBeCloseTo($expectedMonthlyShare, 0.01);
 });
+
+it('computes monthly amortization breakdown correctly with real add-ons', function () {
+    $tcp = 1_000_000;
+    $downPaymentPercent = 0.10;
+    $percentMiscFee = 0.085;
+    $termYears = 21;
+    $gmi = 17_000;
+    $multiplier = 0.35;
+    $interest = 0.0625;
+
+    // Actual monthly add-ons
+    $mri = 150.0;
+    $fire = 75.0;
+
+    $buyer = new FlexibleFakeBuyer(
+        gross_monthly_income: $gmi,
+        joint_maximum_term_allowed: $termYears
+    );
+
+    $property = new FlexibleFakeProperty(
+        total_contract_price: $tcp
+    );
+
+    $order = new FlexibleFakeOrder(
+        interest: $interest,
+        percent_down_payment: $downPaymentPercent,
+        income_requirement_multiplier: $multiplier,
+        percent_miscellaneous_fees: $percentMiscFee,
+        mortgage_redemption_insurance: $mri,
+        annual_fire_insurance: $fire,
+    );
+
+    $inputs = InputsData::fromBooking($buyer, $property, $order);
+    $service = new MortgageComputation($inputs);
+    $breakdown = $service->getMonthlyAmortizationBreakdown();
+
+    $balancePrincipal = $tcp * (1 - $downPaymentPercent);
+    $balanceMF = (1 - $downPaymentPercent) * $percentMiscFee * $tcp;
+    $months = $termYears * 12;
+    $monthlyRate = round($interest / 12, 15);
+
+    $expectedPrincipal = $monthlyRate === 0
+        ? $balancePrincipal / $months
+        : ($balancePrincipal * $monthlyRate) / (1 - pow(1 + $monthlyRate, -$months));
+
+    $expectedMF = $balanceMF / $months;
+    $expectedAddOns = $mri + $fire;
+    $expectedTotal = $expectedPrincipal + $expectedMF + $expectedAddOns;
+
+    expect($breakdown->principal->inclusive()->getAmount()->toFloat())->toBeCloseTo($expectedPrincipal, 0.01)
+        ->and($breakdown->mf->inclusive()->getAmount()->toFloat())->toBeCloseTo($expectedMF, 0.01)
+        ->and($breakdown->add_ons->inclusive()->getAmount()->toFloat())->toBeCloseTo($expectedAddOns, 0.01)
+        ->and($breakdown->total->inclusive()->getAmount()->toFloat())->toBeCloseTo($expectedTotal, 0.01);
+});
+
+it('injects monthly amortization breakdown into qualification result', function () {
+    $tcp = 1_000_000;
+    $downPaymentPercent = 0.10;
+    $percentMiscFee = 0.085;
+    $termYears = 21;
+    $gmi = 17_000;
+    $multiplier = 0.35;
+    $interest = 0.0625;
+    $mri = 941.90;
+    $fire = 0.0;
+
+    $buyer = new FlexibleFakeBuyer(
+        gross_monthly_income: $gmi,
+        joint_maximum_term_allowed: $termYears
+    );
+
+    $property = new FlexibleFakeProperty(
+        total_contract_price: $tcp
+    );
+
+    $order = new FlexibleFakeOrder(
+        interest: $interest,
+        percent_down_payment: $downPaymentPercent,
+        income_requirement_multiplier: $multiplier,
+        percent_miscellaneous_fees: $percentMiscFee,
+        mortgage_redemption_insurance: $mri,
+        annual_fire_insurance: $fire,
+    );
+
+    $inputs = InputsData::fromBooking($buyer, $property, $order);
+    $service = new MortgageComputation($inputs);
+    $result = $service->getQualificationResult();
+    $breakdown = $result->monthly_amortization_breakdown;
+
+    // === Dynamic Expected Values ===
+    $balancePrincipal = $tcp * (1 - $downPaymentPercent); // ₱900,000
+    $balanceMF = (1 - $downPaymentPercent) * $percentMiscFee * $tcp; // ₱76,500
+    $months = $termYears * 12; // 252 months
+    $monthlyRate = $interest / 12; // 0.005208333333...
+
+    $expectedPrincipal = $monthlyRate === 0
+        ? $balancePrincipal / $months
+        : ($balancePrincipal * $monthlyRate) / (1 - pow(1 + $monthlyRate, -$months));
+
+    $expectedMF = $balanceMF / $months;
+    $expectedAddOns = $mri + $fire;
+    $expectedTotal = $expectedPrincipal + $expectedMF + $expectedAddOns;
+
+    // === Assertions ===
+    expect($breakdown->principal->inclusive()->getAmount()->toFloat())
+        ->toBeCloseTo($expectedPrincipal, 0.01)
+        ->and($breakdown->mf->inclusive()->getAmount()->toFloat())
+        ->toBeCloseTo($expectedMF, 0.01)
+        ->and($breakdown->add_ons->inclusive()->getAmount()->toFloat())
+        ->toBeCloseTo($expectedAddOns, 0.01)
+        ->and($breakdown->total->inclusive()->getAmount()->toFloat())
+        ->toBeCloseTo($expectedTotal, 0.01);
+});
