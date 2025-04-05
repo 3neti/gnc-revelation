@@ -7,12 +7,15 @@ use App\Services\BorrowingRulesService;
 use App\Contracts\PropertyInterface;
 use App\Exceptions\BirthdateNotSet;
 use Illuminate\Support\Collection;
+use App\Contracts\BuyerInterface;
 use Illuminate\Support\Carbon;
 use Brick\Math\RoundingMode;
 use Whitecube\Price\Price;
 use Brick\Money\Money;
 
-class Buyer
+
+
+class Buyer implements BuyerInterface
 {
     protected Carbon $birthdate;
     protected Price $gross_monthly_income;
@@ -304,5 +307,20 @@ class Buyer
         }
 
         return config('gnc-revelation.default_buffer_margin', 0.1);
+    }
+
+    public function getInterestRate(): ?float
+    {
+        return config('gnc-revelation.defaults.buyer.interest_rate');
+    }
+
+    public function getDownPaymentTerm(): ?int
+    {
+        return config('gnc-revelation.defaults.buyer.down_payment_term');
+    }
+
+    public function getBalancePaymentTerm(): ?int
+    {
+        return $this->getJointMaximumTermAllowed();
     }
 }
