@@ -13,8 +13,8 @@ interface OrderInterface
     public function getDownPaymentTerm(): ?int;
     public function getBalancePaymentTerm(): ?int;
     public function getLowCashOut(): ?Price;
-    public function getMortgageRedemptionInsurance(): ?float;
-    public function getAnnualFireInsurance(): ?float;
+    public function getMonthlyMRI(): ?float;
+    public function getMonthlyFI(): ?float;
     public function getPercentMiscellaneousFees(): ?float;
     public function getConsultingFee(): ?Price;
     public function getProcessingFee(): ?Price;

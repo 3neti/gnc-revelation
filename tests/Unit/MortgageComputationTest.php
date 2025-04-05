@@ -399,8 +399,8 @@ it('computes monthly amortization breakdown correctly with real add-ons', functi
         percent_down_payment: $downPaymentPercent,
         income_requirement_multiplier: $multiplier,
         percent_miscellaneous_fees: $percentMiscFee,
-        mortgage_redemption_insurance: $mri,
-        annual_fire_insurance: $fire,
+        monthly_mri: $mri,
+        monthly_fi: $fire,
     );
 
     $inputs = InputsData::fromBooking($buyer, $property, $order);
@@ -451,8 +451,8 @@ it('injects monthly amortization breakdown into qualification result', function 
         percent_down_payment: $downPaymentPercent,
         income_requirement_multiplier: $multiplier,
         percent_miscellaneous_fees: $percentMiscFee,
-        mortgage_redemption_insurance: $mri,
-        annual_fire_insurance: $fire,
+        monthly_mri: $mri,
+        monthly_fi: $fire,
     );
 
     $inputs = InputsData::fromBooking($buyer, $property, $order);

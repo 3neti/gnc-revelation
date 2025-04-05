@@ -173,8 +173,8 @@ final class MortgageComputation
 
     protected function getNetMonthlyAddOns(): Price
     {
-        $mri = $this->inputs->monthly_payment_add_ons?->mortgage_redemption_insurance ?? 0.0;
-        $fire = $this->inputs->monthly_payment_add_ons?->annual_fire_insurance ?? 0.0;
+        $mri = $this->inputs->monthly_payment_add_ons?->monthly_mri ?? 0.0;
+        $fire = $this->inputs->monthly_payment_add_ons?->monthly_fi ?? 0.0;
 
         return MoneyFactory::priceWithPrecision($mri + $fire);
     }
