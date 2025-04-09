@@ -4,13 +4,15 @@ namespace Tests\Fakes;
 
 use App\Contracts\PropertyInterface;
 use App\Support\MoneyFactory;
+use App\ValueObjects\Percent;
 use Whitecube\Price\Price;
 
+/** @deprecated  */
 class FlexibleFakeProperty implements PropertyInterface
 {
     public function __construct(
         protected float  $total_contract_price,
-        protected ?float $interest = null,
+        protected ?float $interest = 0.625,
         protected ?float $income_requirement_multiplier = 0.35,
         protected ?float $loanable_amount = null,
         protected ?float $bufferMargin = 0.10,
@@ -26,14 +28,22 @@ class FlexibleFakeProperty implements PropertyInterface
         return MoneyFactory::priceWithPrecision($this->loanable_amount);
     }
 
-    public function getInterestRate(): ?float
+    public function getInterestRate(): Percent
     {
-        return $this->interest;
+        return Percent::ofFraction($this->interest);
     }
 
-    public function getRequiredBufferMargin(): ?float
+//    public function getRequiredBufferMargin(): ?Percent
+//    {
+//        return Percent::ofFraction($this->bufferMargin);
+//    }
+
+
+    public function getRequiredBufferMargin(): ?Percent
     {
-        return $this->bufferMargin;
+        return isset($this->bufferMargin)
+            ? Percent::ofFraction($this->bufferMargin)
+            : null;
     }
 
     public function getIncomeRequirementMultiplier(): ?float
@@ -41,8 +51,18 @@ class FlexibleFakeProperty implements PropertyInterface
         return $this->income_requirement_multiplier;
     }
 
-    public function getPercentLoanable(): ?float { return null; }
-    public function getAppraisalValue(): ?float { return null; }
+    public function getPercentLoanableValue(): ?Percent { return null; }
+    public function getAppraisalValue(): ?Price { return null; }
     public function getProcessingFee(): ?Price { return null; }
-    public function getPercentMiscellaneousFees(): ?float { return null; }
+    public function getPercentMiscellaneousFees(): Percent { return Percent::ofFraction(0); }
+
+    public function getPercentDisposableIncomeRequirement(): Percent
+    {
+        // TODO: Implement getPercentDisposableIncomeRequirement() method.
+    }
+
+    public function resolveDefaultInterestRate(): Percent
+    {
+        // TODO: Implement resolveDefaultInterestRate() method.
+    }
 }

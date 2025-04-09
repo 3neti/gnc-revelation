@@ -5,6 +5,7 @@ namespace Tests\Fakes;
 use App\Contracts\BuyerInterface;
 use Whitecube\Price\Price;
 
+/** @deprecated  */
 class FlexibleFakeBuyer implements BuyerInterface
 {
     public function __construct(
@@ -16,7 +17,7 @@ class FlexibleFakeBuyer implements BuyerInterface
         protected ?float $joint_monthly_disposable_income = null,
     ) {}
 
-    public function getGrossMonthlyIncome(): Price
+    public function getMonthlyGrossIncome(): Price
     {
         return Price::of($this->gross_monthly_income, 'PHP');
     }

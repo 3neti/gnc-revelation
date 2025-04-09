@@ -85,6 +85,17 @@ final class MortgageComputation
 
         $breakdown = $this->getMonthlyAmortizationBreakdown();
 
+        dump($this->inputs);
+        dump([
+            'tcp' => $tcp,
+            'downpayment_percent' => $percentDp,
+            'actual_down_payment' => $actualDownPayment,
+            'required_loanable' => $requiredLoanable,
+            'affordable_loanable' => $affordableLoan,
+            'gap' => $gap,
+            'qualifies' => $qualifies,
+        ]);
+
         return new QualificationResultData(
             qualifies: $qualifies,
             gap: $gap,

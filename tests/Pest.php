@@ -53,3 +53,16 @@ expect()->extend('toBeCloseTo', function (float $expected, float $precision = 0.
 
     return expect(abs($actual - $expected))->toBeLessThanOrEqual($precision);
 });
+
+use App\ValueObjects\Percent;
+
+expect()->extend('toEqualPercent', function (float $expected) {
+    /** @var \Pest\Expectation $this */
+    $actual = $this->value;
+
+    if (!$actual instanceof Percent) {
+        throw new Exception("toEqualPercent() expects a Percent instance, got " . gettype($actual));
+    }
+
+    return expect($actual->equals(Percent::ofFraction($expected)))->toBeTrue();
+});

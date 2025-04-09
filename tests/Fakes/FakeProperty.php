@@ -3,9 +3,11 @@
 namespace Tests\Fakes;
 
 use App\Contracts\PropertyInterface;
+use App\ValueObjects\Percent;
 use Whitecube\Price\Price;
 use Brick\Money\Money;
 
+/** @deprecated  */
 class FakeProperty implements PropertyInterface
 {
     public function getLoanableAmount(): Price
@@ -13,14 +15,14 @@ class FakeProperty implements PropertyInterface
         return new Price(Money::of(1000000, 'PHP')); // ₱1M loan
     }
 
-    public function getInterestRate(): float
+    public function getInterestRate(): Percent
     {
-        return 0.06; // 6% annual interest
+        return Percent::ofFraction(0.06); // 6% annual interest
     }
 
-    public function getRequiredBufferMargin(): ?float
+    public function getRequiredBufferMargin(): ?Percent
     {
-        return 0.1;
+        return Percent::ofFraction(0.1);
     }
 
     public function getTotalContractPrice(): Price
@@ -33,12 +35,12 @@ class FakeProperty implements PropertyInterface
         // TODO: Implement getIncomeRequirementMultiplier() method.
     }
 
-    public function getPercentLoanable(): ?float
+    public function getPercentLoanableValue(): ?Percent
     {
         // TODO: Implement getPercentLoanable() method.
     }
 
-    public function getAppraisalValue(): ?float
+    public function getAppraisalValue(): ?Price
     {
         // TODO: Implement getAppraisalValue() method.
     }
@@ -48,8 +50,18 @@ class FakeProperty implements PropertyInterface
         // TODO: Implement getProcessingFee() method.
     }
 
-    public function getPercentMiscellaneousFees(): ?float
+    public function getPercentMiscellaneousFees(): ?Percent
     {
         // TODO: Implement getPercentMiscellaneousFees() method.
+    }
+
+    public function getPercentDisposableIncomeRequirement(): Percent
+    {
+        // TODO: Implement getPercentDisposableIncomeRequirement() method.
+    }
+
+    public function resolveDefaultInterestRate(): Percent
+    {
+        // TODO: Implement resolveDefaultInterestRate() method.
     }
 }

@@ -25,7 +25,7 @@ class LoanableInputsData extends Data
         return new static(
             total_contract_price: $property->getTotalContractPrice(),
             down_payment: DownPaymentInputsData::fromBooking($buyer, $property, $order),
-            percent_loanable: $property->getPercentLoanable(),
+            percent_loanable: $property->getPercentLoanableValue(),
             appraisal_value: $property->getTotalContractPrice(),
             discount_amount: $order->getDiscountAmount(),
             low_cash_out: $order->getLowCashOut(),

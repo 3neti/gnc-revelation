@@ -39,7 +39,8 @@ class DisposableModifier implements PriceAmendable
     {
         return [
             'modifier' => 'disposable income multiplier',
-            'disposable_income_multiplier' => $this->buyer->getDisposableIncomeMultiplier(),
+            'disposable_income_multiplier' => $this->buyer->getIncomeRequirementMultiplier(),
+
             'default_disposable_income_multiplier' => config('gnc-revelation.default_disposable_income_multiplier'),
         ];
     }
@@ -51,7 +52,8 @@ class DisposableModifier implements PriceAmendable
 
     public function apply(AbstractMoney $build, float $units, bool $perUnit, ?AbstractMoney $exclusive = null, ?Vat $vat = null): ?AbstractMoney
     {
-        $multiplier = $this->buyer->getDisposableIncomeMultiplier();
+        $multiplier = $this->buyer->getIncomeRequirementMultiplier()->value();
+//        $multiplier = $this->buyer->getDisposableIncomeMultiplier()->value();
 
         if ($build instanceof Money) {
             return $build->multipliedBy($multiplier, roundingMode: RoundingMode::CEILING);

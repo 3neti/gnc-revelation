@@ -5,12 +5,13 @@ namespace App\Data\Inputs;
 use App\Contracts\PropertyInterface;
 use App\Contracts\OrderInterface;
 use App\Contracts\BuyerInterface;
+use App\ValueObjects\Percent;
 use Spatie\LaravelData\Data;
 
 class DownPaymentInputsData extends Data
 {
     public function __construct(
-        public ?float $percent_dp = null,
+        public ?Percent $percent_dp = null,
         public ?int $dp_term  = null,
     ) {}
 

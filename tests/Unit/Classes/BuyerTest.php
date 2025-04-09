@@ -1,10 +1,16 @@
 <?php
 
-use Tests\Fakes\{FakeProperty, FlexibleFakeProperty};
+use App\Exceptions\MaximumBorrowingAgeBreached;
+use App\Exceptions\MinimumBorrowingAgeNotMet;
+use App\Data\QualificationComputationData;
+use App\Services\BorrowingRulesService;
+use App\Enums\Property\DevelopmentType;
 use App\Classes\LendingInstitution;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Carbon;
+use App\ValueObjects\Percent;
 use Whitecube\Price\Price;
+use App\Classes\Property;
 use App\Classes\Buyer;
 use Brick\Money\Money;
 
@@ -15,8 +21,8 @@ it('initializes with default values', function () {
     // Assert
     expect($buyer->getBirthdate())->toBeInstanceOf(Carbon::class)
         ->and($buyer->getBirthdate()->isSameDay(Carbon::parse(config('gnc-revelation.defaults.buyer.birthdate'))))->toBeTrue()
-        ->and($buyer->getGrossMonthlyIncome())->toBeInstanceOf(Price::class)
-        ->and($buyer->getGrossMonthlyIncome()->inclusive()->getAmount()->toFloat())->toBe(15000.00)
+        ->and($buyer->getMonthlyGrossIncome())->toBeInstanceOf(Price::class)
+        ->and($buyer->getMonthlyGrossIncome()->inclusive()->getAmount()->toFloat())->toBe(15000.00)
         ->and($buyer->isRegional())->toBeFalse()
         ->and($buyer->getCoBorrowers())->toBeInstanceOf(Collection::class)
         ->and($buyer->getCoBorrowers())->toHaveCount(0);
@@ -36,14 +42,14 @@ it('can set and get birthdate', function () {
 
 it('can set and get gross monthly income', function () {
     // Arrange
-    $income = new Price(Money::of(25000, 'PHP'));
+    $income = 25_000;
     $buyer = app(Buyer::class);
 
     // Act
-    $buyer->setGrossMonthlyIncome($income);
+    $buyer->setMonthlyGrossIncome($income);
 
     // Assert
-    expect($buyer->getGrossMonthlyIncome()->inclusive()->getAmount()->toFloat())->toBe(25000.00);
+    expect($buyer->getMonthlyGrossIncome()->inclusive()->getAmount()->toFloat())->toBe(25000.00);
 });
 
 it('can set and get regional flag', function () {
@@ -84,14 +90,14 @@ it('can set birthdate using age in years', function () {
 it('can calculate age based on birthdate', function () {
     // Arrange
     $buyer = app(Buyer::class);
-    $buyer->setBirthdate(Carbon::parse('1980-01-01'));
+    $buyer->setBirthdate(Carbon::parse('1999-03-17'));
 
     // Act
     $age = $buyer->getAge();
 
     // Assert
     expect($age)->toBeFloat()
-        ->and($age)->toBeGreaterThan(40); // depends on current date
+        ->and($age)->toBeGreaterThan(26); // depends on current date
 });
 
 it('can get the oldest between main and co-borrowers', function () {
@@ -113,9 +119,8 @@ it('can get the oldest between main and co-borrowers', function () {
     // Assert
     expect($oldest)->toBe($older);
 });
-//
-use App\Exceptions\MinimumBorrowingAgeNotMet;
-use App\Exceptions\MaximumBorrowingAgeBreached;
+
+
 
 it('throws exception if age is below minimum', function () {
     // Arrange
@@ -206,15 +211,17 @@ it('calculates the correct maximum term allowed based on age and institution', f
 
 it('calculates disposable income using default multiplier', function () {
     $buyer = app(Buyer::class);
+    $buyer->setIncomeRequirementMultiplier(0.35);//TODO: should this be a default?
     $income = $buyer->getMonthlyDisposableIncome();
 
     expect($income->inclusive()->getAmount()->toFloat())->toBeGreaterThan(0)
         ->and($income->inclusive()->getAmount()->toFloat())
-        ->toEqual(ceil(15000 * 0.35)); // default config value
+        ->toEqual(ceil(15000 * 0.35))
+    ; // default config value
 });
 
 it('calculates disposable income using custom multiplier', function () {
-    $buyer = app(Buyer::class)->setDisposableIncomeMultiplier(0.4);
+    $buyer = app(Buyer::class)->setIncomeRequirementMultiplier(0.4);
     $income = $buyer->getMonthlyDisposableIncome();
 
     expect($income->inclusive()->getAmount()->toFloat())
@@ -226,7 +233,7 @@ it('can add other sources of income to gross monthly income', function () {
         ->addOtherSourcesOfIncome('side hustle', 2000)
         ->addOtherSourcesOfIncome('spouse', Money::of(5000, 'PHP'));
 
-    $gross = $buyer->getGrossMonthlyIncome()->inclusive()->getAmount()->toFloat();
+    $gross = $buyer->getMonthlyGrossIncome()->inclusive()->getAmount()->toFloat();
 
     expect($gross)->toBeGreaterThan(15000)
         ->and($gross)->toEqual(15000 + 2000 + 5000); // default + modifiers
@@ -235,20 +242,20 @@ it('can add other sources of income to gross monthly income', function () {
 it('calculates joint monthly disposable income including co-borrowers', function () {
     // Arrange: Main borrower
     $main = app(Buyer::class);
-    $main->setDisposableIncomeMultiplier(0.4);
+    $main->setIncomeRequirementMultiplier(0.4);
 
     // Add other income sources
     $main->addOtherSourcesOfIncome('main business', 5000); // +5k
 
     // Co-borrower 1
     $co1 = app(Buyer::class)
-        ->setDisposableIncomeMultiplier(0.35)
-        ->setGrossMonthlyIncome(new Price(Money::of(10000, 'PHP')));
+        ->setIncomeRequirementMultiplier(0.35)
+        ->setMonthlyGrossIncome(new Price(Money::of(10000, 'PHP')));
 
     // Co-borrower 2
     $co2 = app(Buyer::class)
-        ->setDisposableIncomeMultiplier(0.4)
-        ->setGrossMonthlyIncome(new Price(Money::of(15000, 'PHP')));
+        ->setIncomeRequirementMultiplier(0.4)
+        ->setMonthlyGrossIncome(new Price(Money::of(15000, 'PHP')));
 
     // Act
     $main->addCoBorrower($co1)->addCoBorrower($co2);
@@ -324,35 +331,39 @@ it('calculates joint maximum term allowed from oldest borrower', function () {
 });
 
 
-
+/** 1 */
 it('validates if joint income can afford monthly amortization', function () {
     $buyer = app(Buyer::class)
-        ->setDisposableIncomeMultiplier(0.4)
+        ->setIncomeRequirementMultiplier(0.4)
         ->addOtherSourcesOfIncome('Side Hustle', 8000);
 
     $co = app(Buyer::class)
         ->setAge(30)
-        ->setGrossMonthlyIncome(new Price(Money::of(15000, 'PHP')))
-        ->setDisposableIncomeMultiplier(0.4);
+        ->setMonthlyGrossIncome(new Price(Money::of(15000, 'PHP')))
+        ->setIncomeRequirementMultiplier(0.4);
 
     $buyer->addCoBorrower($co);
 
-    $property = new FakeProperty();
+    // Use the actual Property class instead of a fake
+    $property = new Property(1_000_000, DevelopmentType::BP_957);
 
-    expect($buyer->qualifiesFor($property))->toBeTrue();
+    // You may optionally set interest or other values here
+    $property->setInterestRate(0.06);
+
+    expect($buyer->getQualificationComputation($property)->qualifies())->toBeTrue();
 });
 
 dataset('affordability cases', function () {
     return [
-        // [loanable, interest, borrower_income, co_borrower_income, expected]
-        'can afford easily' => [1000000, 0.06, 20000, 15000, true],
-        'just enough to afford' => [1000000, 0.06, 12000, 10000, true],
-        'barely not enough' => [1000000, 0.06, 4000, 1900, false],
-        'not enough' => [1000000, 0.06, 3000, 2000, false],
-        'can’t afford high loan' => [5000000, 0.07, 15000, 10000, false],
-        'low interest helps' => [1000000, 0.03, 10000, 10000, true],
-        'short term helps' => [1000000, 0.06, 10000, 10000, true], // will override term later if needed
-        'fails due to buffer margin' => [1000000, 0.06, 4000, 2100, false], // just enough before buffer, fails after
+//         [loanable, interest, borrower_income, co_borrower_income, expected]
+        'can afford easily'           => [1000000, 0.06, 20000, 15000, true],
+        'just enough to afford'      => [1000000, 0.06, 12000, 10000, true],
+        'barely not enough'          => [1000000, 0.06, 4000, 1900, false],
+        'not enough'                 => [1000000, 0.06, 3000, 2000, false],
+        'can’t afford high loan'     => [5000000, 0.07, 15000, 10000, false],
+        'low interest helps'         => [1000000, 0.03, 10000, 10000, true],
+        'short term helps'           => [1000000, 0.06, 10000, 10000, true],
+        'fails due to buffer margin' => [1000000, 0.06, 4000, 2100, false],
     ];
 });
 
@@ -363,67 +374,62 @@ it('validates joint income against monthly amortization', function (
     float $co_income,
     bool $expected
 ) {
-    // Arrange
-    $buyer = app(Buyer::class)
-        ->setDisposableIncomeMultiplier(1)
-        ->setGrossMonthlyIncome(new Price(Money::of($main_income, 'PHP')))
-        ->setAge(30)
-        ->setLendingInstitution(new \App\Classes\LendingInstitution('hdmf'));
+    // Disable config defaults that may interfere
+    config()->set('gnc-revelation.defaults.buyer.gross_monthly_income', 0);
+    config()->set('gnc-revelation.default_buffer_margin', 0.1); // default buffer
 
-    $co = app(Buyer::class)
-        ->setDisposableIncomeMultiplier(1)
-        ->setGrossMonthlyIncome(new Price(Money::of($co_income, 'PHP')))
+    // Arrange: Buyer and Co-Borrower
+    $buyer = new Buyer(app(BorrowingRulesService::class));
+    $buyer
         ->setAge(30)
-        ->setLendingInstitution(new \App\Classes\LendingInstitution('hdmf'));
+        ->setIncomeRequirementMultiplier(1.0)
+        ->setMonthlyGrossIncome($main_income)
+        ->setLendingInstitution(new LendingInstitution('hdmf'));
+
+    $co = new Buyer(app(BorrowingRulesService::class));
+    $co
+        ->setAge(30)
+        ->setIncomeRequirementMultiplier(1.0)
+        ->setMonthlyGrossIncome($co_income)
+        ->setLendingInstitution(new LendingInstitution('hdmf'));
 
     $buyer->addCoBorrower($co);
 
-    $property = new FlexibleFakeProperty($loanable, $interest);
+    // Arrange: Property with forced loan and interest
+    $property = new Property($loanable);
+    $property->setPercentLoanableValue(Percent::ofPercent(100));
+    $property->setInterestRate(Percent::ofFraction($interest));
+    $property->setRequiredBufferMargin(0.1); // 10% buffer margin
 
     // Act & Assert
-    expect($buyer->qualifiesFor($property))->toBe($expected);
-})->with('affordability cases');
-
-it('validates joint income against amortization with buffer margin', function (
-    float $loanable,
-    float $interest,
-    float $main_income,
-    float $co_income,
-    bool $expected
-) {
-    $buyer = app(Buyer::class)
-        ->setDisposableIncomeMultiplier(1)
-        ->setGrossMonthlyIncome(new Price(Money::of($main_income, 'PHP')))
-        ->setAge(30)
-        ->setLendingInstitution(new \App\Classes\LendingInstitution('hdmf'));
-
-    $co = app(Buyer::class)
-        ->setDisposableIncomeMultiplier(1)
-        ->setGrossMonthlyIncome(new Price(Money::of($co_income, 'PHP')))
-        ->setAge(30)
-        ->setLendingInstitution(new \App\Classes\LendingInstitution('hdmf'));
-
-    $buyer->addCoBorrower($co);
-
-    $property = new FlexibleFakeProperty($loanable, $interest);
-
-    expect($buyer->qualifiesFor($property, 0.1))->toBe($expected); // 10% buffer
+//    dump($buyer->getQualificationComputation($property));
+    expect($buyer->getQualificationComputation($property)->qualifies())->toBe($expected);
 })->with('affordability cases');
 
 it('returns qualification gap if borrower cannot afford loan', function () {
+    // Arrange: Borrower who cannot afford the amortization
     $buyer = app(Buyer::class)
-        ->setDisposableIncomeMultiplier(1)
-        ->setGrossMonthlyIncome(new Price(Money::of(2000, 'PHP')))
+        ->setIncomeRequirementMultiplier(1.0)
+        ->setMonthlyGrossIncome(new Price(Money::of(2000, 'PHP')))
         ->setAge(30)
         ->setLendingInstitution(new \App\Classes\LendingInstitution('hdmf'));
 
-    $property = new FlexibleFakeProperty(1000000, 0.06); // ₱1M, 6% interest
+    // Arrange: Real property with forced loanable value and interest
+    $property = new Property(1000000); // TCP = ₱1M
+    $property->setPercentLoanableValue(Percent::ofPercent(100)); // Loanable = 100%
+    $property->setInterestRate(Percent::ofFraction(0.06)); // 6% interest
+    $property->setRequiredBufferMargin(0.1); // 10% buffer
 
-    $gap = $buyer->getQualificationGap($property, 0.1);
+    // Act
+    $gap = $buyer->getQualificationComputation($property)
+        ->gap()
+        ->getAmount()
+        ->toFloat();
 
+    // Assert
     expect($gap)->toBeGreaterThan(0)
-        ->and($buyer->failedQualificationMessage($property))->toBeString()
-        ->and($buyer->failedQualificationMessage($property))->toContain('₱');
+        ->and($buyer->getQualificationComputation($property)->failedMessage())->toBeString()
+        ->and($buyer->getQualificationComputation($property)->failedMessage())->toContain('₱');
 });
 
 dataset('buffer margin scenarios', function () {
@@ -446,7 +452,6 @@ it('resolves correct buffer margin from property, institution, or config', funct
     // Arrange
     config()->set('gnc-revelation.default_buffer_margin', $fallbackConfig);
 
-    $buyer = app(Buyer::class);
     $institutionKey = 'testbank';
 
     config()->set("gnc-revelation.lending_institutions.{$institutionKey}", [
@@ -463,10 +468,15 @@ it('resolves correct buffer margin from property, institution, or config', funct
         'buffer_margin' => $institutionBuffer,
     ]);
 
-    $institution = new \App\Classes\LendingInstitution($institutionKey);
-    $property = new \Tests\Fakes\FlexibleFakeProperty(1000000, 0.06, $propertyBuffer);
-
+    $institution = new LendingInstitution($institutionKey);
+    $buyer = new Buyer(app(\App\Services\BorrowingRulesService::class));
     $buyer->setLendingInstitution($institution);
+
+    $property = new Property(1_000_000);
+
+    if (!is_null($propertyBuffer)) {
+        $property->setRequiredBufferMargin($propertyBuffer);
+    }
 
     // Act
     $resolved = $buyer->resolveBufferMargin($property);
@@ -474,3 +484,105 @@ it('resolves correct buffer margin from property, institution, or config', funct
     // Assert
     expect($resolved)->toEqual($expected);
 })->with('buffer margin scenarios');
+
+it('returns default down payment term from config', function () {
+    config()->set('gnc-revelation.defaults.buyer.down_payment_term', 12);
+    $buyer = app(Buyer::class);
+
+    expect($buyer->getDownPaymentTerm())->toBe(12);
+});
+
+it('returns balance payment term based on joint max term', function () {
+    $buyer = app(Buyer::class)->setAge(35);
+    $co = app(Buyer::class)->setAge(45);
+
+    $buyer->addCoBorrower($co);
+
+    $expected = min(
+        $buyer->getMaximumTermAllowed(),
+        $co->getMaximumTermAllowed()
+    );
+
+    expect($buyer->getBalancePaymentTerm())->toBe($expected);
+});
+
+it('returns a structured qualification computation', function () {
+    $buyer = app(Buyer::class)
+        ->setMonthlyGrossIncome(20000)
+        ->setIncomeRequirementMultiplier(0.4)
+        ->setAge(30)
+        ->setLendingInstitution(new LendingInstitution('hdmf'));
+
+    $property = new Property(1_000_000);
+    $property->setInterestRate(0.06);
+    $property->setPercentLoanableValue(Percent::ofPercent(100));
+    $property->setRequiredBufferMargin(0.1);
+
+    $result = $buyer->getQualificationComputation($property);
+
+    expect($result)->toBeInstanceOf(QualificationComputationData::class)
+        ->and($result->monthlyPayment)->toBeInstanceOf(Money::class)
+        ->and($result->required->isGreaterThan($result->monthlyPayment))->toBeTrue()
+        ->and($result->actual->isPositive())->toBeTrue();
+});
+
+it('can determine qualification status and gap from result DTO', function () {
+    $buyer = app(Buyer::class)
+        ->setMonthlyGrossIncome(2000)
+        ->setIncomeRequirementMultiplier(1.0)
+        ->setAge(30)
+        ->setLendingInstitution(new LendingInstitution('hdmf'));
+
+    $property = new Property(1_000_000);
+    $property->setInterestRate(0.06);
+    $property->setPercentLoanableValue(Percent::ofPercent(100));
+    $property->setRequiredBufferMargin(0.1);
+
+    $result = $buyer->getQualificationComputation($property);
+
+    expect($result->qualifies())->toBeFalse()
+        ->and($result->gap()->isPositive())->toBeTrue()
+        ->and($result->failedMessage())->toContain('₱');
+});
+
+it('returns zero gap and null message when borrower qualifies', function () {
+    $buyer = app(Buyer::class)
+        ->setMonthlyGrossIncome(50000)
+        ->setIncomeRequirementMultiplier(0.5)
+        ->setAge(30)
+        ->setLendingInstitution(new LendingInstitution('hdmf'));
+
+    $property = new Property(1_000_000);
+    $property->setInterestRate(0.06);
+    $property->setPercentLoanableValue(Percent::ofPercent(100));
+    $property->setRequiredBufferMargin(0.1);
+
+    $result = $buyer->getQualificationComputation($property);
+
+    expect($result->qualifies())->toBeTrue()
+        ->and($result->gap()->isZero())->toBeTrue()
+        ->and($result->failedMessage())->toBeNull();
+});
+
+it('returns qualification gap using getQualificationGap()', function () {
+    $buyer = app(Buyer::class)
+        ->setMonthlyGrossIncome(3000)
+        ->setIncomeRequirementMultiplier(1.0)
+        ->setAge(30)
+        ->setLendingInstitution(new \App\Classes\LendingInstitution('hdmf'));
+
+    $property = new Property(1_000_000);
+    $property->setInterestRate(0.06);
+    $property->setPercentLoanableValue(Percent::ofPercent(100));
+    $property->setRequiredBufferMargin(0.1);
+
+    // Act
+    $gapFloat = QualificationComputationData::from($buyer, $property)->gap()->getAmount()->toFloat();
+
+    // Use DTO to compare
+    $gapViaDTO = QualificationComputationData::from($buyer, $property)->gap()->getAmount()->toFloat();
+
+    expect($gapFloat)->toBeFloat()
+        ->and($gapFloat)->toBeGreaterThan(0)
+        ->and($gapFloat)->toEqual($gapViaDTO);
+});

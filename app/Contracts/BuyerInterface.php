@@ -2,16 +2,15 @@
 
 namespace App\Contracts;
 
-use Illuminate\Support\Collection;
+use App\ValueObjects\Percent;
 use Whitecube\Price\Price;
-use Carbon\Carbon;
 
 interface BuyerInterface
 {
-    public function getGrossMonthlyIncome(): Price;
+    public function getMonthlyGrossIncome(): Price;
     public function getJointMonthlyDisposableIncome(): Price;
     public function getJointMaximumTermAllowed(): int;
-    public function getInterestRate(): ?float;
+    public function getInterestRate(): ?Percent;
     public function getDownPaymentTerm(): ?int;
     public function getBalancePaymentTerm(): ?int;
 }

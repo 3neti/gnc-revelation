@@ -2,30 +2,54 @@
 
 namespace App\Classes;
 
-use App\Enums\Property\DevelopmentType;
-use App\Enums\Property\MarketSegment;
+use App\Enums\Property\{DevelopmentForm, DevelopmentType, MarketSegment};
+use App\Support\Traits\HasFinancialAttributes;
 use App\Contracts\PropertyInterface;
 use App\Support\MoneyFactory;
+use App\ValueObjects\Percent;
 use Whitecube\Price\Price;
 use Brick\Money\Money;
 
 class Property implements PropertyInterface
 {
-    protected Price $total_contract_price;
-    protected ?float $appraisal_value = null;
-    protected ?float $loanable_value_multiplier = null;
-    protected ?float $disposable_income_multiplier = null;
-    protected ?float $interest_rate = null;
-    protected ?float $buffer_margin = null;
-    protected ?float $income_requirement_multiplier = null;
-    protected ?float $percent_misc_fees = null;
-    protected DevelopmentType $development_type;
+    use HasFinancialAttributes;
 
-    public function __construct()
-    {
-        $this->development_type = DevelopmentType::BP_220;
-        $this->buffer_margin = config('gnc-revelation.default_buffer_margin', 0.1);
-        $this->percent_misc_fees = config('gnc-revelation.property.default.percent_mf', 0.085);
+    protected Price $total_contract_price;
+    protected DevelopmentType $development_type;
+    protected DevelopmentForm $development_form;
+    protected Percent $required_buffer_margin;
+    protected Percent $percent_disposable_income_requirement;
+    protected Percent $percent_loanable_value;
+    protected ?Price $appraisal_value = null;
+    protected ?Price $processing_fee = null;
+    protected ?Percent $percent_miscellaneous_fees = null;
+
+    public function __construct(
+        float|int|string $total_contract_price,
+        ?DevelopmentType $development_type = null,
+        ?DevelopmentForm $development_form = null
+    ) {
+        $this->setTotalContractPrice($total_contract_price);
+
+        $this->setDevelopmentType(
+            $development_type ?? DevelopmentType::from(
+            config('gnc-revelation.property.default.development_type')
+        )
+        );
+
+        $this->setDevelopmentForm(
+            $development_form ?? DevelopmentForm::from(
+            config('gnc-revelation.property.default.development_form')
+        )
+        );
+
+        $buffer = config('gnc-revelation.default_buffer_margin');
+
+        if (is_null($buffer)) {
+            throw new \RuntimeException("Default buffer margin must not be null.");
+        }
+
+        $this->setRequiredBufferMargin($buffer);
     }
 
     public function setTotalContractPrice(float|Money|Price $value): static
@@ -42,73 +66,6 @@ class Property implements PropertyInterface
         return $this->total_contract_price;
     }
 
-    public function setAppraisalValue(?float $value): static
-    {
-        $this->appraisal_value = $value;
-        return $this;
-    }
-
-    public function getAppraisalValue(): ?float
-    {
-        return $this->appraisal_value;
-    }
-
-    public function getLoanableAmount(): Price
-    {
-        $tcp = $this->total_contract_price->inclusive()->getAmount()->toFloat();
-        $appraisal = $this->appraisal_value ?? $tcp;
-        $base = min($appraisal, $tcp);
-        $multiplier = $this->getPercentLoanable();
-
-        return MoneyFactory::price($base * $multiplier);
-    }
-
-    public function getInterestRate(): ?float
-    {
-        return $this->interest_rate ?? $this->getDefaultInterestRate();
-    }
-
-    public function setInterestRate(?float $value): static
-    {
-        $this->interest_rate = $value;
-        return $this;
-    }
-
-    public function getRequiredBufferMargin(): ?float
-    {
-        return $this->buffer_margin;
-    }
-
-    public function setRequiredBufferMargin(?float $value): static
-    {
-        $this->buffer_margin = $value;
-        return $this;
-    }
-
-    public function getIncomeRequirementMultiplier(): ?float
-    {
-        return $this->income_requirement_multiplier
-            ?? $this->getMarketSegment()->defaultDisposableIncomeRequirementMultiplier();
-    }
-
-    public function setIncomeRequirementMultiplier(?float $value): static
-    {
-        $this->income_requirement_multiplier = $value;
-        return $this;
-    }
-
-    public function getPercentLoanable(): ?float
-    {
-        return $this->loanable_value_multiplier
-            ?? $this->getMarketSegment()->defaultLoanableValueMultiplier();
-    }
-
-    public function setPercentLoanable(?float $value): static
-    {
-        $this->loanable_value_multiplier = $value;
-        return $this;
-    }
-
     public function setDevelopmentType(DevelopmentType $type): static
     {
         $this->development_type = $type;
@@ -120,39 +77,149 @@ class Property implements PropertyInterface
         return $this->development_type;
     }
 
+    public function setDevelopmentForm(DevelopmentForm $form): static
+    {
+        $this->development_form = $form;
+        return $this;
+    }
+
+    public function getDevelopmentForm(): DevelopmentForm
+    {
+        return $this->development_form;
+    }
+
+    public function setRequiredBufferMargin(Percent|float|int $value): static
+    {
+        $this->required_buffer_margin = match (true) {
+            $value instanceof Percent       => $value,
+            is_int($value)                  => Percent::ofPercent($value),
+            is_float($value) && $value <= 1 => Percent::ofFraction($value),
+            is_float($value)                => Percent::ofPercent($value),
+            default                         => throw new \InvalidArgumentException("Invalid buffer margin."),
+        };
+
+        return $this;
+    }
+
+    public function getRequiredBufferMargin(): Percent
+    {
+        return $this->required_buffer_margin;
+    }
+
     public function getMarketSegment(): MarketSegment
     {
         return MarketSegment::fromPrice($this->total_contract_price, $this->development_type);
     }
 
-    public function getProcessingFee(): ?Price
+    public function setPercentDisposableIncomeRequirement(Percent|float|int $value): static
     {
-        $amount = config('gnc-revelation.property.default.processing_fee', 10000);
-        return MoneyFactory::price($amount);
-    }
+        $this->percent_disposable_income_requirement = match (true) {
+            $value instanceof Percent       => $value,
+            is_int($value)                  => Percent::ofPercent($value),
+            is_float($value) && $value <= 1 => Percent::ofFraction($value),
+            is_float($value)                => Percent::ofPercent($value),
+            default                         => throw new \InvalidArgumentException("Invalid value for disposable income requirement."),
+        };
 
-    public function getPercentMiscellaneousFees(): ?float
-    {
-        return $this->percent_misc_fees;
-    }
-
-    public function setPercentMiscellaneousFees(?float $value): static
-    {
-        $this->percent_misc_fees = $value;
         return $this;
     }
 
-    protected function getDefaultInterestRate(): float
+    public function getPercentDisposableIncomeRequirement(): Percent
     {
-        $tcp = $this->total_contract_price->inclusive()->getAmount()->toFloat();
+        return $this->percent_disposable_income_requirement
+            ?? $this->getMarketSegment()->defaultPercentDisposableIncomeRequirement();
+    }
 
-        return match ($this->getMarketSegment()) {
-            MarketSegment::SOCIALIZED, MarketSegment::ECONOMIC => match (true) {
-                $tcp <= 750_000 => 0.03,
-                $tcp <= 850_000 => 0.0625,
-                default => 0.0625,
-            },
-            MarketSegment::OPEN => 0.07,
+    public function setPercentLoanableValue(Percent|float|int $value): static
+    {
+        $this->percent_loanable_value = match (true) {
+            $value instanceof Percent       => $value,
+            is_int($value)                  => Percent::ofPercent($value),
+            is_float($value) && $value <= 1 => Percent::ofFraction($value),
+            is_float($value)                => Percent::ofPercent($value),
+            default                         => throw new \InvalidArgumentException("Invalid value for loanable value percent."),
         };
+
+        return $this;
+    }
+
+    public function getPercentLoanableValue(): Percent
+    {
+        return $this->percent_loanable_value
+            ?? $this->getMarketSegment()->defaultPercentLoanableValue();
+    }
+
+    public function setAppraisalValue(float|Money|Price|null $value): static
+    {
+        $this->appraisal_value = match (true) {
+            $value instanceof Price => $value,
+            $value instanceof Money => MoneyFactory::price($value),
+            is_numeric($value)      => MoneyFactory::price($value),
+            is_null($value)         => null,
+            default => throw new \InvalidArgumentException("Invalid value for appraisal price."),
+        };
+
+        return $this;
+    }
+
+    public function getAppraisalValue(): ?Price
+    {
+        return $this->appraisal_value;
+    }
+
+    public function getLoanableAmount(): Price
+    {
+        $baseValue = $this->appraisal_value?->inclusive()->getAmount()->toFloat()
+            ?? $this->total_contract_price->inclusive()->getAmount()->toFloat();
+
+        $multiplier = $this->getPercentLoanableValue()->value();
+
+        return MoneyFactory::price($baseValue * $multiplier);
+    }
+
+    public function setProcessingFee(float|Money|Price|null $value): static
+    {
+        $this->processing_fee = match (true) {
+            $value instanceof Price => $value,
+            $value instanceof Money => MoneyFactory::price($value),
+            is_numeric($value)      => MoneyFactory::price($value),
+            is_null($value)         => null,
+            default                 => throw new \InvalidArgumentException('Invalid processing fee.'),
+        };
+
+        return $this;
+    }
+
+    public function getProcessingFee(): ?Price
+    {
+        return $this->processing_fee;
+    }
+
+    public function setPercentMiscellaneousFees(Percent|float|int|null $value): static
+    {
+        $this->percent_miscellaneous_fees = match (true) {
+            $value instanceof Percent       => $value,
+            is_int($value)                  => Percent::ofPercent($value),
+            is_float($value) && $value <= 1 => Percent::ofFraction($value),
+            is_float($value)                => Percent::ofPercent($value),
+            is_null($value)                 => null,
+            default                         => throw new \InvalidArgumentException("Invalid value for miscellaneous fees percent."),
+        };
+
+        return $this;
+    }
+
+    public function getPercentMiscellaneousFees(): ?Percent
+    {
+        return $this->percent_miscellaneous_fees;
+    }
+
+    /**
+     * Provides the default interest rate based on market segment and contract price.
+     * Used by HasFinancialAttributes if no explicit interest rate is set.
+     */
+    public function resolveDefaultInterestRate(): Percent
+    {
+        return $this->getMarketSegment()->defaultInterestRateFor($this->getTotalContractPrice());
     }
 }

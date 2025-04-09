@@ -2,19 +2,21 @@
 
 namespace App\Classes;
 
+use App\Support\Traits\HasFinancialAttributes;
 use App\Contracts\OrderInterface;
 use App\Support\MoneyFactory;
+use App\ValueObjects\FeeCollection;
+use App\ValueObjects\Percent;
+use App\Enums\Order\MonthlyFee;
 use Whitecube\Price\Price;
+use Brick\Money\Money;
 
 class Order implements OrderInterface
 {
-    protected ?float $interestRate = null;
-    protected ?float $percentDownPayment = null;
-    protected ?float $incomeRequirementMultiplier = null;
-    protected ?float $monthlyMRI = null;
-    protected ?float $monthlyFI = null;
-    protected ?float $percentMiscellaneousFees = null;
+    use HasFinancialAttributes;
 
+    protected ?Percent $percentDownPayment = null;
+    protected FeeCollection $monthlyFees;
     protected ?Price $discountAmount = null;
     protected ?Price $lowCashOut = null;
     protected ?Price $consultingFee = null;
@@ -24,75 +26,61 @@ class Order implements OrderInterface
     protected ?int $dpTerm = null;
     protected ?int $bpTerm = null;
 
-    public function getInterestRate(): ?float
+    public function __construct()
     {
-        return $this->interestRate;
+        $this->monthlyFees = new FeeCollection();
     }
 
-    public function setInterestRate(?float $rate): static
+    public function setPercentDownPayment(Percent|float|int $value): static
     {
-        $this->interestRate = $rate;
+        if ((is_numeric($value) && $value < 0) || ($value instanceof Percent && $value->value() < 0)) {
+            throw new \InvalidArgumentException("Down payment percent must not be negative.");
+        }
+
+        $this->percentDownPayment = match (true) {
+            $value instanceof Percent       => $value,
+            is_int($value)                  => Percent::ofPercent($value),
+            is_float($value) && $value <= 1 => Percent::ofFraction($value),
+            is_float($value)                => Percent::ofPercent($value),
+            default                         => throw new \InvalidArgumentException("Unsupported value for percent down payment"),
+        };
+
         return $this;
     }
 
-    public function getPercentDownPayment(): ?float
+    public function getPercentDownPayment(): ?Percent
     {
         return $this->percentDownPayment;
     }
 
-    public function setPercentDownPayment(?float $value): static
+    public function addMonthlyFee(MonthlyFee $type, ?float $amount = null): static
     {
-        $this->percentDownPayment = $value;
+        $money = $amount !== null
+            ? Money::of($amount, config('gnc-revelation.default_currency', 'PHP'))
+            : $type->defaultAmount();
+
+        $this->monthlyFees->addAddOn($type->label(), $money->getAmount()->toFloat());
+
         return $this;
     }
 
-    public function getIncomeRequirementMultiplier(): ?float
+    public function setMonthlyFee(MonthlyFee $type, float $value): static
     {
-        return $this->incomeRequirementMultiplier;
-    }
-
-    public function setIncomeRequirementMultiplier(?float $value): static
-    {
-        $this->incomeRequirementMultiplier = $value;
+        $this->monthlyFees->addAddOn($type->label(), $value);
         return $this;
     }
 
-    public function getMonthlyMRI(): ?float
+    public function getMonthlyFee(MonthlyFee $type): ?float
     {
-        return $this->monthlyMRI;
+        return $this->monthlyFees
+            ->allAddOns()
+            ->get($type->label())?->getAmount()
+            ?->toFloat();
     }
 
-    public function setMonthlyMRI(?float $value): static
+    public function getMonthlyFees(): FeeCollection
     {
-        $this->monthlyMRI = $value;
-        return $this;
-    }
-
-    public function getMonthlyFI(): ?float
-    {
-        return $this->monthlyFI;
-    }
-
-    public function setMonthlyFI(?float $value): static
-    {
-        $this->monthlyFI = $value;
-        return $this;
-    }
-
-    public function getPercentMiscellaneousFees(): ?float
-    {
-        return $this->percentMiscellaneousFees;
-    }
-
-    public function setPercentMiscellaneousFees(?float $value): static
-    {
-        $this->percentMiscellaneousFees = $value;
-        return $this;
-    }
-
-    public function getDiscountAmount(): ?Price
-    {
-        return $this->discountAmount;
+        return $this->monthlyFees;
     }
 
     public function setDiscountAmount(?float $value): static
@@ -101,9 +89,9 @@ class Order implements OrderInterface
         return $this;
     }
 
-    public function getLowCashOut(): ?Price
+    public function getDiscountAmount(): ?Price
     {
-        return $this->lowCashOut;
+        return $this->discountAmount;
     }
 
     public function setLowCashOut(?float $value): static
@@ -112,9 +100,9 @@ class Order implements OrderInterface
         return $this;
     }
 
-    public function getConsultingFee(): ?Price
+    public function getLowCashOut(): ?Price
     {
-        return $this->consultingFee;
+        return $this->lowCashOut;
     }
 
     public function setConsultingFee(?float $value): static
@@ -123,9 +111,9 @@ class Order implements OrderInterface
         return $this;
     }
 
-    public function getProcessingFee(): ?Price
+    public function getConsultingFee(): ?Price
     {
-        return $this->processingFee;
+        return $this->consultingFee;
     }
 
     public function setProcessingFee(?float $value): static
@@ -134,9 +122,9 @@ class Order implements OrderInterface
         return $this;
     }
 
-    public function getWaivedProcessingFee(): ?Price
+    public function getProcessingFee(): ?Price
     {
-        return $this->waivedProcessingFee;
+        return $this->processingFee;
     }
 
     public function setWaivedProcessingFee(?float $value): static
@@ -145,9 +133,9 @@ class Order implements OrderInterface
         return $this;
     }
 
-    public function getDownPaymentTerm(): ?int
+    public function getWaivedProcessingFee(): ?Price
     {
-        return $this->dpTerm;
+        return $this->waivedProcessingFee;
     }
 
     public function setDownPaymentTerm(?int $months): static
@@ -156,14 +144,19 @@ class Order implements OrderInterface
         return $this;
     }
 
+    public function getDownPaymentTerm(): ?int
+    {
+        return $this->dpTerm;
+    }
+
+    public function setBalancePaymentTerm(?int $years): static
+    {
+        $this->bpTerm = $years;
+        return $this;
+    }
+
     public function getBalancePaymentTerm(): ?int
     {
         return $this->bpTerm;
-    }
-
-    public function setBalancePaymentTerm(?int $months): static
-    {
-        $this->bpTerm = $months;
-        return $this;
     }
 }

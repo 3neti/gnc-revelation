@@ -65,50 +65,67 @@ return [
     'rounding_mode' => env('MONEY_ROUNDING_MODE', RoundingMode::CEILING),
     'default_currency' => env('DEFAULT_CURRENCY', 'PHP'),
     'property' => [
-
         'market' => [
-
             'segment' => [
                 'open' => env('MARKET_SEGMENT_OPEN', 'Open Market'),
                 'economic' => env('MARKET_SEGMENT_ECONOMIC', 'Economic'),
                 'socialized' => env('MARKET_SEGMENT_SOCIALIZED', 'Socialized'),
             ],
-
             'ceiling' => [
-
-                // Ceilings for horizontal development (typically BP 957)
-                'horizontal' => [
-                    'socialized' => env('HORIZONTAL_SOCIALIZED_MARKET_CEILING', 850000),
-                    'economic' => env('HORIZONTAL_ECONOMIC_MARKET_CEILING', 2500000),
-                    'open' => env('HORIZONTAL_OPEN_MARKET_CEILING', 10000000),
+                'bp_957' => [
+                    'horizontal' => [
+                        'socialized' => env('HORIZONTAL_SOCIALIZED_MARKET_CEILING', 850_000),
+                        'economic'   => env('HORIZONTAL_ECONOMIC_MARKET_CEILING', 2_500_000),
+                        'open'       => env('HORIZONTAL_OPEN_MARKET_CEILING', 10_000_000),
+                    ],
+                    'vertical' => [
+                        'socialized' => env('VERTICAL_SOCIALIZED_MARKET_CEILING_BP957', 1_500_000),
+                        'economic'   => env('VERTICAL_ECONOMIC_MARKET_CEILING_BP957', 3_000_000),
+                        'open'       => env('VERTICAL_OPEN_MARKET_CEILING_BP957', 10_000_000),
+                    ],
                 ],
-
-                // Ceilings for vertical development (typically BP 220)
-                'vertical' => [
-                    'socialized' => env('VERTICAL_SOCIALIZED_MARKET_CEILING', 1800000),
-                    'economic' => env('VERTICAL_ECONOMIC_MARKET_CEILING', 2500000),
-                    'open' => env('VERTICAL_OPEN_MARKET_CEILING', 10000000),
+                'bp_220' => [
+                    'horizontal' => [
+                        'socialized' => env('HORIZONTAL_SOCIALIZED_MARKET_CEILING_BP220', 850_000),
+                        'economic'   => env('HORIZONTAL_ECONOMIC_MARKET_CEILING_BP220', 2_500_000),
+                        'open'       => env('HORIZONTAL_OPEN_MARKET_CEILING_BP220', 10_000_000),
+                    ],
+                    'vertical' => [
+                        'socialized' => env('VERTICAL_SOCIALIZED_MARKET_CEILING', 1_800_000),
+                        'economic'   => env('VERTICAL_ECONOMIC_MARKET_CEILING', 2_500_000),
+                        'open'       => env('VERTICAL_OPEN_MARKET_CEILING', 10_000_000),
+                    ],
                 ],
             ],
 
-            'disposable_income_multiplier' => [
+            'percent_disposable_income' => [
                 'socialized' => env('SOCIALIZED_MARKET_DISPOSABLE_MULTIPLIER', 0.35),
                 'economic' => env('ECONOMIC_MARKET_DISPOSABLE_MULTIPLIER', 0.35),
                 'open' => env('OPEN_MARKET_DISPOSABLE_MULTIPLIER', 0.30),
             ],
 
-            'loanable_value_multiplier' => [
+            'percent_loanable_value' => [
                 'socialized' => env('SOCIALIZED_MARKET_LOANABLE_MULTIPLIER', 1.00),
                 'economic' => env('ECONOMIC_MARKET_LOANABLE_MULTIPLIER', 0.95),
                 'open' => env('OPEN_MARKET_LOANABLE_MULTIPLIER', 0.90),
             ],
         ],
-
         'default' => [
-            'processing_fee' => env('PROPERTY_DEFAULT_PROCESSING_FEE', 10000),
-            'percent_dp' => env('PROPERTY_DEFAULT_PERCENT_DP', 10 / 100), // 10%
+            'development_type' => env('PROPERTY_DEFAULT_DEVELOPMENT_TYPE', 'bp_220'),
+            'development_form' => env('PROPERTY_DEFAULT_DEVELOPMENT_FORM', 'horizontal'),
+            'processing_fee' => env('PROPERTY_DEFAULT_PROCESSING_FEE', 0.0),
+            'percent_dp' => env('PROPERTY_DEFAULT_PERCENT_DP', 0), // 10%
             'dp_term' => env('PROPERTY_DEFAULT_DP_TERM', 12), // in months
-            'percent_mf' => env('PROPERTY_DEFAULT_PERCENT_MISC_FEES', 8.5 / 100), // 8.5%
+            'percent_mf' => env('PROPERTY_DEFAULT_PERCENT_MISC_FEES', 0.0), // 8.5%
         ],
+    ],
+    'order' => [
+        'default' => [
+            'monthly_fees' => [
+                'mri' => 800,
+                'fire_insurance' => 300,
+                'other' => 0,
+            ],
+        ]
     ],
 ];

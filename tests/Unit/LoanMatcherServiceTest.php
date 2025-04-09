@@ -66,8 +66,8 @@ it('matches buyer to loan product and logs details with precision', function (
 
     $buyer = new \App\Classes\Buyer($rules);
     $buyer->setAge($age)
-        ->setGrossMonthlyIncome(new Price(Money::of($grossIncome, 'PHP')))
-        ->setDisposableIncomeMultiplier($multiplier);
+        ->setMonthlyGrossIncome(new Price(Money::of($grossIncome, 'PHP')))
+        ->setIncomeRequirementMultiplier($multiplier);
 
     $product = new LoanProductData(
         code: $productCode,
