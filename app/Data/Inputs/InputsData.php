@@ -14,7 +14,10 @@ class InputsData extends Data
         public LoanableInputsData               $loanable,
         public BalancePaymentInputsData         $balance_payment,
         public ?FeesInputsData                  $fees = null,
-        public ?MonthlyPaymentAddOnsInputsData  $monthly_payment_add_ons = null
+        public ?MonthlyPaymentAddOnsInputsData  $monthly_payment_add_ons = null,
+        protected ?BuyerInterface $buyer = null,
+        protected ?PropertyInterface $property = null,
+        protected ?OrderInterface $order = null,
     ) {}
 
     public static function fromBooking(BuyerInterface $buyer, PropertyInterface $property, OrderInterface $order): static
@@ -25,6 +28,24 @@ class InputsData extends Data
             balance_payment: BalancePaymentInputsData::fromBooking($buyer, $property, $order),
             fees: FeesInputsData::fromBooking($buyer, $property, $order),
             monthly_payment_add_ons: MonthlyPaymentAddOnsInputsData::fromBooking($buyer, $property, $order),
+            buyer: $buyer,
+            property: $property,
+            order: $order,
         );
+    }
+
+    public function buyer(): ?BuyerInterface
+    {
+        return $this->buyer;
+    }
+
+    public function property(): ?PropertyInterface
+    {
+        return $this->property;
+    }
+
+    public function order(): ?OrderInterface
+    {
+        return $this->order;
     }
 }

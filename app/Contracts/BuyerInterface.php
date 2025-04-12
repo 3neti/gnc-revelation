@@ -2,6 +2,7 @@
 
 namespace App\Contracts;
 
+use App\Classes\LendingInstitution;
 use App\ValueObjects\Percent;
 use Whitecube\Price\Price;
 
@@ -13,4 +14,5 @@ interface BuyerInterface
     public function getInterestRate(): ?Percent;
     public function getDownPaymentTerm(): ?int;
     public function getBalancePaymentTerm(): ?int;
+    public function getLendingInstitution(): LendingInstitution;
 }
