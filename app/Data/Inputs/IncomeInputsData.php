@@ -20,7 +20,7 @@ class IncomeInputsData extends Data
     {
         return new static(
             gross_monthly_income: $buyer->getMonthlyGrossIncome(),
-            income_requirement_multiplier: $order->getIncomeRequirementMultiplier() ?? $property->getIncomeRequirementMultiplier()
+            income_requirement_multiplier: $order->getIncomeRequirementMultiplier() ?? ($property->getIncomeRequirementMultiplier() ?? $buyer->getIncomeRequirementMultiplier()),
         );
     }
 }

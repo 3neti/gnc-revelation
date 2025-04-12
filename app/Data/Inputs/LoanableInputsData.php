@@ -5,6 +5,7 @@ namespace App\Data\Inputs;
 use App\Contracts\PropertyInterface;
 use App\Contracts\OrderInterface;
 use App\Contracts\BuyerInterface;
+use App\ValueObjects\Percent;
 use Spatie\LaravelData\Data;
 use Whitecube\Price\Price;
 
@@ -13,7 +14,7 @@ class LoanableInputsData extends Data
     public function __construct(
         public Price $total_contract_price,
         public DownPaymentInputsData $down_payment,
-        public ?float $percent_loanable = 1.00,
+        public ?Percent $percent_loanable = null,
         public ?Price $appraisal_value = null,
         public ?Price $discount_amount  = null,
         public ?float $low_cash_out = null,

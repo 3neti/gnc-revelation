@@ -11,7 +11,7 @@ class LendingInstitution
 {
     protected string $key;
 
-    public function __construct(string $key = null)
+    public function __construct(?string $key = null)
     {
         $key ??= config('gnc-revelation.default_lending_institution', 'hdmf');
 

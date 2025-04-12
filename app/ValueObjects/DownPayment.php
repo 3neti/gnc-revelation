@@ -2,6 +2,7 @@
 
 namespace App\ValueObjects;
 
+use App\Data\Inputs\InputsData;
 use Brick\Math\RoundingMode;
 use Brick\Money\Money;
 
@@ -14,6 +15,14 @@ class DownPayment
     {
         $this->tcp = Money::of($tcp, 'PHP');
         $this->percent = $percent;
+    }
+
+    public static function fromInputs(InputsData $inputs): self
+    {
+        $tcp = $inputs->loanable->total_contract_price->inclusive()->getAmount()->toFloat();
+        $percent = $inputs->loanable->down_payment->percent_dp?->value() ?? 0.0;
+
+        return new self($tcp, $percent);
     }
 
     public function amount(): Money

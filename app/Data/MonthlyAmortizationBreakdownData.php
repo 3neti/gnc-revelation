@@ -11,6 +11,14 @@ class MonthlyAmortizationBreakdownData extends Data
         public Price $principal,
         public Price $mf,
         public Price $add_ons,
-        public Price $total,
     ) {}
+
+    public function total(): Price
+    {
+        return Price::addMany([
+            $this->principal,
+            $this->mf,
+            $this->add_ons,
+        ]);
+    }
 }

@@ -24,15 +24,24 @@ class MoneyFactory
         return self::of($rounded, $currency);
     }
 
-    public static function price(float|int|string $amount, ?string $currency = null): Price
+    public static function price(float|int|string|Money $amount, ?string $currency = null): Price
     {
+        if ($amount instanceof Money) {
+            return new Price($amount);
+        }
+
         return new Price(self::of($amount, $currency));
     }
 
-    public static function priceWithPrecision(float|int|string $amount, int $precision = 2, ?string $currency = null): Price
+    public static function priceWithPrecision(float|int|string|Money $amount, int $precision = 2, ?string $currency = null): Price
     {
+        if ($amount instanceof Money) {
+            return new Price($amount);
+        }
+
         $currency ??= self::getCurrency();
         $rounded = round((float) $amount, $precision);
+
         return new Price(self::of($rounded, $currency));
     }
 
