@@ -22,9 +22,10 @@ class Order implements OrderInterface
     protected ?Price $consultingFee = null;
     protected ?Price $processingFee = null;
     protected ?Price $waivedProcessingFee = null;
-
     protected ?int $dpTerm = null;
     protected ?int $bpTerm = null;
+    protected ?LendingInstitution $lendingInstitution = null;
+    protected ?Price $tcp = null;
 
     public function __construct()
     {
@@ -53,13 +54,45 @@ class Order implements OrderInterface
         return $this->percentDownPayment;
     }
 
-    public function addMonthlyFee(MonthlyFee $type, ?float $amount = null): static
+    public function setLendingInstitution(LendingInstitution $institution): static
     {
-        $money = $amount !== null
-            ? Money::of($amount, config('gnc-revelation.default_currency', 'PHP'))
-            : $type->defaultAmount();
+        $this->lendingInstitution = $institution;
+        return $this;
+    }
 
-        $this->monthlyFees->addAddOn($type->label(), $money->getAmount()->toFloat());
+    public function getLendingInstitution(): ?LendingInstitution
+    {
+        return $this->lendingInstitution;
+    }
+
+
+    public function setTotalContractPrice(float|Price $value): static
+    {
+        $this->tcp = $value instanceof Price
+            ? $value
+            : MoneyFactory::priceWithPrecision($value);
+
+        return $this;
+    }
+
+    public function getTotalContractPrice(): ?Price
+    {
+        return $this->tcp;
+    }
+
+    public function addMonthlyFee(MonthlyFee $type, ?Price $amount = null): static
+    {
+        $price = $amount
+            ?: match (true) {
+                $this->tcp instanceof Price && $this->lendingInstitution instanceof LendingInstitution
+                => $type->computeFromTCP(
+                    $this->tcp->inclusive()->getAmount()->toFloat(),
+                    $this->lendingInstitution
+                ),
+                default => throw new \LogicException("TCP and Lending Institution must be set before computing a monthly fee."),
+            };
+
+        $this->monthlyFees->addAddOn($type->label(), $price->inclusive());
 
         return $this;
     }

@@ -59,6 +59,7 @@ final class CalculatorFactory
             \App\Calculators\EquityRequirementCalculator::class,
             \App\Calculators\CashOutCalculator::class,
             \App\Calculators\LoanableAmountCalculator::class,
+            \App\Calculators\FeesCalculator::class,
         ];
 
         foreach ($classes as $class) {

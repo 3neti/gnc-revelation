@@ -2,7 +2,10 @@
 
 namespace App\Enums\Order;
 
+use App\Classes\LendingInstitution;
+use App\Support\MoneyFactory;
 use Brick\Money\Money;
+use Whitecube\Price\Price;
 
 enum MonthlyFee: string
 {
@@ -28,5 +31,22 @@ enum MonthlyFee: string
     {
         $amount = config("gnc-revelation.order.default.monthly_fees.{$this->configKey()}", 0);
         return Money::of($amount, 'PHP');
+    }
+
+
+    public function computeFromTCP(float $tcp, LendingInstitution $institution): Price
+    {
+        return match ($this) {
+            self::MRI => MoneyFactory::priceWithPrecision(
+                ($tcp / 1000) * $institution->get('mri_rate', 0.225)
+            ),
+
+            self::FIRE_INSURANCE => MoneyFactory::priceWithPrecision(
+            // Annual fire insurance rate divided by 12 to get monthly value
+                ($tcp * $institution->get('fire_insurance_rate', 0.00212584)) / 12
+            ),
+
+            self::OTHER => MoneyFactory::zero(),
+        };
     }
 }

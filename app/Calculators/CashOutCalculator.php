@@ -17,6 +17,7 @@ final class CashOutCalculator extends BaseCalculator
         return new CashOutBreakdownData(
             down_payment: $this->downPayment(),
             miscellaneous_fee: $this->partialMiscellaneousFee(),
+            processing_fee: $this->processingFee(),
             total: $this->total()
         );
     }
@@ -35,8 +36,15 @@ final class CashOutCalculator extends BaseCalculator
         );
     }
 
+    public function processingFee(): Price
+    {
+        return MoneyFactory::priceWithPrecision(
+            $this->inputs->fees->processing_fee ?? 0
+        );
+    }
+
     public function total(): Price
     {
-        return $this->downPayment()->plus($this->partialMiscellaneousFee());
+        return $this->downPayment()->plus($this->partialMiscellaneousFee())->plus($this->processingFee());
     }
 }

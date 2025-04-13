@@ -2,6 +2,7 @@
 
 namespace App\ValueObjects;
 
+use Brick\Money\AbstractMoney;
 use Illuminate\Support\Collection;
 use Brick\Math\RoundingMode;
 use Brick\Money\Money;
@@ -19,11 +20,22 @@ class FeeCollection
         $this->deductibles = collect($deductibles)->map(fn ($value) => Money::of($value, $currency));
     }
 
-    public function addAddOn(string $label, float $amount): static
+    public function addAddOn(string $label, float|AbstractMoney $amount): static
     {
-        $this->addOns->put($label, Money::of($amount, $this->currency));
+        $money = $amount instanceof Money
+            ? $amount
+            : Money::of($amount, $this->currency);
+
+        $this->addOns->put($label, $money);
+
         return $this;
     }
+
+//    public function addAddOn(string $label, float $amount): static
+//    {
+//        $this->addOns->put($label, Money::of($amount, $this->currency));
+//        return $this;
+//    }
 
     public function addDeductible(string $label, float $amount): static
     {

@@ -2,8 +2,10 @@
 
 use App\Classes\{Buyer, Property, Order};
 use App\Services\BorrowingRulesService;
+use App\ValueObjects\MiscellaneousFee;
 use App\Factories\CalculatorFactory;
 use App\Classes\LendingInstitution;
+use App\Enums\Order\MonthlyFee;
 use App\Data\Inputs\InputsData;
 use App\ValueObjects\Percent;
 use App\Enums\CalculatorType;
@@ -14,21 +16,23 @@ beforeEach(function () {
 });
 
 dataset('simple amortization', [
-    'hdmf 1.0M in 21 yrs @ 6.25% by a 49yo w/ [35%] ₱17,000 gmi;  0% dp; 0.0% mf; ₱ 0k pf' => [ 'hdmf', 1_000_000, 49, 17_000, 0.35, 0.0625, 0.00, 0.000, 21, 5_950.0,   833_878.13, 166_121.87,  7_135.34,   0_000.00, 1_000_000.00 ],
-    'hdmf 1.0M in 23 yrs @ 6.25% by a 47yo w/ [35%] ₱21,000 gmi;  0% dp; 0.0% mf; ₱ 0k pf' => [ 'hdmf', 1_000_000, 47, 21_000, 0.35, 0.0625, 0.00, 0.000, 23, 7_350.0, 1_074_757.85,       0.00,  6_838.75,   0_000.00, 1_000_000.00 ],
-    'hdmf 1.1M in 22 yrs @ 6.25% by a 48yo w/ [35%] ₱19,000 gmi;  0% dp; 0.0% mf; ₱ 0k pf' => [ 'hdmf', 1_100_000, 48, 19_000, 0.35, 0.0625, 0.00, 0.000, 22, 6_650.0,   952_820.39, 147_179.61,  7_677.21,   0_000.00, 1_100_000.00 ],
-    'hdmf 1.2M in 23 yrs @ 6.25% by a 47yo w/ [35%] ₱21,000 gmi;  0% dp; 0.0% mf; ₱ 0k pf' => [ 'hdmf', 1_200_000, 47, 21_000, 0.35, 0.0625, 0.00, 0.000, 23, 7_350.0, 1_074_757.85, 125_242.15,  8_206.50,   0_000.00, 1_200_000.00 ],
+    'hdmf 1.0M in 21 yrs @ 6.25% by a 49yo w/ [35%] ₱17,000 gmi;  0% dp; 0.0% mf; ₱  0k pf no add-ons' => [ 'hdmf', 1_000_000, 49, 17_000, 0.35, 0.0625, 0.00, 0.000, 00_000.00, false, false, 21, 5_950.0,   833_878.13, 166_121.87,  7_135.34,   0.00,       0.00, 1_000_000.00, 00_000.00 ],
+    'hdmf 1.0M in 23 yrs @ 6.25% by a 47yo w/ [35%] ₱21,000 gmi;  0% dp; 0.0% mf; ₱  0k pf no add-ons' => [ 'hdmf', 1_000_000, 47, 21_000, 0.35, 0.0625, 0.00, 0.000, 00_000.00, false, false, 23, 7_350.0, 1_074_757.85,       0.00,  6_838.75,   0.00,       0.00, 1_000_000.00, 00_000.00 ],
+    'hdmf 1.1M in 22 yrs @ 6.25% by a 48yo w/ [35%] ₱19,000 gmi;  0% dp; 0.0% mf; ₱  0k pf no add-ons' => [ 'hdmf', 1_100_000, 48, 19_000, 0.35, 0.0625, 0.00, 0.000, 00_000.00, false, false, 22, 6_650.0,   952_820.39, 147_179.61,  7_677.21,   0.00,       0.00, 1_100_000.00, 00_000.00 ],
+    'hdmf 1.2M in 23 yrs @ 6.25% by a 47yo w/ [35%] ₱21,000 gmi;  0% dp; 0.0% mf; ₱  0k pf no add-ons' => [ 'hdmf', 1_200_000, 47, 21_000, 0.35, 0.0625, 0.00, 0.000, 00_000.00, false, false, 23, 7_350.0, 1_074_757.85, 125_242.15,  8_206.50,   0.00,       0.00, 1_200_000.00, 00_000.00 ],
 
-    'hdmf 1.0M in 22 yrs @ 6.25% by a 48yo w/ [35%] ₱19,000 gmi; 10% dp; 0.0% mf; ₱ 0k pf' => [ 'hdmf', 1_000_000, 48, 19_000, 0.35, 0.0625, 0.10, 0.000, 22, 6_650.0,   952_820.39,       0.00,   6281.35,  100_000.00,  900_000.00 ],
-    'hdmf 1.0M in 22 yrs @ 6.25% by a 48yo w/ [35%] ₱19,000 gmi; 10% dp; 8.5% mf; ₱ 0k pf' => [ 'hdmf', 1_000_000, 48, 19_000, 0.35, 0.0625, 0.10, 0.085, 22, 6_650.0,   952_820.39,  32_179.61,  6_874.59,  100_000.00,  985_000.00 ],
+    'hdmf 1.0M in 22 yrs @ 6.25% by a 48yo w/ [35%] ₱19,000 gmi; 10% dp; 0.0% mf; ₱  0k pf no add-ons' => [ 'hdmf', 1_000_000, 48, 19_000, 0.35, 0.0625, 0.10, 0.000, 00_000.00, false, false, 22, 6_650.0,   952_820.39,       0.00,   6281.35,   0.00, 100_000.00,   900_000.00, 00_000.00 ],
+    'hdmf 1.0M in 22 yrs @ 6.25% by a 48yo w/ [35%] ₱19,000 gmi; 10% dp; 8.5% mf; ₱  0k pf no add-ons' => [ 'hdmf', 1_000_000, 48, 19_000, 0.35, 0.0625, 0.10, 0.085, 00_000.00, false, false, 22, 6_650.0,   952_820.39,  32_179.61,  6_874.59,   0.00, 100_000.00,   985_000.00, 85_000.00 ],
+    'hdmf 1.0M in 22 yrs @ 6.25% by a 48yo w/ [35%] ₱19,000 gmi; 10% dp; 8.5% mf; ₱ 10k pf no add-ons' => [ 'hdmf', 1_000_000, 48, 19_000, 0.35, 0.0625, 0.10, 0.085, 10_000.00, false, false, 22, 6_650.0,   952_820.39,  32_179.61,  6_874.59,   0.00, 110_000.00,   985_000.00, 85_000.00 ],
+    'hdmf 1.0M in 22 yrs @ 6.25% by a 48yo w/ [35%] ₱19,000 gmi; 10% dp; 8.5% mf; ₱ 10k pf mri and fi' => [ 'hdmf', 1_000_000, 48, 19_000, 0.35, 0.0625, 0.10, 0.085, 10_000.00,  true,  true, 22, 6_650.0,   952_820.39,  32_179.61,  7_276.74, 402.15, 110_000.00,   985_000.00, 85_000.00 ],
 
-    'hdmf 1.3M in 24 yrs @ 6.25% by a 46yo w/ [35%] ₱23,000 gmi;  0% dp; 0.0% mf; ₱ 0k pf' => [ 'hdmf', 1_300_000, 46, 23_000, 0.35, 0.0625, 0.00, 0.000, 24, 8_050.0, 1_199_384.92, 100_615.08,  8_725.31,   0_000.00, 1_300_000.00 ],
-    'hdmf 1.4M in 25 yrs @ 6.25% by a 45yo w/ [35%] ₱25,000 gmi;  0% dp; 0.0% mf; ₱ 0k pf' => [ 'hdmf', 1_400_000, 45, 25_000, 0.35, 0.0625, 0.00, 0.000, 25, 8_750.0, 1_326_422.04,  73_577.96,  9_235.37,   0_000.00, 1_400_000.00 ],
-    'rcbc 1.0M in 15 yrs @ 6.25% by a 49yo w/ [35%] ₱17,000 gmi;  0% dp; 0.0% mf; ₱ 0k pf' => [ 'rcbc', 1_000_000, 49, 17_000, 0.35, 0.0625, 0.00, 0.000, 15, 5_950.0,   693_939.97, 306_060.03,  8_574.23,   0_000.00, 1_000_000.00 ],
-    'rcbc 1.1M in 16 yrs @ 6.25% by a 48yo w/ [35%] ₱19,000 gmi;  0% dp; 0.0% mf; ₱ 0k pf' => [ 'rcbc', 1_100_000, 48, 19_000, 0.35, 0.0625, 0.00, 0.000, 16, 6_650.0,   805_870.98, 294_129.02,  9_077.14,   0_000.00, 1_100_000.00 ],
-    'rcbc 1.2M in 17 yrs @ 6.25% by a 47yo w/ [35%] ₱21,000 gmi;  0% dp; 0.0% mf; ₱ 0k pf' => [ 'rcbc', 1_200_000, 47, 21_000, 0.35, 0.0625, 0.00, 0.000, 17, 7_350.0,   922_155.72, 277_844.28,  9_564.55,   0_000.00, 1_200_000.00 ],
-    'rcbc 1.3M in 18 yrs @ 6.25% by a 46yo w/ [35%] ₱23,000 gmi;  0% dp; 0.0% mf; ₱ 0k pf' => [ 'rcbc', 1_300_000, 46, 23_000, 0.35, 0.0625, 0.00, 0.000, 18, 8_050.0, 1_042_350.02, 257_649.98, 10_039.81,   0_000.00, 1_300_000.00 ],
-    'rcbc 1.4M in 19 yrs @ 6.25% by a 45yo w/ [35%] ₱25,000 gmi;  0% dp; 0.0% mf; ₱ 0k pf' => [ 'rcbc', 1_400_000, 45, 25_000, 0.35, 0.0625, 0.00, 0.000, 19, 8_750.0, 1_166_047.51, 233_952.49, 10_505.58,   0_000.00, 1_400_000.00 ],
+    'hdmf 1.3M in 24 yrs @ 6.25% by a 46yo w/ [35%] ₱23,000 gmi;  0% dp; 0.0% mf; ₱  0k pf no add-ons' => [ 'hdmf', 1_300_000, 46, 23_000, 0.35, 0.0625, 0.00, 0.000, 00_000.00, false, false, 24, 8_050.0, 1_199_384.92, 100_615.08,  8_725.31,   0.00,       0.00, 1_300_000.00, 00_000.00 ],
+    'hdmf 1.4M in 25 yrs @ 6.25% by a 45yo w/ [35%] ₱25,000 gmi;  0% dp; 0.0% mf; ₱  0k pf no add-ons' => [ 'hdmf', 1_400_000, 45, 25_000, 0.35, 0.0625, 0.00, 0.000, 00_000.00, false, false, 25, 8_750.0, 1_326_422.04,  73_577.96,  9_235.37,   0.00,       0.00, 1_400_000.00, 00_000.00 ],
+    'rcbc 1.0M in 15 yrs @ 6.25% by a 49yo w/ [35%] ₱17,000 gmi;  0% dp; 0.0% mf; ₱  0k pf no add-ons' => [ 'rcbc', 1_000_000, 49, 17_000, 0.35, 0.0625, 0.00, 0.000, 00_000.00, false, false, 15, 5_950.0,   693_939.97, 306_060.03,  8_574.23,   0.00,       0.00, 1_000_000.00, 00_000.00 ],
+    'rcbc 1.1M in 16 yrs @ 6.25% by a 48yo w/ [35%] ₱19,000 gmi;  0% dp; 0.0% mf; ₱  0k pf no add-ons' => [ 'rcbc', 1_100_000, 48, 19_000, 0.35, 0.0625, 0.00, 0.000, 00_000.00, false, false, 16, 6_650.0,   805_870.98, 294_129.02,  9_077.14,   0.00,       0.00, 1_100_000.00, 00_000.00 ],
+    'rcbc 1.2M in 17 yrs @ 6.25% by a 47yo w/ [35%] ₱21,000 gmi;  0% dp; 0.0% mf; ₱  0k pf no add-ons' => [ 'rcbc', 1_200_000, 47, 21_000, 0.35, 0.0625, 0.00, 0.000, 00_000.00, false, false, 17, 7_350.0,   922_155.72, 277_844.28,  9_564.55,   0.00,       0.00, 1_200_000.00, 00_000.00 ],
+    'rcbc 1.3M in 18 yrs @ 6.25% by a 46yo w/ [35%] ₱23,000 gmi;  0% dp; 0.0% mf; ₱  0k pf no add-ons' => [ 'rcbc', 1_300_000, 46, 23_000, 0.35, 0.0625, 0.00, 0.000, 00_000.00, false, false, 18, 8_050.0, 1_042_350.02, 257_649.98, 10_039.81,   0.00,       0.00, 1_300_000.00, 00_000.00 ],
+    'rcbc 1.4M in 19 yrs @ 6.25% by a 45yo w/ [35%] ₱25,000 gmi;  0% dp; 0.0% mf; ₱  0k pf no add-ons' => [ 'rcbc', 1_400_000, 45, 25_000, 0.35, 0.0625, 0.00, 0.000, 00_000.00, false, false, 19, 8_750.0, 1_166_047.51, 233_952.49, 10_505.58,   0.00,       0.00, 1_400_000.00, 00_000.00 ],
 ]);
 
 it('mortgage computations', function (
@@ -40,13 +44,18 @@ it('mortgage computations', function (
     float  $balance_payment_interest,
     float  $percent_down_payment,
     float  $percent_miscellaneous_fee,
+    float  $processing_fee,
+    bool   $add_mri,
+    bool   $add_fi,
     int    $expected_balance_payment_term,
     float  $expected_disposable_income,
     float  $expected_present_value,
     float  $expected_required_equity,
     float  $expected_monthly_amortization,
+    float  $expected_add_on_fees,
     float  $expected_cash_out,
-    float  $expected_loanable_amount
+    float  $expected_loanable_amount,
+    float  $expected_miscellaneous_fee,
 ) {
     // Arrange
     $buyer = app(Buyer::class)
@@ -60,7 +69,16 @@ it('mortgage computations', function (
         ->setInterestRate(Percent::ofFraction($balance_payment_interest))
         ->setIncomeRequirementMultiplier(Percent::ofFraction($income_requirement_multiplier))
         ->setPercentMiscellaneousFees(Percent::ofFraction($percent_miscellaneous_fee))
+        ->setProcessingFee($processing_fee)
+        ->setLendingInstitution(new LendingInstitution($lending_institution))
+        ->setTotalContractPrice($total_contract_price)
     ;
+    if ($add_mri) {
+        $order->addMonthlyFee(MonthlyFee::MRI);
+    }
+    if ($add_fi) {
+        $order->addMonthlyFee(MonthlyFee::FIRE_INSURANCE);
+    }
     if ($percent_down_payment) {
         $order->setPercentDownPayment($percent_down_payment);
     }
@@ -69,15 +87,23 @@ it('mortgage computations', function (
     // Act
     $actual_term_years = $buyer->getMaximumTermAllowed();
     $actual_disposable_income_float = CalculatorFactory::make(CalculatorType::DISPOSABLE_INCOME, $inputs)->calculate()->getAmount()->toFloat();
-    $actual_monthly_amortization_float = CalculatorFactory::make(CalculatorType::AMORTIZATION, $inputs)->calculate()->principal->getAmount()->toFloat();
+    $actual_monthly_amortization_float = CalculatorFactory::make(CalculatorType::AMORTIZATION, $inputs)->total()->getAmount()->toFloat();
     $actual_present_value_float = CalculatorFactory::make(CalculatorType::PRESENT_VALUE, $inputs)->calculate()->getAmount()->toFloat();
     $actual_equity_float = CalculatorFactory::make(CalculatorType::EQUITY, $inputs)->calculate()->amount->getAmount()->toFloat();
     $actual_cash_out = CalculatorFactory::make(CalculatorType::CASH_OUT, $inputs)->calculate()->total->getAmount()->toFloat();
     $actual_loanable_amount = CalculatorFactory::make(CalculatorType::LOANABLE_AMOUNT, $inputs)->calculate()->getAmount()->toFloat();
-
+    $actual_add_on_fees = CalculatorFactory::make(CalculatorType::FEES, $inputs)->total()->getAmount()->toFloat();
+    $actual_miscellaneous_fee = MiscellaneousFee::fromInputs($inputs)->total()->getAmount()->toFloat();
+//    dd($actual_miscellaneous_fee, $expected_miscellaneous_fee);
 //    dd($inputs->loanable->total_contract_price->inclusive()->getAmount()->toFloat());
 //    dd($actual_loanable_amount, $expected_loanable_amount);
 //    dd($actual_equity_float, $expected_required_equity );
+
+//    dd(
+//        CalculatorFactory::make(CalculatorType::AMORTIZATION, $inputs)->total()->getAmount()->toFloat(),
+//        CalculatorFactory::make(CalculatorType::AMORTIZATION, $inputs)->monthlyMiscFee()->getAmount()->toFloat(),
+//        CalculatorFactory::make(CalculatorType::AMORTIZATION, $inputs)->addOns()->getAmount()->toFloat()
+//    );
 //    dd($actual_monthly_amortization_float, $expected_monthly_amortization, $actual_monthly_amortization_float - $expected_monthly_amortization);
 //    dd($actual_cash_out, $expected_cash_out);
 
@@ -90,6 +116,8 @@ it('mortgage computations', function (
         ->and($actual_monthly_amortization_float)->toBeCloseTo($expected_monthly_amortization, 0.01)
         ->and($actual_cash_out)->toBeCloseTo($expected_cash_out, 0.01)
         ->and($actual_loanable_amount)->toBeCloseTo($expected_loanable_amount, 0.01)
+        ->and($actual_add_on_fees)->toBeCloseTo($expected_add_on_fees, 0.01)
+        ->and($actual_miscellaneous_fee)->toBeCloseTo($expected_miscellaneous_fee, 0.01)
     ;
 
 })->with('simple amortization');

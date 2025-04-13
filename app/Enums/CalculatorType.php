@@ -10,4 +10,5 @@ enum CalculatorType: string
     case EQUITY = 'equity';
     case CASH_OUT = 'cash_out';
     case LOANABLE_AMOUNT = 'loanable_amount';
+    case FEES = 'fees';
 }
