@@ -1,30 +1,15 @@
 <?php
 
-use App\Services\{LoanProcessingService, MortgageComputation};
-use App\Data\{
-    Inputs\InputsData,
-    Inputs\IncomeInputsData,
-    Inputs\LoanableInputsData,
-    Inputs\DownPaymentInputsData,
-    Inputs\BalancePaymentInputsData,
-    Inputs\MonthlyPaymentAddOnsInputsData,
-    LoanProcessingData,
-    ProductMatchData,
-    RemediationStrategiesData,
-    CashOutScheduleData,
-    BalancePaymentScheduleData,
-    QualificationResultData
-};
-use App\Support\MoneyFactory;
-use App\Classes\{Buyer, Property, Order};
-use App\Services\BorrowingRulesService;
-use App\Services\AgeService;
-use Tests\Fakes\FlexibleFakeBuyer;
-use Tests\Fakes\FlexibleFakeOrder;
-use Tests\Fakes\FlexibleFakeProperty;
+use App\Data\{LoanProcessingData, ProductMatchData, QualificationResultData, RemediationStrategiesData};
+use App\Services\{LoanProcessingService};
+use LBHurtado\Mortgage\Classes\{Order};
+use LBHurtado\Mortgage\Classes\Buyer;
+use LBHurtado\Mortgage\Classes\Property;
+use LBHurtado\Mortgage\Factories\MoneyFactory;
+use LBHurtado\Mortgage\Services\AgeService;
+use LBHurtado\Mortgage\Services\BorrowingRulesService;
+use LBHurtado\Mortgage\ValueObjects\Percent;
 use Whitecube\Price\Price;
-
-use App\ValueObjects\Percent;
 
 it('generates the loan processing result correctly', function () {
     $rules = new BorrowingRulesService(new AgeService());

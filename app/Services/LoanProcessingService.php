@@ -2,17 +2,17 @@
 
 namespace App\Services;
 
-use App\Contracts\{BuyerInterface, PropertyInterface, OrderInterface};
-use App\Data\{
-    BalancePaymentScheduleData,
+use App\Data\{BalancePaymentScheduleData,
     CashOutScheduleData,
     LoanProcessingData,
     ProductMatchData,
     QualificationResultData,
-    RemediationStrategiesData
-};
-use App\Data\Inputs\InputsData;
-use App\Support\MoneyFactory;
+    RemediationStrategiesData};
+use LBHurtado\Mortgage\Contracts\{OrderInterface};
+use LBHurtado\Mortgage\Contracts\BuyerInterface;
+use LBHurtado\Mortgage\Contracts\PropertyInterface;
+use LBHurtado\Mortgage\Data\Inputs\InputsData;
+use LBHurtado\Mortgage\Factories\MoneyFactory;
 
 final class LoanProcessingService
 {

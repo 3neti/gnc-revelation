@@ -1,9 +1,9 @@
 <?php
 
-use App\ValueObjects\FeeCollection;
-use App\Enums\Order\MonthlyFee;
-use App\ValueObjects\Percent;
-use App\Classes\Order;
+use LBHurtado\Mortgage\Classes\Order;
+use LBHurtado\Mortgage\Enums\MonthlyFee;
+use LBHurtado\Mortgage\ValueObjects\FeeCollection;
+use LBHurtado\Mortgage\ValueObjects\Percent;
 
 it('initializes with no values set', function () {
     $order = new Order();

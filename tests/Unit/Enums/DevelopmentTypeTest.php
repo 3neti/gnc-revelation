@@ -1,8 +1,8 @@
 <?php
 
-use App\Enums\Property\DevelopmentType;
-use App\ValueObjects\Percent;
-use App\Support\MoneyFactory;
+use LBHurtado\Mortgage\Enums\Property\DevelopmentType;
+use LBHurtado\Mortgage\Factories\MoneyFactory;
+use LBHurtado\Mortgage\ValueObjects\Percent;
 
 it('returns correct name for each development type', function () {
     expect(DevelopmentType::BP_220->getName())->toBe('BP 220')

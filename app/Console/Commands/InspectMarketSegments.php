@@ -3,7 +3,9 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Enums\Property\{DevelopmentType, DevelopmentForm, MarketSegment};
+use LBHurtado\Mortgage\Enums\Property\{MarketSegment};
+use LBHurtado\Mortgage\Enums\Property\DevelopmentForm;
+use LBHurtado\Mortgage\Enums\Property\DevelopmentType;
 
 class InspectMarketSegments extends Command
 {

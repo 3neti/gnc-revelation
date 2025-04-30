@@ -1,10 +1,10 @@
 <?php
 
 use App\Modifiers\DownPaymentDeductionModifier;
-use App\ValueObjects\Percent;
+use Brick\Money\Money;
+use LBHurtado\Mortgage\ValueObjects\Percent;
 use Whitecube\Price\Price;
 use Whitecube\Price\PriceManager;
-use Brick\Money\Money;
 
 dataset('down payment deduction', [
     '10% of 1,000,000' => [1_000_000, 0.10, 900_000.00],

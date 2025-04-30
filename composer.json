@@ -31,6 +31,7 @@
     "autoload": {
         "psr-4": {
             "App\\": "app/",
+            "LBHurtado\\Mortgage\\": "packages/lbhurtado/mortgage/src/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
         }

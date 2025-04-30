@@ -2,7 +2,7 @@
 
 namespace Tests\Fakes;
 
-use App\Contracts\BuyerInterface;
+use LBHurtado\Mortgage\Contracts\BuyerInterface;
 use Whitecube\Price\Price;
 
 /** @deprecated  */

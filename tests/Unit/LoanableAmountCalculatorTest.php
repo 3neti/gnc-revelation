@@ -1,10 +1,12 @@
 <?php
 
-use App\Classes\{Buyer, Property, Order};
-use App\Factories\CalculatorFactory;
-use App\Data\Inputs\InputsData;
-use App\Enums\CalculatorType;
-use App\ValueObjects\Percent;
+use LBHurtado\Mortgage\Classes\{Order};
+use LBHurtado\Mortgage\Classes\Buyer;
+use LBHurtado\Mortgage\Classes\Property;
+use LBHurtado\Mortgage\Data\Inputs\InputsData;
+use LBHurtado\Mortgage\Enums\CalculatorType;
+use LBHurtado\Mortgage\Factories\CalculatorFactory;
+use LBHurtado\Mortgage\ValueObjects\Percent;
 
 dataset('loanable amounts with dp only', [
     '1M TCP with 10% DP' => [1_000_000, 0.10, 900_000.00],

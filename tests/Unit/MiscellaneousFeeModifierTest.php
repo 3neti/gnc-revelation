@@ -1,10 +1,9 @@
 <?php
 
 use App\Modifiers\MiscellaneousFeeModifier;
-use App\ValueObjects\Percent;
-use Whitecube\Price\Price;
-use Whitecube\Price\Vat;
 use Brick\Money\Money;
+use LBHurtado\Mortgage\ValueObjects\Percent;
+use Whitecube\Price\Price;
 
 dataset('miscellaneous fee modifier', [
     '8.5% MF on 1M'   => [1_000_000, 0.085, 1_085_000.00],

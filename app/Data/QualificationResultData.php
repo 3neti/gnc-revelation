@@ -2,9 +2,10 @@
 
 namespace App\Data;
 
+use Brick\Money\Money;
+use LBHurtado\Mortgage\Data\MonthlyAmortizationBreakdownData;
 use Spatie\LaravelData\Data;
 use Whitecube\Price\Price;
-use Brick\Money\Money;
 
 class QualificationResultData extends Data
 {

@@ -1,7 +1,9 @@
 <?php
 
-use App\Data\Inputs\DownPaymentInputsData;
-use App\Classes\{Buyer, Order, Property};
+use LBHurtado\Mortgage\Classes\{Order};
+use LBHurtado\Mortgage\Classes\Buyer;
+use LBHurtado\Mortgage\Classes\Property;
+use LBHurtado\Mortgage\Data\Inputs\DownPaymentInputsData;
 
 test('default down payment input', function () {
     $buyer = app(Buyer::class);

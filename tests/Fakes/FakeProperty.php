@@ -2,10 +2,10 @@
 
 namespace Tests\Fakes;
 
-use App\Contracts\PropertyInterface;
-use App\ValueObjects\Percent;
-use Whitecube\Price\Price;
 use Brick\Money\Money;
+use LBHurtado\Mortgage\Contracts\PropertyInterface;
+use LBHurtado\Mortgage\ValueObjects\Percent;
+use Whitecube\Price\Price;
 
 /** @deprecated  */
 class FakeProperty implements PropertyInterface

@@ -3,8 +3,8 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Classes\LendingInstitution;
 use Illuminate\Support\Carbon;
+use LBHurtado\Mortgage\Classes\LendingInstitution;
 
 class GenerateAmortizationDataset extends Command
 {

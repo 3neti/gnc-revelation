@@ -1,8 +1,9 @@
 <?php
 
-use App\Enums\Property\{DevelopmentForm, DevelopmentType, MarketSegment};
+use LBHurtado\Mortgage\Classes\Property;
+use LBHurtado\Mortgage\Enums\Property\{DevelopmentType};
+use LBHurtado\Mortgage\Enums\Property\DevelopmentForm;
 use Whitecube\Price\Price;
-use App\Classes\Property;
 
 beforeEach(function () {
     config()->set('gnc-revelation.property.default.development_type', 'bp_957');

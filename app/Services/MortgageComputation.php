@@ -3,11 +3,10 @@
 namespace App\Services;
 
 use App\Data\QualificationResultData;
-use App\Factories\CalculatorFactory;
-use App\Data\Inputs\InputsData;
-use App\Support\MoneyFactory;
-use App\Enums\CalculatorType;
-use App\ValueObjects\Equity;
+use LBHurtado\Mortgage\Data\Inputs\InputsData;
+use LBHurtado\Mortgage\Enums\CalculatorType;
+use LBHurtado\Mortgage\Factories\CalculatorFactory;
+use LBHurtado\Mortgage\Factories\MoneyFactory;
 use Whitecube\Price\Price;
 
 final class MortgageComputation

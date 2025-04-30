@@ -2,20 +2,24 @@
 
 namespace App\Classes;
 
-use App\Modifiers\{DisposableModifier, OtherIncomeModifier};
-use App\Support\Traits\HasFinancialAttributes;
-use App\Services\BorrowingRulesService;
-use App\Contracts\PropertyInterface;
-use App\Exceptions\BirthdateNotSet;
-use Illuminate\Support\Collection;
-use App\Contracts\BuyerInterface;
-use Illuminate\Support\Carbon;
-use App\Support\MoneyFactory;
-use App\ValueObjects\Percent;
 use Brick\Math\RoundingMode;
-use Whitecube\Price\Price;
 use Brick\Money\Money;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
+use LBHurtado\Mortgage\Classes\Buyer;
+use LBHurtado\Mortgage\Classes\LendingInstitution;
+use LBHurtado\Mortgage\Contracts\BuyerInterface;
+use LBHurtado\Mortgage\Contracts\PropertyInterface;
+use LBHurtado\Mortgage\Exceptions\BirthdateNotSet;
+use LBHurtado\Mortgage\Factories\MoneyFactory;
+use LBHurtado\Mortgage\Modifiers\{OtherIncomeModifier};
+use LBHurtado\Mortgage\Modifiers\DisposableModifier;
+use LBHurtado\Mortgage\Services\BorrowingRulesService;
+use LBHurtado\Mortgage\Traits\HasFinancialAttributes;
+use LBHurtado\Mortgage\ValueObjects\Percent;
+use Whitecube\Price\Price;
 
+/** @deprecated  */
 class BuyerOldButWorking implements BuyerInterface
 {
     use HasFinancialAttributes;

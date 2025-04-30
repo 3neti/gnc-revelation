@@ -1,9 +1,8 @@
 <?php
 
-use App\Exceptions\MaximumBorrowingAgeBreached;
-use App\Exceptions\MinimumBorrowingAgeNotMet;
-use App\Services\BorrowingRulesService;
-use Illuminate\Support\Carbon;
+use LBHurtado\Mortgage\Exceptions\MaximumBorrowingAgeBreached;
+use LBHurtado\Mortgage\Exceptions\MinimumBorrowingAgeNotMet;
+use LBHurtado\Mortgage\Services\BorrowingRulesService;
 
 beforeEach(function () {
     $this->rules = app(BorrowingRulesService::class);

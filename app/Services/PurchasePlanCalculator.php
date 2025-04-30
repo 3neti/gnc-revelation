@@ -2,12 +2,14 @@
 
 namespace App\Services;
 
-use App\ValueObjects\{DownPayment, Equity, FeeCollection};
 use App\Data\QualificationResultData;
 use App\DataObjects\MortgageTerm;
 use Brick\Math\RoundingMode;
-use Whitecube\Price\Price;
 use Brick\Money\Money;
+use LBHurtado\Mortgage\ValueObjects\{Equity};
+use LBHurtado\Mortgage\ValueObjects\DownPayment;
+use LBHurtado\Mortgage\ValueObjects\FeeCollection;
+use Whitecube\Price\Price;
 
 class PurchasePlanCalculator
 {

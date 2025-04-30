@@ -1,8 +1,10 @@
 <?php
 
-use App\Enums\Property\{DevelopmentType, DevelopmentForm, MarketSegment};
-use App\Support\MoneyFactory;
 use Brick\Money\Money;
+use LBHurtado\Mortgage\Enums\Property\{MarketSegment};
+use LBHurtado\Mortgage\Enums\Property\DevelopmentForm;
+use LBHurtado\Mortgage\Enums\Property\DevelopmentType;
+use LBHurtado\Mortgage\Factories\MoneyFactory;
 
 beforeEach(function () {
     config()->set('gnc-revelation.property.market.ceiling', [

@@ -2,9 +2,9 @@
 
 namespace Tests\Fakes;
 
-use App\Contracts\PropertyInterface;
-use App\Support\MoneyFactory;
-use App\ValueObjects\Percent;
+use LBHurtado\Mortgage\Contracts\PropertyInterface;
+use LBHurtado\Mortgage\Factories\MoneyFactory;
+use LBHurtado\Mortgage\ValueObjects\Percent;
 use Whitecube\Price\Price;
 
 /** @deprecated  */

@@ -1,10 +1,7 @@
 <?php
 
-use App\Classes\Buyer;
 use App\Data\LoanProductData;
-use App\DataObjects\MortgageTerm;
 use App\Services\LoanMatcherService;
-use App\Services\BorrowingRulesService;
 use Brick\Money\Money;
 use Whitecube\Price\Price;
 
@@ -62,9 +59,9 @@ it('matches buyer to loan product and logs details with precision', function (
     float $disposablePrecision,
     float $gapPrecision
 ) {
-    $rules = app(\App\Services\BorrowingRulesService::class);
+    $rules = app(\LBHurtado\Mortgage\Services\BorrowingRulesService::class);
 
-    $buyer = new \App\Classes\Buyer($rules);
+    $buyer = new \LBHurtado\Mortgage\Classes\Buyer($rules);
     $buyer->setAge($age)
         ->setMonthlyGrossIncome(new Price(Money::of($grossIncome, 'PHP')))
         ->setIncomeRequirementMultiplier($multiplier);

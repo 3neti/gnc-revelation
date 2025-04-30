@@ -1,7 +1,7 @@
 <?php
 
-use App\Classes\LendingInstitution;
 use Illuminate\Support\Carbon;
+use LBHurtado\Mortgage\Classes\LendingInstitution;
 
 it('can retrieve lending institution details from config', function () {
     $li = new LendingInstitution('rcbc');

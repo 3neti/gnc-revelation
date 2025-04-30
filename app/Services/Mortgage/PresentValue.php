@@ -8,6 +8,7 @@ use Whitecube\Price\Price;
 use Jarouche\Financial\PV;
 use Brick\Money\Money;
 
+/** @deprecated  */
 class PresentValue
 {
     protected float $payment;

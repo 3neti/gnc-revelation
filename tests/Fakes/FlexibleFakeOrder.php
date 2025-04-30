@@ -2,7 +2,7 @@
 
 namespace Tests\Fakes;
 
-use App\Contracts\OrderInterface;
+use LBHurtado\Mortgage\Contracts\OrderInterface;
 use Whitecube\Price\Price;
 
 class FlexibleFakeOrder implements OrderInterface

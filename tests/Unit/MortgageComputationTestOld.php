@@ -1,13 +1,8 @@
 <?php
 
 use App\Services\MortgageComputation;
-use App\Data\Inputs\InputsData;
-use App\Data\Inputs\IncomeInputsData;
-use App\Data\Inputs\LoanableInputsData;
-use App\Data\Inputs\DownPaymentInputsData;
-use App\Data\Inputs\BalancePaymentInputsData;
-use App\Data\Inputs\MonthlyPaymentAddOnsInputsData;
-use App\ValueObjects\Equity;
+use LBHurtado\Mortgage\Data\Inputs\InputsData;
+use LBHurtado\Mortgage\ValueObjects\Equity;
 use Tests\Fakes\FlexibleFakeBuyer;
 use Tests\Fakes\FlexibleFakeOrder;
 use Tests\Fakes\FlexibleFakeProperty;

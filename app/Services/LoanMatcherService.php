@@ -3,10 +3,10 @@
 namespace App\Services;
 
 use App\Data\{LoanProductData, MatchResultData};
-use Illuminate\Support\Collection;
 use App\DataObjects\MortgageTerm;
+use Illuminate\Support\Collection;
+use LBHurtado\Mortgage\Classes\Buyer;
 use Whitecube\Price\Price;
-use App\Classes\Buyer;
 
 class LoanMatcherService
 {

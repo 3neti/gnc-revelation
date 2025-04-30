@@ -1,18 +1,18 @@
 <?php
 
-use App\Exceptions\MaximumBorrowingAgeBreached;
-use App\Exceptions\MinimumBorrowingAgeNotMet;
-use App\Data\QualificationComputationData;
-use App\Services\BorrowingRulesService;
-use App\Enums\Property\DevelopmentType;
-use App\Classes\LendingInstitution;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Carbon;
-use App\ValueObjects\Percent;
-use Whitecube\Price\Price;
-use App\Classes\Property;
-use App\Classes\Buyer;
 use Brick\Money\Money;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
+use LBHurtado\Mortgage\Classes\Buyer;
+use LBHurtado\Mortgage\Classes\LendingInstitution;
+use LBHurtado\Mortgage\Classes\Property;
+use LBHurtado\Mortgage\Data\QualificationComputationData;
+use LBHurtado\Mortgage\Enums\Property\DevelopmentType;
+use LBHurtado\Mortgage\Exceptions\MaximumBorrowingAgeBreached;
+use LBHurtado\Mortgage\Exceptions\MinimumBorrowingAgeNotMet;
+use LBHurtado\Mortgage\Services\BorrowingRulesService;
+use LBHurtado\Mortgage\ValueObjects\Percent;
+use Whitecube\Price\Price;
 
 it('initializes with default values', function () {
     // Arrange & Act
@@ -152,14 +152,14 @@ it('initializes with default lending institution', function () {
     $institution = $buyer->getLendingInstitution();
 
     // Assert
-    expect($institution)->toBeInstanceOf(\App\Classes\LendingInstitution::class)
+    expect($institution)->toBeInstanceOf(\LBHurtado\Mortgage\Classes\LendingInstitution::class)
         ->and($institution->key())->toBe(config('gnc-revelation.default_lending_institution'));
 });
 
 it('can change lending institution', function () {
     // Arrange
     $buyer = app(Buyer::class);
-    $cbc = new \App\Classes\LendingInstitution('cbc');
+    $cbc = new \LBHurtado\Mortgage\Classes\LendingInstitution('cbc');
 
     // Act
     $buyer->setLendingInstitution($cbc);
@@ -201,7 +201,7 @@ it('calculates the correct maximum term allowed based on age and institution', f
 ) {
     $buyer = app(Buyer::class)
         ->setAge($age)
-        ->setLendingInstitution(new \App\Classes\LendingInstitution($institution))
+        ->setLendingInstitution(new \LBHurtado\Mortgage\Classes\LendingInstitution($institution))
         ->setOverrideMaximumPayingAge($overridePayingAge);
 
     expect($buyer->getLendingInstitution()->maximumPayingAge())->toBe($expectedPayingAge)
@@ -302,19 +302,19 @@ it('calculates joint maximum term allowed from oldest borrower', function () {
     // Main borrower: age 40 → max term 30
     $main = app(Buyer::class)
         ->setAge(40)
-        ->setLendingInstitution(new \App\Classes\LendingInstitution('hdmf'))
+        ->setLendingInstitution(new \LBHurtado\Mortgage\Classes\LendingInstitution('hdmf'))
         ->setOverrideMaximumPayingAge(70); // max term = 30
 
     // Co-borrower 1: age 50 → max term 20
     $co1 = app(Buyer::class)
         ->setAge(50)
-        ->setLendingInstitution(new \App\Classes\LendingInstitution('hdmf'))
+        ->setLendingInstitution(new \LBHurtado\Mortgage\Classes\LendingInstitution('hdmf'))
         ->setOverrideMaximumPayingAge(70);
 
     // Co-borrower 2: age 45 → max term 25
     $co2 = app(Buyer::class)
         ->setAge(45)
-        ->setLendingInstitution(new \App\Classes\LendingInstitution('hdmf'))
+        ->setLendingInstitution(new \LBHurtado\Mortgage\Classes\LendingInstitution('hdmf'))
         ->setOverrideMaximumPayingAge(70);
 
     $main->addCoBorrower($co1)->addCoBorrower($co2);
@@ -412,7 +412,7 @@ it('returns qualification gap if borrower cannot afford loan', function () {
         ->setIncomeRequirementMultiplier(1.0)
         ->setMonthlyGrossIncome(new Price(Money::of(2000, 'PHP')))
         ->setAge(30)
-        ->setLendingInstitution(new \App\Classes\LendingInstitution('hdmf'));
+        ->setLendingInstitution(new \LBHurtado\Mortgage\Classes\LendingInstitution('hdmf'));
 
     // Arrange: Real property with forced loanable value and interest
     $property = new Property(1000000); // TCP = ₱1M
@@ -469,7 +469,7 @@ it('resolves correct buffer margin from property, institution, or config', funct
     ]);
 
     $institution = new LendingInstitution($institutionKey);
-    $buyer = new Buyer(app(\App\Services\BorrowingRulesService::class));
+    $buyer = new Buyer(app(\LBHurtado\Mortgage\Services\BorrowingRulesService::class));
     $buyer->setLendingInstitution($institution);
 
     $property = new Property(1_000_000);
@@ -569,7 +569,7 @@ it('returns qualification gap using getQualificationGap()', function () {
         ->setMonthlyGrossIncome(3000)
         ->setIncomeRequirementMultiplier(1.0)
         ->setAge(30)
-        ->setLendingInstitution(new \App\Classes\LendingInstitution('hdmf'));
+        ->setLendingInstitution(new \LBHurtado\Mortgage\Classes\LendingInstitution('hdmf'));
 
     $property = new Property(1_000_000);
     $property->setInterestRate(0.06);

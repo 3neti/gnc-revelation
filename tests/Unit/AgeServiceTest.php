@@ -1,7 +1,6 @@
 <?php
 
-use App\Services\AgeService;
-use Illuminate\Support\Carbon;
+use LBHurtado\Mortgage\Services\AgeService;
 
 beforeEach(function () {
     $this->service = new AgeService();

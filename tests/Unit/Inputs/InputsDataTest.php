@@ -1,9 +1,18 @@
 <?php
 
-use App\Data\Inputs\{InputsData, IncomeInputsData, LoanableInputsData, DownPaymentInputsData, BalancePaymentInputsData, FeesInputsData, MonthlyPaymentAddOnsInputsData};
-use App\Services\{BorrowingRulesService, AgeService};
-use App\Classes\{Buyer, Property, Order};
-use App\ValueObjects\Percent;
+use LBHurtado\Mortgage\Classes\{Order};
+use LBHurtado\Mortgage\Classes\Buyer;
+use LBHurtado\Mortgage\Classes\Property;
+use LBHurtado\Mortgage\Data\Inputs\{DownPaymentInputsData};
+use LBHurtado\Mortgage\Data\Inputs\BalancePaymentInputsData;
+use LBHurtado\Mortgage\Data\Inputs\FeesInputsData;
+use LBHurtado\Mortgage\Data\Inputs\IncomeInputsData;
+use LBHurtado\Mortgage\Data\Inputs\InputsData;
+use LBHurtado\Mortgage\Data\Inputs\LoanableInputsData;
+use LBHurtado\Mortgage\Data\Inputs\MonthlyPaymentAddOnsInputsData;
+use LBHurtado\Mortgage\Services\{AgeService};
+use LBHurtado\Mortgage\Services\BorrowingRulesService;
+use LBHurtado\Mortgage\ValueObjects\Percent;
 
 beforeEach(function () {
     $this->buyer = new Buyer(new BorrowingRulesService(new AgeService()));

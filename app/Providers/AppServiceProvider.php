@@ -2,12 +2,9 @@
 
 namespace App\Providers;
 
-use App\Classes\Buyer;
-use App\Services\AgeService;
-use App\Services\BorrowingRulesService;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Carbon;
 
+/** @deprecated  */
 class AppServiceProvider extends ServiceProvider
 {
     /**

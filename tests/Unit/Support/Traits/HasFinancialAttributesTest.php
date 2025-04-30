@@ -1,7 +1,7 @@
 <?php
 
-use App\Support\Traits\HasFinancialAttributes;
-use App\ValueObjects\Percent;
+use LBHurtado\Mortgage\Traits\HasFinancialAttributes;
+use LBHurtado\Mortgage\ValueObjects\Percent;
 
 beforeEach(function () {
     $this->instance = new class {

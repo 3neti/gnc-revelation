@@ -54,7 +54,7 @@ expect()->extend('toBeCloseTo', function (float $expected, float $precision = 0.
     return expect(abs($actual - $expected))->toBeLessThanOrEqual($precision);
 });
 
-use App\ValueObjects\Percent;
+use LBHurtado\Mortgage\ValueObjects\Percent;
 
 expect()->extend('toEqualPercent', function (float $expected) {
     /** @var \Pest\Expectation $this */

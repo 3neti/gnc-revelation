@@ -1,10 +1,8 @@
 <?php
 
-use App\Services\PurchasePlanCalculator;
 use App\DataObjects\MortgageTerm;
-use App\ValueObjects\DownPayment;
-use Whitecube\Price\Price;
-use Brick\Money\Money;
+use App\Services\PurchasePlanCalculator;
+use LBHurtado\Mortgage\ValueObjects\DownPayment;
 
 dataset('rdg qualification cases', function () {
     return [

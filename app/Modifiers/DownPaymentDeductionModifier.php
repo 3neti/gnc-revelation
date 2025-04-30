@@ -2,12 +2,13 @@
 
 namespace App\Modifiers;
 
-use Whitecube\Price\PriceAmendable;
-use Brick\Money\AbstractMoney;
-use App\ValueObjects\Percent;
 use Brick\Math\RoundingMode;
+use Brick\Money\AbstractMoney;
+use LBHurtado\Mortgage\ValueObjects\Percent;
+use Whitecube\Price\PriceAmendable;
 use Whitecube\Price\Vat;
 
+/** @deprecated  */
 class DownPaymentDeductionModifier implements PriceAmendable
 {
     protected string $type = 'default';

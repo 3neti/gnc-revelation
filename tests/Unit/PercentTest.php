@@ -1,6 +1,6 @@
 <?php
 
-use App\ValueObjects\Percent;
+use LBHurtado\Mortgage\ValueObjects\Percent;
 
 it('creates from percent correctly', function () {
     $p = Percent::ofPercent(10);

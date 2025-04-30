@@ -1,8 +1,8 @@
 <?php
 
-use App\Modifiers\PeriodicPaymentModifier;
-use Whitecube\Price\Price;
 use Brick\Money\Money;
+use LBHurtado\Mortgage\Modifiers\PeriodicPaymentModifier;
+use Whitecube\Price\Price;
 
 it('computes periodic payment with zero interest', function () {
     $amount = Money::of(120_000, 'PHP'); // ₱120,000 loan
