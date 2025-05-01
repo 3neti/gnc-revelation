@@ -138,7 +138,10 @@ class Order implements OrderInterface
 
     public function setConsultingFee(?float $value): static
     {
-        $this->consultingFee = $value ? MoneyFactory::priceWithPrecision($value) : null;
+        $this->consultingFee = is_null($value)
+            ? null
+            : MoneyFactory::priceWithPrecision($value);
+
         return $this;
     }
 
@@ -149,7 +152,10 @@ class Order implements OrderInterface
 
     public function setProcessingFee(?float $value): static
     {
-        $this->processingFee = $value ? MoneyFactory::priceWithPrecision($value) : null;
+        $this->processingFee = is_null($value)
+            ? null
+            : MoneyFactory::priceWithPrecision($value);
+
         return $this;
     }
 

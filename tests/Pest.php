@@ -44,11 +44,15 @@ function something()
     // ..
 }
 
-expect()->extend('toBeCloseTo', function (float $expected, float $precision = 0.01) {
+expect()->extend('toBeCloseTo', function (?float $expected, float $precision = 0.01) {
     $actual = $this->value;
 
+    if (is_null($actual) || is_null($expected)) {
+        return expect($actual)->toBe($expected); // both must be null
+    }
+
     if (!is_numeric($actual)) {
-        throw new Exception("toBeCloseTo() expects a numeric value, got " . gettype($actual));
+        throw new Exception("toBeCloseTo() expects a numeric or null value, got " . gettype($actual));
     }
 
     return expect(abs($actual - $expected))->toBeLessThanOrEqual($precision);

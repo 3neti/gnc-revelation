@@ -13,9 +13,9 @@ class InputsData extends Data
         public BalancePaymentInputsData         $balance_payment,
         public ?FeesInputsData                  $fees = null,
         public ?MonthlyPaymentAddOnsInputsData  $monthly_payment_add_ons = null,
-        protected ?BuyerInterface $buyer = null,
-        protected ?PropertyInterface $property = null,
-        protected ?OrderInterface $order = null,
+        protected ?BuyerInterface               $buyer = null,
+        protected ?PropertyInterface            $property = null,
+        protected ?OrderInterface               $order = null,
     ) {}
 
     public static function fromBooking(BuyerInterface $buyer, PropertyInterface $property, OrderInterface $order): static

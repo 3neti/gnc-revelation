@@ -38,9 +38,7 @@ final class CashOutCalculator extends BaseCalculator
 
     public function processingFee(): Price
     {
-        return MoneyFactory::priceWithPrecision(
-            $this->inputs->fees->processing_fee ?? 0
-        );
+        return $this->inputs->fees->processing_fee;
     }
 
     public function total(): Price
