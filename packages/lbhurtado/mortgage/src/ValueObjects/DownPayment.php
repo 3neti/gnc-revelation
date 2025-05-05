@@ -6,6 +6,7 @@ use LBHurtado\Mortgage\Data\Inputs\InputsData;
 use Brick\Math\RoundingMode;
 use Brick\Money\Money;
 
+/** TODO: change the name of this class */
 class DownPayment
 {
     protected Money $tcp;

@@ -5,6 +5,7 @@ namespace LBHurtado\Mortgage\Classes;
 use LBHurtado\Mortgage\Services\AgeService;
 use Illuminate\Support\{Arr, Carbon};
 use InvalidArgumentException;
+use LBHurtado\Mortgage\ValueObjects\Percent;
 
 class LendingInstitution
 {
@@ -92,5 +93,10 @@ class LendingInstitution
     public function getRequiredBufferMargin(): ?float
     {
         return $this->get('buffer_margin'); // optional config key
+    }
+
+    public function getIncomeRequirementMultiplier(): ?Percent
+    {
+        return Percent::ofFraction($this->get('income_requirement_multiplier'));
     }
 }

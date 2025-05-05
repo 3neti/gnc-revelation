@@ -7,6 +7,7 @@ use LBHurtado\Mortgage\Factories\MoneyFactory;
 use LBHurtado\Mortgage\Enums\CalculatorType;
 use LBHurtado\Mortgage\ValueObjects\Equity;
 
+/** TODO: maybe rename to LoanDifferenceCalculator */
 #[CalculatorFor(CalculatorType::EQUITY)]
 final class EquityRequirementCalculator extends BaseCalculator
 {
@@ -24,7 +25,7 @@ final class EquityRequirementCalculator extends BaseCalculator
             ->toFloat();
 
         $gap = max(0, $requiredLoanable - $affordableLoan);
-//        dd($requiredLoanable, $affordableLoan, $gap);
+
         return new Equity(MoneyFactory::priceWithPrecision($gap));
     }
 }

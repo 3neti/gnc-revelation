@@ -98,7 +98,11 @@ class Buyer implements BuyerInterface
 
     public function addCoBorrower(Buyer $co_borrower): static
     {
+        if ($this->getLendingInstitution() !== null) {
+            $co_borrower->setLendingInstitution($this->getLendingInstitution());
+        }
         $this->co_borrowers->push($co_borrower);
+
         return $this;
     }
 
@@ -140,6 +144,8 @@ class Buyer implements BuyerInterface
     public function setLendingInstitution(LendingInstitution $institution): static
     {
         $this->lendingInstitution = $institution;
+        $this->setIncomeRequirementMultiplier($this->lendingInstitution->getIncomeRequirementMultiplier());
+
         return $this;
     }
 

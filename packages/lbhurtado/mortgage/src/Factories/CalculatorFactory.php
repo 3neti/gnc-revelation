@@ -3,7 +3,13 @@
 namespace LBHurtado\Mortgage\Factories;
 
 use LBHurtado\Mortgage\Calculators\{BaseCalculator, CashOutCalculator, EquityRequirementCalculator, FeesCalculator, LoanableAmountCalculator};
-use LBHurtado\Mortgage\Calculators\{LoanAffordabilityCalculator, MonthlyAmortizationCalculator, MonthlyDisposableIncomeCalculator};
+use LBHurtado\Mortgage\Calculators\{IncomeGapCalculator,
+    LoanAffordabilityCalculator,
+    LoanQualificationCalculator,
+    MonthlyAmortizationCalculator,
+    MonthlyDisposableIncomeCalculator,
+    RequiredIncomeCalculator,
+    RequiredPercentDownPaymentCalculator};
 use LBHurtado\Mortgage\Attributes\CalculatorFor;
 use LBHurtado\Mortgage\Data\Inputs\InputsData;
 use LBHurtado\Mortgage\Enums\CalculatorType;
@@ -61,6 +67,10 @@ final class CalculatorFactory
             CashOutCalculator::class,
             LoanableAmountCalculator::class,
             FeesCalculator::class,
+            RequiredIncomeCalculator::class,
+            IncomeGapCalculator::class,
+            LoanQualificationCalculator::class,
+            RequiredPercentDownPaymentCalculator::class,
         ];
 
         foreach ($classes as $class) {
