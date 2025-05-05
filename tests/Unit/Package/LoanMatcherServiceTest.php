@@ -1,9 +1,18 @@
 <?php
 
-use App\Services\LoanMatcherService;
-use Brick\Money\Money;
+use LBHurtado\Mortgage\Classes\{Buyer, LendingInstitution, Order, Property};
+use LBHurtado\Mortgage\Services\{AgeService, BorrowingRulesService};
+use LBHurtado\Mortgage\Services\LoanMatcherService;
 use LBHurtado\Mortgage\Data\Match\LoanProductData;
 use Whitecube\Price\Price;
+use Brick\Money\Money;
+use LBHurtado\Mortgage\Data\Match\MatchResultData;
+use Illuminate\Support\Collection;
+
+
+beforeEach(function () {
+    $this->rules = new BorrowingRulesService(new AgeService());
+});
 
 dataset('loan matcher combinations', function () {
     return [
@@ -59,12 +68,21 @@ it('matches buyer to loan product and logs details with precision', function (
     float $disposablePrecision,
     float $gapPrecision
 ) {
-    $rules = app(\LBHurtado\Mortgage\Services\BorrowingRulesService::class);
+    $rules = app(BorrowingRulesService::class);
 
-    $buyer = new \LBHurtado\Mortgage\Classes\Buyer($rules);
+    $buyer = new Buyer($rules);
     $buyer->setAge($age)
         ->setMonthlyGrossIncome(new Price(Money::of($grossIncome, 'PHP')))
-        ->setIncomeRequirementMultiplier($multiplier);
+        ->setIncomeRequirementMultiplier($multiplier)
+    ;
+
+
+    $buyer = app(Buyer::class)
+        ->setAge($age)
+        ->setMonthlyGrossIncome($grossIncome)
+        ->setLendingInstitution(new LendingInstitution('hdmf'))
+        ->setIncomeRequirementMultiplier($multiplier)
+    ;
 
     $product = new LoanProductData(
         code: $productCode,
@@ -95,5 +113,148 @@ it('matches buyer to loan product and logs details with precision', function (
     expect($result->qualified)->toBe($expectedQualifies)
         ->and($actualAmort)->toBeCloseTo($expectedAmort, $amortPrecision)
         ->and($actualDisposable)->toBeCloseTo($expectedDisposable, $disposablePrecision)
-        ->and($actualGap)->toBeCloseTo($expectedGap, $gapPrecision);
+        ->and($actualGap)->toBeCloseTo($expectedGap, $gapPrecision)
+    ;
 })->with('loan matcher combinations');
+
+dataset('loan product options with expectation', [
+    'RDG750 - should qualify' => [
+        new LoanProductData(
+            code: 'P750',
+            name: 'RDG750',
+            tcp: 750_000,
+            interest_rate: 0.0625,
+            max_term_years: 20,
+            max_loanable_percent: 1.0,
+            disposable_income_multiplier: 0.35
+        ),
+        true
+    ],
+    'RDG1000 - should qualify' => [
+        new LoanProductData(
+            code: 'P1000',
+            name: 'RDG1000',
+            tcp: 1_000_000,
+            interest_rate: 0.0625,
+            max_term_years: 25,
+            max_loanable_percent: 1.0,
+            disposable_income_multiplier: 0.35
+        ),
+        true
+    ],
+    'RDG1500 - should qualify' => [
+        new LoanProductData(
+            code: 'P1500',
+            name: 'RDG1500',
+            tcp: 1_500_000,
+            interest_rate: 0.0625,
+            max_term_years: 30,
+            max_loanable_percent: 1.0,
+            disposable_income_multiplier: 0.35
+        ),
+        true
+    ],
+    'RDG2000 - should not qualify' => [
+        new LoanProductData(
+            code: 'P2000',
+            name: 'RDG2000',
+            tcp: 2_000_000,
+            interest_rate: 0.0625,
+            max_term_years: 30,
+            max_loanable_percent: 1.0,
+            disposable_income_multiplier: 0.35
+        ),
+        false
+    ],
+]);
+
+it('evaluates borrower qualification for each loan product explicitly', function (
+    LoanProductData $product,
+    bool $expectedQualifies
+) {
+    $buyer = app(Buyer::class)
+        ->setAge(30)
+        ->setMonthlyGrossIncome(30_000)
+        ->setIncomeRequirementMultiplier(0.35)
+        ->setLendingInstitution(new LendingInstitution('hdmf'));
+
+    $results = (new LoanMatcherService())->match($buyer, collect([$product]));
+    $match = $results->first();
+
+    expect($match)->toBeInstanceOf(MatchResultData::class)
+        ->and($match->qualified)->toBe($expectedQualifies);
+
+    if ($expectedQualifies) {
+        $disposable = $buyer->getJointMonthlyDisposableIncome()->inclusive()->getAmount()->toFloat();
+        $amort = $match->monthly_amortization->inclusive()->getAmount()->toFloat();
+
+        expect($amort)->toBeLessThanOrEqual($disposable)
+            ->and($match->gap)->toBe(0.0);
+    } else {
+        expect($match->gap)->toBeGreaterThan(0.0);
+    }
+
+    echo "→ {$product->code} | " .
+        ($match->qualified ? '✅ qualified' : '❌ not qualified') .
+        PHP_EOL;
+})->with('loan product options with expectation');
+
+it('returns only qualified loan products from a set', function () {
+    $products = collect([
+        new LoanProductData(
+            code: 'P750',
+            name: 'RDG750',
+            tcp: 750_000,
+            interest_rate: 0.0625,
+            max_term_years: 20,
+            max_loanable_percent: 1.0,
+            disposable_income_multiplier: 0.35
+        ),
+        new LoanProductData(
+            code: 'P1000',
+            name: 'RDG1000',
+            tcp: 1_000_000,
+            interest_rate: 0.0625,
+            max_term_years: 25,
+            max_loanable_percent: 1.0,
+            disposable_income_multiplier: 0.35
+        ),
+        new LoanProductData(
+            code: 'P1500',
+            name: 'RDG1500',
+            tcp: 1_500_000,
+            interest_rate: 0.0625,
+            max_term_years: 30,
+            max_loanable_percent: 1.0,
+            disposable_income_multiplier: 0.35
+        ),
+        new LoanProductData(
+            code: 'P2000',
+            name: 'RDG2000',
+            tcp: 2_000_000,
+            interest_rate: 0.0625,
+            max_term_years: 30,
+            max_loanable_percent: 1.0,
+            disposable_income_multiplier: 0.35
+        ),
+    ]);
+
+    $buyer = app(Buyer::class)
+        ->setAge(30)
+        ->setMonthlyGrossIncome(30_000)
+        ->setIncomeRequirementMultiplier(0.35)
+        ->setLendingInstitution(new LendingInstitution('hdmf'));
+
+    $results = (new LoanMatcherService())->match($buyer, $products);
+
+    /** @var \Illuminate\Support\Collection<int, MatchResultData> $qualified */
+    $qualified = $results->filter(fn (MatchResultData $result) => $result->qualified);
+
+    expect($qualified->count())->toBe(3)
+        ->and($qualified->pluck('product_code'))->not->toContain('P2000');
+
+    $qualifiedResults = (new LoanMatcherService())
+        ->matchQualifiedOnly($buyer, $products);
+
+    expect($qualifiedResults)->toHaveCount(3);
+});

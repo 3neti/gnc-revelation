@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Data;
+namespace LBHurtado\Mortgage\Data\Match;
 
 use Spatie\LaravelData\Data;
 
