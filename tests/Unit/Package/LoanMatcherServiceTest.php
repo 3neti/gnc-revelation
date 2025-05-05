@@ -1,8 +1,8 @@
 <?php
 
-use App\Data\LoanProductData;
 use App\Services\LoanMatcherService;
 use Brick\Money\Money;
+use LBHurtado\Mortgage\Data\Match\LoanProductData;
 use Whitecube\Price\Price;
 
 dataset('loan matcher combinations', function () {
