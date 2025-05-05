@@ -19,12 +19,11 @@ final class LoanAffordabilityCalculator extends BaseCalculator
     {
         $term = $this->inputs->balance_payment->bp_term;
         $interest_rate = $this->inputs->balance_payment->bp_interest_rate->value();
-
         $present_value = MonthlyDisposableIncomeCalculator::fromInputs($this->inputs)
             ->calculate()
             ->addModifier('present value', PresentValueModifier::class, $term, $interest_rate)
             ->inclusive();
-//        dd($present_value->getAmount()->toFloat());
+
         return MoneyFactory::price($present_value);
     }
 }
