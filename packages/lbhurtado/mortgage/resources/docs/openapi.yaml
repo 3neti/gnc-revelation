@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Loan Matching API
-  version: 1.0.1
+  version: 1.0.2
   description: API for matching a buyer to qualified loan products based on income and age.
 
 tags:
@@ -63,6 +63,7 @@ paths:
                         example: RDG750
                       tcp:
                         type: number
+                        enum: [750000, 1000000, 1500000, 2000000]
                         example: 750000
                       interest_rate:
                         type: number
@@ -70,12 +71,15 @@ paths:
                         example: 0.0625
                       max_term_years:
                         type: integer
+                        enum: [20, 25, 30]
                         example: 20
                       max_loanable_percent:
                         type: number
+                        enum: [1.0]
                         example: 1.0
                       disposable_income_multiplier:
                         type: number
+                        enum: [0.35]
                         example: 0.35
       responses:
         '200':
