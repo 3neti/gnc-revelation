@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Number;
 
 /** @deprecated  */
 class AppServiceProvider extends ServiceProvider
@@ -25,5 +26,6 @@ class AppServiceProvider extends ServiceProvider
 //        Carbon::macro('floatDiffInYears', function () {
 //            return $this->diffInDays(now()) / 365.25;
 //        });
+        Number::useCurrency('PHP');
     }
 }
