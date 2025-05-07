@@ -4,9 +4,15 @@ info:
   version: 1.0.0
   description: API for matching a buyer to qualified loan products based on income and age.
 
+tags:
+  - name: Loan Matching
+    description: Match a buyer to eligible loan products
+
 paths:
   /loan-match:
     post:
+      tags:
+        - Loan Matching
       summary: Match buyer to qualified loan products
       operationId: matchLoanProducts
       requestBody:
@@ -98,3 +104,18 @@ paths:
                       example: Sufficient disposable income
         '422':
           description: Validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "The given data was invalid."
+                  errors:
+                    type: object
+                    example:
+                      age:
+                        - "The age field is required."
+                      monthly_income:
+                        - "The monthly income must be at least 1000."
