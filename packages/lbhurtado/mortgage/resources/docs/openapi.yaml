@@ -1,16 +1,16 @@
 openapi: 3.1.0
 info:
   title: Loan Matching API
-  version: 1.0.0
+  version: 1.0.1
   description: API for matching a buyer to qualified loan products based on income and age.
-
-servers:
-  - url: https://gnc-revelation-main-ndpjj4.laravel.cloud/api/v1
-    description: Production server
 
 tags:
   - name: Loan Matching
     description: Match a buyer to eligible loan products
+
+servers:
+  - url: https://gnc-revelation-main-ndpjj4.laravel.cloud/api/v1
+    description: Production server
 
 paths:
   /loan-match:
@@ -55,9 +55,11 @@ paths:
                     properties:
                       code:
                         type: string
+                        enum: [P750, P1000, P1500, P2000]
                         example: P750
                       name:
                         type: string
+                        enum: [RDG750, RDG1000, RDG1500, RDG2000]
                         example: RDG750
                       tcp:
                         type: number
@@ -71,7 +73,7 @@ paths:
                         example: 20
                       max_loanable_percent:
                         type: number
-                        example: 0.95
+                        example: 1.0
                       disposable_income_multiplier:
                         type: number
                         example: 0.35
