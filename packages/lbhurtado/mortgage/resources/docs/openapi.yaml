@@ -8,6 +8,10 @@ tags:
   - name: Loan Matching
     description: Match a buyer to eligible loan products
 
+servers:
+  - url: https://gnc-revelation-main-ndpjj4.laravel.cloud/api/v1
+    description: Production server
+
 paths:
   /loan-match:
     post:
