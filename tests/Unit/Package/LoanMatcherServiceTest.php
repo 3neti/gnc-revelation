@@ -2,13 +2,12 @@
 
 use LBHurtado\Mortgage\Classes\{Buyer, LendingInstitution, Order, Property};
 use LBHurtado\Mortgage\Services\{AgeService, BorrowingRulesService};
+use LBHurtado\Mortgage\Transformers\MatchResultTransformer;
 use LBHurtado\Mortgage\Services\LoanMatcherService;
 use LBHurtado\Mortgage\Data\Match\LoanProductData;
+use LBHurtado\Mortgage\Data\Match\MatchResultData;
 use Whitecube\Price\Price;
 use Brick\Money\Money;
-use LBHurtado\Mortgage\Data\Match\MatchResultData;
-use Illuminate\Support\Collection;
-
 
 beforeEach(function () {
     $this->rules = new BorrowingRulesService(new AgeService());
@@ -257,4 +256,27 @@ it('returns only qualified loan products from a set', function () {
         ->matchQualifiedOnly($buyer, $products);
 
     expect($qualifiedResults)->toHaveCount(3);
+});
+
+it('transforms MatchResultData into a response array', function () {
+    $result = new MatchResultData(
+        qualified: true,
+        product_code: 'RDG750',
+        monthly_amortization: Price::of(5452.00, 'PHP'),
+        income_required: Price::of(15577.14, 'PHP'),
+        suggested_equity: Price::of(0.00, 'PHP'),
+        gap: 0.00,
+        reason: 'Sufficient disposable income'
+    );
+
+    $transformed = MatchResultTransformer::transform($result);
+
+    expect($transformed)->toBeArray()
+        ->and($transformed['qualified'])->toBeTrue()
+        ->and($transformed['product_code'])->toBe('RDG750')
+        ->and($transformed['monthly_amortization'])->toBe(5452.00)
+        ->and($transformed['income_required'])->toBe(15577.14)
+        ->and($transformed['suggested_equity'])->toBe(0.00)
+        ->and($transformed['income_gap'])->toBe(0.00)
+        ->and($transformed['reason'])->toBe('Sufficient disposable income');
 });

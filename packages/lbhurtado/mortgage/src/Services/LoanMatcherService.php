@@ -3,9 +3,9 @@
 namespace LBHurtado\Mortgage\Services;
 
 use LBHurtado\Mortgage\Data\Match\{LoanProductData, MatchResultData};
-use LBHurtado\Mortgage\Data\Inputs\InputsData;
-use LBHurtado\Mortgage\Data\QualificationResultData;
 use LBHurtado\Mortgage\Classes\{Buyer, Order, Property};
+use LBHurtado\Mortgage\Data\QualificationResultData;
+use LBHurtado\Mortgage\Data\Inputs\InputsData;
 use Illuminate\Support\Collection;
 
 class LoanMatcherService
