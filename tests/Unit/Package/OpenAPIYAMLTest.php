@@ -9,6 +9,6 @@ it('serves the OpenAPI spec YAML file', function () {
 
     $response->assertOk()
         ->assertHeader('Content-Type', 'text/yaml; charset=UTF-8')
-        ->assertSee('openapi: 3.0.0')
+        ->assertSee('openapi: 3.1.0')
     ;
 });
