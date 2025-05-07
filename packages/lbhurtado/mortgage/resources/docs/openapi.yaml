@@ -1,12 +1,14 @@
 openapi: 3.1.0
 info:
   title: Loan Matching API
-  version: 1.0.2
+  version: 1.0.3
   description: API for matching a buyer to qualified loan products based on income and age.
 
 tags:
   - name: Loan Matching
     description: Match a buyer to eligible loan products
+  - name: Mortgage Computation
+    description: Compute amortization and qualification results
 
 servers:
   - url: https://gnc-revelation-main-ndpjj4.laravel.cloud/api/v1
@@ -129,3 +131,139 @@ paths:
                         - "The age field is required."
                       monthly_income:
                         - "The monthly income must be at least 1000."
+
+  /mortgage-compute:
+    post:
+      tags:
+        - Mortgage Computation
+      summary: Compute mortgage amortization and qualification
+      operationId: computeMortgage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - lending_institution
+                - total_contract_price
+                - buyer
+              properties:
+                lending_institution:
+                  type: string
+                  enum: [hdmf, rcbc]
+                  example: hdmf
+                total_contract_price:
+                  type: number
+                  minimum: 100000
+                  example: 1000000
+                buyer:
+                  type: object
+                  required:
+                    - age
+                    - monthly_income
+                  properties:
+                    age:
+                      type: integer
+                      minimum: 18
+                      maximum: 65
+                      example: 49
+                    monthly_income:
+                      type: number
+                      minimum: 1000
+                      example: 17000
+                    additional_income:
+                      type: number
+                      minimum: 0
+                      example: 0
+                co_borrower:
+                  type: object
+                  nullable: true
+                  properties:
+                    age:
+                      type: integer
+                      minimum: 18
+                      maximum: 65
+                      example: 50
+                    monthly_income:
+                      type: number
+                      minimum: 1000
+                      example: 19000
+                percent_down_payment:
+                  type: number
+                  minimum: 0
+                  maximum: 1
+                  example: 0.10
+                percent_miscellaneous_fee:
+                  type: number
+                  minimum: 0
+                  maximum: 1
+                  example: 0.085
+                processing_fee:
+                  type: number
+                  minimum: 0
+                  example: 10000
+                add_mri:
+                  type: boolean
+                  example: true
+                add_fi:
+                  type: boolean
+                  example: false
+      responses:
+        '200':
+          description: Mortgage computation and qualification results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  payload:
+                    type: object
+                    description: Computed mortgage data
+                  qualification:
+                    type: object
+                    description: Mortgage qualification result
+                    properties:
+                      income_gap:
+                        type: number
+                        example: 1185.34
+                      loan_difference:
+                        type: number
+                        example: 166121.87
+                      suggested_down_payment_percent:
+                        type: number
+                        example: 0.16
+                      qualifies:
+                        type: boolean
+                        example: false
+                      reason:
+                        type: string
+                        example: Disposable income below amortization
+                      mortgage:
+                        type: object
+                        properties:
+                          monthly_amortization:
+                            type: number
+                            example: 7135.34
+                          term_years:
+                            type: integer
+                            example: 21
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "The given data was invalid."
+                  errors:
+                    type: object
+                    example:
+                      lending_institution:
+                        - "The lending institution field is required."
+                      buyer.age:
+                        - "The buyer age must be at least 18."
+                      buyer.monthly_income:
+                        - "The buyer monthly income must be at least 1000."

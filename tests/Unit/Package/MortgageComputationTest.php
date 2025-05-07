@@ -15,7 +15,7 @@ beforeEach(function () {
 });
 
 dataset('simple amortization', [
-    /********************************************************************************************************************** lender     TCP    age1  gmi1  age2   gmi2 income interest %dp   %mf      pf       MRI?   FI?  term %gmi disposable     PV        equity    amortization  fees   cash out  loanable amount   mf     income gap  %dpr ****/
+    /******************************************************************************************************************************* lender     TCP    age1  gmi1  age2   gmi2 income interest %dp   %mf      pf       MRI?   FI?  term %gmi disposable     PV        equity    amortization  fees   cash out  loanable amount   mf     income gap  %dpr ****/
     'hdmf 1.0M in 21 yrs @ 6.25% by a 49yo w/ [35%] ₱17,000 gmi; nil dp; 0.0% mf; ₱ _0k pf no add-ons w/o co-borrower w/o +inc' => [ 'hdmf', 1_000_000, 49, 17_000, 00, 17_000, 0_000, 0.0625, null, 0.000, 00_000.00, false, false, 21, 0.35,  5_950.0,   833_878.13, 166_121.87,  7_135.34,   0.00,       0.00, 1_000_000.00, 00_000.00, 1_185.34, 0.16 ],
 
     'hdmf 1.0M in 23 yrs @ 6.25% by a 47yo w/ [35%] ₱21,000 gmi; nil dp; 0.0% mf; ₱ _0k pf no add-ons w/o co-borrower w/o +inc' => [ 'hdmf', 1_000_000, 47, 21_000, 00, 21_000, 0_000, 0.0625, null, 0.000, 00_000.00, false, false, 23, 0.35,  7_350.0, 1_074_757.85,       0.00,  6_838.75,   0.00,       0.00, 1_000_000.00, 00_000.00,     0.00, 0.00 ],
