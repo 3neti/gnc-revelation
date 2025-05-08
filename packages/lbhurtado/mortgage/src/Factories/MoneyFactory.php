@@ -27,22 +27,22 @@ class MoneyFactory
     public static function price(float|int|string|Money $amount, ?string $currency = null): Price
     {
         if ($amount instanceof Money) {
-            return new Price($amount);
+            return (new Price($amount))->setVat(0); // Provide a default VAT value
         }
 
-        return new Price(self::of($amount, $currency));
+        return (new Price(self::of($amount, $currency)))->setVat(0); // Provide a default VAT value
     }
 
     public static function priceWithPrecision(float|int|string|Money $amount, int $precision = 2, ?string $currency = null): Price
     {
         if ($amount instanceof Money) {
-            return new Price($amount);
+            return (new Price($amount))->setVat(0);
         }
 
         $currency ??= self::getCurrency();
         $rounded = round((float) $amount, $precision);
 
-        return new Price(self::of($rounded, $currency));
+        return (new Price(self::of($rounded, $currency)))->setVat(0);
     }
 
     public static function positivePrice(float|int|string $amount, ?string $currency = null): Price

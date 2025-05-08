@@ -16,6 +16,7 @@
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.10.1",
         "spatie/laravel-data": "^4.14",
+        "spatie/laravel-schemaless-attributes": "^2.5",
         "tightenco/ziggy": "^2.4",
         "whitecube/php-prices": "^3.1"
     },
@@ -39,7 +40,8 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Tests\\": "tests/"
+            "Tests\\": "tests/",
+            "LBHurtado\\Mortgage\\Database\\Factories\\": "packages/lbhurtado/mortgage/database/factories/"
         }
     },
     "scripts": {
