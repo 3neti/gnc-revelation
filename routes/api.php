@@ -1,6 +1,6 @@
 <?php
 
-use LBHurtado\Mortgage\Http\Controllers\{LoanMatchController, PropertyController};
+use LBHurtado\Mortgage\Http\Controllers\{AI\AIController, LoanMatchController, PropertyController};
 use LBHurtado\Mortgage\Http\Controllers\MortgageComputationController;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Route;
@@ -30,3 +30,4 @@ Route::get('/mortgage/docs/openapi.yaml', function () {
 })->name('api.v1.mortgage.openapi.yaml');
 
 
+Route::post('/ai/interact', [AIController::class, 'interact'])->name('api.ai.interact');
