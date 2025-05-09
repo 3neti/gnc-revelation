@@ -6,6 +6,7 @@ use LBHurtado\Mortgage\Enums\Property\DevelopmentForm;
 use LBHurtado\Mortgage\Enums\Property\DevelopmentType;
 use LBHurtado\Mortgage\Factories\MoneyFactory;
 use LBHurtado\Mortgage\ValueObjects\Percent;
+use Brick\Math\Exception\MathException;
 use Whitecube\Price\Price;
 use Brick\Money\Money;
 
@@ -13,13 +14,13 @@ trait AdditionalPropertyAttributes
 {
     const TOTAL_CONTRACT_PRICE = 'total_contract_price';
     const APPRAISAL_VALUE = 'appraisal_value';
-    const PROCESSING_FEE = 'processing_fee';
-    const PERCENT_LOANABLE_VALUE = 'percent_loanable_value';
-    const PERCENT_DISPOSABLE_INCOME_REQUIREMENT = 'percent_disposable_income_requirement';
     const DEVELOPMENT_TYPE = 'development_type';
     const DEVELOPMENT_FORM = 'development_form';
-    const REQUIRED_BUFFER_MARGIN = 'required_buffer_margin';
+    const PERCENT_LOANABLE_VALUE = 'percent_loanable_value';
     const PERCENT_MISCELLANEOUS_FEES = 'percent_miscellaneous_fees';
+    const PERCENT_DISPOSABLE_INCOME_REQUIREMENT = 'percent_disposable_income_requirement';
+    const PROCESSING_FEE = 'processing_fee';
+    const REQUIRED_BUFFER_MARGIN = 'required_buffer_margin';
 
     public function initializeAdditionalPropertyAttributes(): void
     {
@@ -48,18 +49,35 @@ trait AdditionalPropertyAttributes
     }
 
     /**
-     * Set total_contract_price.
+     * Get a Price attribute from meta.
+     *
+     * @param string $key
+     * @return Price|null
      */
-    public function setTotalContractPriceAttribute(Price|Money|float|int|string|null $value): self
+    private function getPriceFromMeta(string $key): ?Price
+    {
+        $amount = $this->getAttribute('meta')->get($key);
+
+        return $amount !== null ? MoneyFactory::priceOfMinor($amount)->setVat(0) : null;
+    }
+
+    /**
+     * Set a Price attribute in meta.
+     *
+     * @param string $key
+     * @param Price|Money|float|int|string|null $value
+     * @return self
+     * @throws MathException
+     */
+    private function setPriceInMeta(string $key, Price|Money|float|int|string|null $value): self
     {
         if (is_null($value)) {
-            $this->getAttribute('meta')->forget(self::TOTAL_CONTRACT_PRICE);
+            $this->getAttribute('meta')->forget($key);
             return $this;
         }
 
-        $money = $value instanceof Price ? $value : MoneyFactory::of($value);
-
-        $this->getAttribute('meta')->set(self::TOTAL_CONTRACT_PRICE, $money->getAmount()->toFloat());
+        $price = $value instanceof Price ? $value : MoneyFactory::of($value);
+        $this->getAttribute('meta')->set($key, $price->getMinorAmount()->toInt());
 
         return $this;
     }
@@ -69,10 +87,31 @@ trait AdditionalPropertyAttributes
      */
     public function getTotalContractPriceAttribute(): ?Price
     {
+        return $this->getPriceFromMeta(self::TOTAL_CONTRACT_PRICE);
+    }
 
-        $amount = $this->getAttribute('meta')->get(self::TOTAL_CONTRACT_PRICE);
+    /**
+     * Set total_contract_price.
+     */
+    public function setTotalContractPriceAttribute(Price|Money|float|int|string|null $value): self
+    {
+        return $this->setPriceInMeta(self::TOTAL_CONTRACT_PRICE, $value);
+    }
 
-        return $amount !== null ? MoneyFactory::price($amount)->setVat(0) : null;
+    /**
+     * Get appraisal_value.
+     */
+    public function getAppraisalValueAttribute(): ?Price
+    {
+        return $this->getPriceFromMeta(self::APPRAISAL_VALUE);
+    }
+
+    /**
+     * Set appraisal_value.
+     */
+    public function setAppraisalValueAttribute(Price|Money|float|int|string|null $value): self
+    {
+        return $this->setPriceInMeta(self::APPRAISAL_VALUE, $value);
     }
 
     /**
@@ -119,28 +158,55 @@ trait AdditionalPropertyAttributes
     }
 
     /**
-     * Get required_buffer_margin.
+     * Get percent_loanable_value.
      */
-    public function getRequiredBufferMarginAttribute(): ?Percent
+    public function getPercentLoanableValueAttribute(): ?Percent
     {
-        $margin = $this->getAttribute('meta')->get(self::REQUIRED_BUFFER_MARGIN);
+        $value = $this->getAttribute('meta')->get(self::PERCENT_LOANABLE_VALUE);
 
-        return $margin !== null ? Percent::ofFraction($margin) : null;
+        return $value !== null ? Percent::ofFraction($value) : null;
     }
 
     /**
-     * Set required_buffer_margin.
+     * Set percent_loanable_value.
      */
-    public function setRequiredBufferMarginAttribute(Percent|int|float $value): static
+    public function setPercentLoanableValueAttribute(Percent|int|float $value): static
     {
         $percent = match (true) {
             $value instanceof Percent       => $value,
             is_float($value) && $value <= 1 => Percent::ofFraction($value),
             is_int($value), is_float($value) => Percent::ofPercent($value),
-            default                         => throw new \InvalidArgumentException('Invalid buffer margin.'),
+            default                         => throw new \InvalidArgumentException('Invalid loanable value percent.'),
         };
 
-        $this->getAttribute('meta')->set(self::REQUIRED_BUFFER_MARGIN, $percent->value());
+        $this->getAttribute('meta')->set(self::PERCENT_LOANABLE_VALUE, $percent->value());
+
+        return $this;
+    }
+
+    /**
+     * Get percent_miscellaneous_fees.
+     */
+    public function getPercentMiscellaneousFeesAttribute(): ?Percent
+    {
+        $fee = $this->getAttribute('meta')->get(self::PERCENT_MISCELLANEOUS_FEES);
+
+        return $fee !== null ? Percent::ofFraction($fee) : null;
+    }
+
+    /**
+     * Set percent_miscellaneous_fees.
+     */
+    public function setPercentMiscellaneousFeesAttribute(Percent|int|float|null $value): static
+    {
+        $percent = match (true) {
+            $value instanceof Percent       => $value,
+            is_float($value) && $value <= 1 => Percent::ofFraction($value),
+            is_int($value), is_float($value) => Percent::ofPercent($value),
+            default                         => throw new \InvalidArgumentException('Invalid miscellaneous fees.'),
+        };
+
+        $this->getAttribute('meta')->set('percent_miscellaneous_fees', $percent->value());
 
         return $this;
     }
@@ -173,110 +239,46 @@ trait AdditionalPropertyAttributes
     }
 
     /**
-     * Get percent_loanable_value.
-     */
-    public function getPercentLoanableValueAttribute(): ?Percent
-    {
-        $value = $this->getAttribute('meta')->get(self::PERCENT_LOANABLE_VALUE);
-
-        return $value !== null ? Percent::ofFraction($value) : null;
-    }
-
-    /**
-     * Set percent_loanable_value.
-     */
-    public function setPercentLoanableValueAttribute(Percent|int|float $value): static
-    {
-        $percent = match (true) {
-            $value instanceof Percent       => $value,
-            is_float($value) && $value <= 1 => Percent::ofFraction($value),
-            is_int($value), is_float($value) => Percent::ofPercent($value),
-            default                         => throw new \InvalidArgumentException('Invalid loanable value percent.'),
-        };
-
-        $this->getAttribute('meta')->set(self::PERCENT_LOANABLE_VALUE, $percent->value());
-
-        return $this;
-    }
-
-    /**
-     * Get appraisal_value.
-     */
-    public function getAppraisalValueAttribute(): ?Price
-    {
-        $value = $this->getAttribute('meta')->get(self::APPRAISAL_VALUE);
-
-        return $value !== null ? MoneyFactory::price($value) : null;
-    }
-
-    /**
-     * Set appraisal_value.
-     */
-    public function setAppraisalValueAttribute(Price|Money|float|int|string|null $value): static
-    {
-        if (is_null($value)) {
-            $this->getAttribute('meta')->forget(self::APPRAISAL_VALUE);
-            return $this;
-        }
-
-        $price = $value instanceof Price ? $value : MoneyFactory::of($value);
-
-        $this->getAttribute('meta')->set(self::APPRAISAL_VALUE, $price->getAmount()->toFloat());
-
-        return $this;
-    }
-
-    /**
      * Get processing_fee.
      */
     public function getProcessingFeeAttribute(): ?Price
     {
-        $fee = $this->getAttribute('meta')->get(self::PROCESSING_FEE);
-
-        return $fee !== null ? MoneyFactory::price($fee) : null;
+        return $this->getPriceFromMeta(self::PROCESSING_FEE);
     }
 
     /**
      * Set processing_fee.
      */
-    public function setProcessingFeeAttribute(Price|Money|float|int|string|null $value): static
+    public function setProcessingFeeAttribute(Price|Money|float|int|string|null $value): self
     {
-        if (is_null($value)) {
-            $this->getAttribute('meta')->forget(self::PROCESSING_FEE);
-            return $this;
-        }
-
-        $fee = $value instanceof Price ? $value : MoneyFactory::of($value);
-
-        $this->getAttribute('meta')->set(self::PROCESSING_FEE, $fee->getAmount()->toFloat());
-
-        return $this;
+        return $this->setPriceInMeta(self::PROCESSING_FEE, $value);
     }
 
     /**
-     * Get percent_miscellaneous_fees.
+     * Get required_buffer_margin.
      */
-    public function getPercentMiscellaneousFeesAttribute(): ?Percent
+    public function getRequiredBufferMarginAttribute(): ?Percent
     {
-        $fee = $this->getAttribute('meta')->get(self::PERCENT_MISCELLANEOUS_FEES);
+        $margin = $this->getAttribute('meta')->get(self::REQUIRED_BUFFER_MARGIN);
 
-        return $fee !== null ? Percent::ofFraction($fee) : null;
+        return $margin !== null ? Percent::ofFraction($margin) : null;
     }
 
     /**
-     * Set percent_miscellaneous_fees.
+     * Set required_buffer_margin.
      */
-    public function setPercentMiscellaneousFeesAttribute(Percent|int|float|null $value): static
+    public function setRequiredBufferMarginAttribute(Percent|int|float $value): static
     {
         $percent = match (true) {
             $value instanceof Percent       => $value,
             is_float($value) && $value <= 1 => Percent::ofFraction($value),
             is_int($value), is_float($value) => Percent::ofPercent($value),
-            default                         => throw new \InvalidArgumentException('Invalid miscellaneous fees.'),
+            default                         => throw new \InvalidArgumentException('Invalid buffer margin.'),
         };
 
-        $this->getAttribute('meta')->set('percent_miscellaneous_fees', $percent->value());
+        $this->getAttribute('meta')->set(self::REQUIRED_BUFFER_MARGIN, $percent->value());
 
         return $this;
     }
+
 }

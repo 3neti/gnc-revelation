@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Loan Matching & Mortgage API
-  version: 1.0.4
+  version: 1.0.6
   description: Strict input definitions for buyer qualification and mortgage computation.
 
 servers:
@@ -13,6 +13,8 @@ tags:
     description: Match a buyer to eligible loan products
   - name: Mortgage Computation
     description: Compute amortization, equity, and loan qualification
+  - name: Properties
+    description: Fetch available property listings
 
 paths:
   /loan-match:
@@ -197,3 +199,69 @@ paths:
                             type: integer
                           monthly_amortization:
                             type: number
+
+  /properties:
+    get:
+      tags:
+        - Properties
+      summary: List available properties with optional filters
+      operationId: listProperties
+      parameters:
+        - in: query
+          name: code
+          schema:
+            type: string
+            example: PROP0001
+          description: Filter by property code
+        - in: query
+          name: min_price
+          schema:
+            type: number
+            example: 1000000
+          description: Minimum total contract price (PHP)
+        - in: query
+          name: max_price
+          schema:
+            type: number
+            example: 3000000
+          description: Maximum total contract price (PHP)
+        - in: query
+          name: available_only
+          schema:
+            type: boolean
+            example: true
+          description: Show only available properties (status = available)
+      responses:
+        '200':
+          description: A list of available properties with financial details
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    code:
+                      type: string
+                      example: PROP0001
+                    name:
+                      type: string
+                      example: Property ₱1,000,000
+                    status:
+                      type: string
+                      example: available
+                    total_contract_price:
+                      type: number
+                      example: 1000000
+                    appraisal_value:
+                      type: number
+                      example: 1000000
+                    percent_loanable_value:
+                      type: number
+                      example: 1.0
+                    percent_miscellaneous_fees:
+                      type: number
+                      example: 0.085
+                    processing_fee:
+                      type: number
+                      example: 10000

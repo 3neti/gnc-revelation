@@ -12,3 +12,4 @@ it('serves the OpenAPI spec YAML file', function () {
         ->assertSee('openapi: 3.1.0')
     ;
 });
+

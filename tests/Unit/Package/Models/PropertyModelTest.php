@@ -27,7 +27,8 @@ test('property has additional attributes', function () {
     $property = Property::factory()->create();
 
     $domain_attributes = [
-        'total_contract_price' => $total_contract_price = fake()->numberBetween(750_000, 4_000_000)
+//        'total_contract_price' => $total_contract_price = fake()->numberBetween(750_000, 4_000_000)
+          'total_contract_price' => $total_contract_price = 100.0
     ];
 
     // Update the Property model with the additional attribute
@@ -837,3 +838,141 @@ test('it throws an exception when setting an invalid percent_miscellaneous_fees'
     // Assert that an exception is thrown
 })->throws(TypeError::class);
 /*** Property::PERCENT_MISCELLANEOUS_FEES ****/
+
+use LBHurtado\Mortgage\Classes\Property as DomainProperty;
+
+/*** Property::toDomain() ****/
+test('it converts eloquent Property model to domain Property object', function () {
+    $eloquent = Property::factory()->create([
+        'code' => 'RDG1000',
+        'name' => 'RDG 1.0M',
+        'type' => 'residential',
+        'cluster' => 'A1',
+        'status' => 'available',
+//        'sku' => 'RDG1000',
+    ]);
+
+    $tcp = 1_000_000;
+    $appraisal = 950_000;
+    $pf = 5000;
+    $pdp = 90;
+    $pmf = 8.5;
+    $pdi = 35;
+    $buffer = 10;
+    $devType = DevelopmentType::BP_957;
+    $devForm = DevelopmentForm::HORIZONTAL;
+
+    $eloquent->update([
+        Property::TOTAL_CONTRACT_PRICE => $tcp,
+        Property::APPRAISAL_VALUE => $appraisal,
+        Property::PROCESSING_FEE => $pf,
+        Property::PERCENT_LOANABLE_VALUE => $pdp,
+        Property::PERCENT_MISCELLANEOUS_FEES => $pmf,
+        Property::PERCENT_DISPOSABLE_INCOME_REQUIREMENT => $pdi,
+        Property::REQUIRED_BUFFER_MARGIN => $buffer,
+        Property::DEVELOPMENT_TYPE => $devType->value,
+        Property::DEVELOPMENT_FORM => $devForm->value,
+    ]);
+
+    $domain = $eloquent->toDomain();
+
+    expect($domain)->toBeInstanceOf(DomainProperty::class)
+        ->and($domain->getTotalContractPrice()->inclusive()->getAmount()->toInt())->toBe($tcp)
+        ->and($domain->getAppraisalValue()->inclusive()->getAmount()->toInt())->toBe($appraisal)
+        ->and($domain->getProcessingFee()->inclusive()->getAmount()->toInt())->toBe($pf)
+        ->and($domain->getPercentLoanableValue()->asPercent())->toBeCloseTo($pdp)
+        ->and($domain->getPercentMiscellaneousFees()->asPercent())->toBeCloseTo($pmf)
+        ->and($domain->getPercentDisposableIncomeRequirement()->asPercent())->toBeCloseTo($pdi)
+        ->and($domain->getRequiredBufferMargin()->asPercent())->toBeCloseTo($buffer)
+        ->and($domain->getDevelopmentType())->toBe($devType)
+        ->and($domain->getDevelopmentForm())->toBe($devForm);
+});
+/*** Property::toDomain() ****/
+
+/*** Property::getRouteKeyName() ****/
+test('property uses code as route key', function () {
+    $property = Property::factory()->create(['code' => 'RDG1000']);
+
+    expect($property->getRouteKeyName())->toBe('code')
+        ->and($property->getRouteKey())->toBe('RDG1000');
+});
+
+it('resolves property by code via route model binding', function () {
+    $property = Property::factory()->create([
+        'code' => 'RDG1000',
+        'name' => 'RDG 1.0M',
+    ]);
+
+    $this->get("/properties/{$property->code}")
+        ->assertOk()
+        ->assertJson([
+            'code' => 'RDG1000',
+            'name' => 'RDG 1.0M',
+        ]);
+
+    $this->get(route('test-property', ['property' => $property->code]))
+        ->assertOk()
+        ->assertJson([
+            'code' => 'RDG1000',
+            'name' => 'RDG 1.0M',
+        ]);
+});
+/*** Property::getRouteKeyName() ****/
+
+/*** Property::scopeWithMeta() ****/
+test('it filters using withMeta with key-only', function () {
+    Property::factory()->create([
+        'code' => 'WKEY1',
+        Property::TOTAL_CONTRACT_PRICE => 2_000_000,
+    ]);
+
+    Property::factory()->create([
+        'code' => 'WKEY2',
+        'meta' => [], // Missing total_contract_price
+    ]);
+
+    $results = Property::query()->withMeta('total_contract_price')->pluck('code')->all();
+
+    expect($results)->toContain('WKEY1')->not->toContain('WKEY2');
+});
+
+test('it filters using withMeta with operator and value', function () {
+    Property::factory()->create([
+        'code' => 'WVAL1',
+        Property::TOTAL_CONTRACT_PRICE => 1_500_000,
+    ]);
+
+    Property::factory()->create([
+        'code' => 'WVAL2',
+        Property::TOTAL_CONTRACT_PRICE => 750_000,
+    ]);
+
+    $results = Property::query()
+        ->withMeta('total_contract_price', '>=', 1_000_000 * 100)
+        ->pluck('code')
+        ->all();
+
+    expect($results)->toContain('WVAL1')->not->toContain('WVAL2');
+});
+
+test('it filters using withMeta with array of keys', function () {
+    Property::factory()->create([
+        'code' => 'WMULTI1',
+        Property::TOTAL_CONTRACT_PRICE => 1_000_000,
+        Property::APPRAISAL_VALUE => 1_000_000,
+    ]);
+
+    Property::factory()->create([
+        'code' => 'WMULTI2',
+        Property::TOTAL_CONTRACT_PRICE => 1_000_000,
+        // No appraisal_value
+    ]);
+
+    $results = Property::query()
+        ->withMeta([Property::TOTAL_CONTRACT_PRICE, Property::APPRAISAL_VALUE])
+        ->pluck('code')
+        ->all();
+
+    expect($results)->toContain('WMULTI1')->not->toContain('WMULTI2');
+});
+/*** Property::scopeWithMeta() ****/

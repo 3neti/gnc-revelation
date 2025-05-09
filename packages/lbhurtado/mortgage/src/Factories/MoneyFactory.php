@@ -33,6 +33,16 @@ class MoneyFactory
         return (new Price(self::of($amount, $currency)))->setVat(0); // Provide a default VAT value
     }
 
+    public static function priceOfMinor(int|string $minorUnits, ?string $currency = null): Price
+    {
+        $currency ??= self::getCurrency();
+
+        // Convert minor units (int) to a Money object
+        $money = Money::ofMinor($minorUnits, $currency);
+
+        return (new Price($money))->setVat(0);
+    }
+
     public static function priceWithPrecision(float|int|string|Money $amount, int $precision = 2, ?string $currency = null): Price
     {
         if ($amount instanceof Money) {

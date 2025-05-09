@@ -1,7 +1,7 @@
 <?php
 
+use LBHurtado\Mortgage\Http\Controllers\{LoanMatchController, PropertyController};
 use LBHurtado\Mortgage\Http\Controllers\MortgageComputationController;
-use LBHurtado\Mortgage\Http\Controllers\LoanMatchController;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\File;
@@ -17,6 +17,7 @@ Route::prefix('v1')->group(function () {
     Route::post('loan-match', LoanMatchController::class)->name('api.v1.loan-match');
     Route::post('mortgage-compute', MortgageComputationController::class)
         ->name('api.v1.mortgage-compute');
+    Route::get('properties', [PropertyController::class, 'index'])->name('api.v1.properties');
 });
 
 Route::get('/mortgage/docs/openapi.yaml', function () {
