@@ -3,9 +3,9 @@
 use Illuminate\Support\Facades\Route;
 
 it('serves the OpenAPI spec YAML file', function () {
-    expect(Route::has('api.v1.mortgage.openapi.yaml'))->toBeTrue();
+    expect(Route::has('openapi.yaml'))->toBeTrue();
 
-    $response = $this->get(route('api.v1.mortgage.openapi.yaml'));
+    $response = $this->get(route('openapi.yaml'));
 
     $response->assertOk()
         ->assertHeader('Content-Type', 'text/yaml; charset=UTF-8')
