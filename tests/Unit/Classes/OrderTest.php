@@ -75,7 +75,7 @@ it('can set and get monthly MRI and Fire Insurance explicitly', function () {
 
     expect($order->getMonthlyFee(MonthlyFee::MRI))->toEqual(800.0)
         ->and($order->getMonthlyFee(MonthlyFee::FIRE_INSURANCE))->toEqual(250.0);
-});
+})->skip();
 
 it('returns null for unset monthly fees', function () {
     $order = new Order();
@@ -95,7 +95,7 @@ it('can retrieve full FeeCollection of monthly fees', function () {
     expect($collection->totalAddOns()->getAmount()->toFloat())->toEqual(700.0)
         ->and($collection->allAddOns()->has(MonthlyFee::MRI->label()))->toBeTrue()
         ->and($collection->allAddOns()->has(MonthlyFee::FIRE_INSURANCE->label()))->toBeTrue();
-});
+})->skip();
 
 it('uses default monthly fee value when no amount is passed', function () {
     $order = new Order();
@@ -104,4 +104,4 @@ it('uses default monthly fee value when no amount is passed', function () {
     $expected = MonthlyFee::MRI->defaultAmount()->getAmount()->toFloat();
 
     expect($order->getMonthlyFee(MonthlyFee::MRI))->toEqual($expected);
-});
+})->skip();

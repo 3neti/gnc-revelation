@@ -53,7 +53,7 @@ enum MarketSegment: string
         };
     }
 
-    public function defaultPercentDisposableIncomeRequirement(): Percent
+    public function defaultIncomeRequirementMultiplier(): Percent
     {
         return match ($this) {
             self::OPEN => Percent::ofFraction(config('gnc-revelation.property.market.percent_disposable_income.open', 0.30)),

@@ -882,7 +882,7 @@ test('it converts eloquent Property model to domain Property object', function (
         ->and($domain->getProcessingFee()->inclusive()->getAmount()->toInt())->toBe($pf)
         ->and($domain->getPercentLoanableValue()->asPercent())->toBeCloseTo($pdp)
         ->and($domain->getPercentMiscellaneousFees()->asPercent())->toBeCloseTo($pmf)
-        ->and($domain->getPercentDisposableIncomeRequirement()->asPercent())->toBeCloseTo($pdi)
+        ->and($domain->getIncomeRequirementMultiplier()->asPercent())->toBeCloseTo($pdi)
         ->and($domain->getRequiredBufferMargin()->asPercent())->toBeCloseTo($buffer)
         ->and($domain->getDevelopmentType())->toBe($devType)
         ->and($domain->getDevelopmentForm())->toBe($devForm);

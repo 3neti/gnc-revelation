@@ -56,7 +56,7 @@ class FlexibleFakeProperty implements PropertyInterface
     public function getProcessingFee(): ?Price { return null; }
     public function getPercentMiscellaneousFees(): Percent { return Percent::ofFraction(0); }
 
-    public function getPercentDisposableIncomeRequirement(): Percent
+    public function getIncomeRequirementMultiplier(): Percent
     {
         // TODO: Implement getPercentDisposableIncomeRequirement() method.
     }

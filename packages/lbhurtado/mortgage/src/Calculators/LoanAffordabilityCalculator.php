@@ -3,6 +3,7 @@
 namespace LBHurtado\Mortgage\Calculators;
 
 use LBHurtado\Mortgage\Exceptions\IncomeRequirementMultiplierNotSetException;
+use LBHurtado\Mortgage\Factories\CalculatorFactory;
 use LBHurtado\Mortgage\Attributes\CalculatorFor;
 use LBHurtado\Mortgage\Factories\MoneyFactory;
 use LBHurtado\Mortgage\Enums\CalculatorType;
@@ -17,8 +18,8 @@ final class LoanAffordabilityCalculator extends BaseCalculator
      */
     public function calculate(): Price
     {
-        $term = $this->inputs->balance_payment->bp_term;
-        $interest_rate = $this->inputs->balance_payment->bp_interest_rate->value();
+        $term = CalculatorFactory::make(CalculatorType::BALANCE_PAYMENT_TERM, $this->inputs)->calculate();
+        $interest_rate = $this->inputs->balance_payment->bp_interest_rate->value();//TODO: create an extractor for this
         $present_value = MonthlyDisposableIncomeCalculator::fromInputs($this->inputs)
             ->calculate()
             ->addModifier('present value', PresentValueModifier::class, $term, $interest_rate)

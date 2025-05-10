@@ -90,6 +90,6 @@ class Property extends Model
             ->setProcessingFee($this->processing_fee)
             ->setPercentLoanableValue($this->percent_loanable_value)
             ->setPercentMiscellaneousFees($this->percent_miscellaneous_fees)
-            ->setPercentDisposableIncomeRequirement($this->percent_disposable_income_requirement);
+            ->setIncomeRequirementMultiplier($this->percent_disposable_income_requirement);
     }
 }

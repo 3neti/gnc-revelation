@@ -1,6 +1,6 @@
 <?php
 
-use LBHurtado\Mortgage\Classes\{Order};
+use LBHurtado\Mortgage\Classes\{LendingInstitution, Order};
 use LBHurtado\Mortgage\Classes\Buyer;
 use LBHurtado\Mortgage\Classes\Property;
 use LBHurtado\Mortgage\Data\Inputs\InputsData;
@@ -25,6 +25,7 @@ it('computes loanable amount using down payment deduction only', function (
     $property = new Property($tcp);
     $order = (new Order())
         ->setInterestRate(Percent::ofFraction(0.0625))
+        ->setLendingInstitution(new LendingInstitution)
         ->setPercentDownPayment($dpPercent)
     ;
     $inputs = InputsData::fromBooking($buyer, $property, $order);

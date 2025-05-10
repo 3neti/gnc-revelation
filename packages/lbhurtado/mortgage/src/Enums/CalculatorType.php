@@ -15,4 +15,5 @@ enum CalculatorType: string
     case INCOME_GAP = 'income_gap';
     case LOAN_QUALIFICATION = 'loan_qualification';
     case REQUIRED_PERCENT_DOWN_PAYMENT = 'required_percent_down_payment';
+    case BALANCE_PAYMENT_TERM = 'balance_payment_term';
 }

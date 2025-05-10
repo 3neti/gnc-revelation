@@ -14,5 +14,5 @@ interface BuyerInterface
     public function getInterestRate(): ?Percent;
     public function getDownPaymentTerm(): ?int;
     public function getBalancePaymentTerm(): ?int;
-    public function getLendingInstitution(): LendingInstitution;
+    public function getLendingInstitution(): ?LendingInstitution;
 }

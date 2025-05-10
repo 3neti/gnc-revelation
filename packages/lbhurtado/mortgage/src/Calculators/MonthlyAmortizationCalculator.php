@@ -3,6 +3,7 @@
 namespace LBHurtado\Mortgage\Calculators;
 
 use LBHurtado\Mortgage\Data\MonthlyAmortizationBreakdownData;
+use LBHurtado\Mortgage\Factories\CalculatorFactory;
 use LBHurtado\Mortgage\Modifiers\PeriodicPaymentModifier;
 use LBHurtado\Mortgage\Attributes\CalculatorFor;
 use LBHurtado\Mortgage\Factories\MoneyFactory;
@@ -45,7 +46,9 @@ final class MonthlyAmortizationCalculator extends BaseCalculator
 
     protected function getBalancePaymentTermInputInMonths(): int|float
     {
-        return $this->inputs->balance_payment->bp_term * 12;
+        $balance_payment_term = CalculatorFactory::make(CalculatorType::BALANCE_PAYMENT_TERM, $this->inputs)->calculate();
+
+        return $balance_payment_term * 12;
     }
 
     protected function getBalancePaymentInterestRateInMonths(): float

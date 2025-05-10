@@ -55,7 +55,7 @@ class FakeProperty implements PropertyInterface
         // TODO: Implement getPercentMiscellaneousFees() method.
     }
 
-    public function getPercentDisposableIncomeRequirement(): Percent
+    public function getIncomeRequirementMultiplier(): Percent
     {
         // TODO: Implement getPercentDisposableIncomeRequirement() method.
     }

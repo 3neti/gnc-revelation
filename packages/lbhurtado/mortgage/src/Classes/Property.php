@@ -18,7 +18,7 @@ class Property implements PropertyInterface
     protected DevelopmentType $development_type;
     protected DevelopmentForm $development_form;
     protected Percent $required_buffer_margin;
-    protected Percent $percent_disposable_income_requirement;
+    protected Percent $income_requirement_multiplier;
     protected Percent $percent_loanable_value;
     protected ?Price $appraisal_value = null;
     protected ?Price $processing_fee = null;
@@ -111,9 +111,9 @@ class Property implements PropertyInterface
         return MarketSegment::fromPrice($this->total_contract_price, $this->development_type);
     }
 
-    public function setPercentDisposableIncomeRequirement(Percent|float|int $value): static
+    public function setIncomeRequirementMultiplier(Percent|float|int $value): static
     {
-        $this->percent_disposable_income_requirement = match (true) {
+        $this->income_requirement_multiplier = match (true) {
             $value instanceof Percent       => $value,
             is_int($value)                  => Percent::ofPercent($value),
             is_float($value) && $value <= 1 => Percent::ofFraction($value),
@@ -124,10 +124,10 @@ class Property implements PropertyInterface
         return $this;
     }
 
-    public function getPercentDisposableIncomeRequirement(): Percent
+    public function getIncomeRequirementMultiplier(): Percent
     {
-        return $this->percent_disposable_income_requirement
-            ?? $this->getMarketSegment()->defaultPercentDisposableIncomeRequirement();
+        return $this->income_requirement_multiplier
+            ?? $this->getMarketSegment()->defaultIncomeRequirementMultiplier();
     }
 
     public function setPercentLoanableValue(Percent|float|int $value): static
@@ -221,5 +221,18 @@ class Property implements PropertyInterface
     public function resolveDefaultInterestRate(): Percent
     {
         return $this->getMarketSegment()->defaultInterestRateFor($this->getTotalContractPrice());
+    }
+
+    protected string $code = 'N/A';
+
+    public function setCode(string $code): static
+    {
+        $this->code = $code;
+        return $this;
+    }
+
+    public function getCode(): string
+    {
+        return $this->code;
     }
 }

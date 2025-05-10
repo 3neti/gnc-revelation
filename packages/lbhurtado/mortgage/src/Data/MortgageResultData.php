@@ -48,7 +48,7 @@ class MortgageResultData extends Data
     {
         return new static(
             inputs: $inputs,
-            term_years: $inputs->buyer()->getJointMaximumTermAllowed(),
+            term_years: CalculatorFactory::make(CalculatorType::BALANCE_PAYMENT_TERM, $inputs)->calculate(),
             monthly_disposable_income: CalculatorFactory::make(CalculatorType::DISPOSABLE_INCOME, $inputs)->calculate(),
             present_value: CalculatorFactory::make(CalculatorType::PRESENT_VALUE, $inputs)->calculate(),
             required_equity: CalculatorFactory::make(CalculatorType::EQUITY, $inputs)->calculate()->amount,

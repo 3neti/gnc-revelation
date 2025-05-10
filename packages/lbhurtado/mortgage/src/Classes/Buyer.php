@@ -22,7 +22,7 @@ class Buyer implements BuyerInterface
     protected Price $monthly_gross_income;
     protected bool $regional;
     protected Collection $co_borrowers;
-    protected LendingInstitution $lendingInstitution;
+
     protected ?int $override_maximum_paying_age = null;
     protected array $other_income_sources = [];
 
@@ -33,7 +33,7 @@ class Buyer implements BuyerInterface
         $this->monthly_gross_income = new Price(Money::of(config('gnc-revelation.defaults.buyer.gross_monthly_income'), 'PHP'));
         $this->regional = config('gnc-revelation.defaults.buyer.regional', false);
         $this->co_borrowers = collect();
-        $this->lendingInstitution = new LendingInstitution();
+//        $this->lendingInstitution = new LendingInstitution();
     }
 
     public static function getMinimumBorrowingAge(): int
@@ -136,7 +136,7 @@ class Buyer implements BuyerInterface
         return $oldest;
     }
 
-    public function getLendingInstitution(): LendingInstitution
+    public function getLendingInstitution(): ?LendingInstitution
     {
         return $this->lendingInstitution;
     }
@@ -160,25 +160,43 @@ class Buyer implements BuyerInterface
         return $this->override_maximum_paying_age;
     }
 
+    /** @deprecated  */
     public function getMaximumTermAllowed(): int
     {
-        return $this->lendingInstitution->maxAllowedTerm($this->getBirthdate(), $this->getOverrideMaximumPayingAge());
+        return $this->getLendingInstitution()?->maxAllowedTerm($this->getBirthdate(), $this->getOverrideMaximumPayingAge()) ?? 30;
+//        return $this->lendingInstitution->maxAllowedTerm($this->getBirthdate(), $this->getOverrideMaximumPayingAge());
     }
 
     public function getJointMaximumTermAllowed(): int
     {
-        $terms = collect([$this->getMaximumTermAllowed()]);
-
-        $this->co_borrowers->each(function (Buyer $co_borrower) use ($terms) {
-            $terms->push($co_borrower->getMaximumTermAllowed());
-        });
-
-        return $terms->min();
+        return $this->getOldestAmongst()->getMaximumTermAllowed();
     }
+
+//    public function getJointMaximumTermAllowed(): int
+//    {
+//        $terms = collect([$this->getMaximumTermAllowed()]);
+//
+//        $this->co_borrowers->each(function (Buyer $co_borrower) use ($terms) {
+//            $terms->push($co_borrower->getMaximumTermAllowed());
+//        });
+//
+//        return $terms->min();
+//    }
 
     public function getMonthlyDisposableIncome(): Price
     {
         return (new Price($this->getMonthlyGrossIncome()->inclusive()))
-            ->addModifier('disposable income multiplier', DisposableModifier::class, $this);
+            ->addModifier('disposable income multiplier', DisposableModifier::class, $this->getIncomeRequirementMultiplier());
+    }
+
+    public function getJointMonthlyGrossIncome(): Price
+    {
+        $all = collect([$this])->merge($this->co_borrowers);
+
+        $sum = $all->reduce(function (Money $carry, Buyer $buyer) {
+            return $carry->plus($buyer->getMonthlyGrossIncome()->inclusive());
+        }, MoneyFactory::zero());
+
+        return MoneyFactory::price($sum);
     }
 }

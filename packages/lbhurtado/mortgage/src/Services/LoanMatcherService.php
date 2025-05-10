@@ -2,61 +2,60 @@
 
 namespace LBHurtado\Mortgage\Services;
 
-use LBHurtado\Mortgage\Data\Match\{LoanProductData, MatchResultData};
-use LBHurtado\Mortgage\Classes\{Buyer, Order, Property};
 use LBHurtado\Mortgage\Data\QualificationResultData;
+use LBHurtado\Mortgage\Contracts\PropertyInterface;
+use LBHurtado\Mortgage\Data\Match\MatchResultData;
+use LBHurtado\Mortgage\Classes\{Buyer, Order};
 use LBHurtado\Mortgage\Data\Inputs\InputsData;
 use Illuminate\Support\Collection;
 
 class LoanMatcherService
 {
     /**
-     * @param  Buyer  $buyer
-     * @param  Collection<int, LoanProductData>  $products
+     * Match a buyer to all provided properties and return qualification results.
+     *
+     * @param Buyer $buyer
+     * @param Collection<int, PropertyInterface> $properties
      * @return Collection<int, MatchResultData>
      */
-    public function match(Buyer $buyer, Collection $products): Collection
+    public function match(Buyer $buyer, Collection $properties): Collection
     {
-        return $products->map(function (LoanProductData $product) use ($buyer): MatchResultData {
-            $termYears = min(
-                $buyer->getJointMaximumTermAllowed(),
-                $product->max_term_years,
-            );
-
-            $property = new Property($product->tcp);
-
+        return $properties->map(function (PropertyInterface $property) use ($buyer): MatchResultData {
             $order = (new Order())
-                ->setInterestRate($product->interest_rate)
-                ->setBalancePaymentTerm($termYears)
-                ->setIncomeRequirementMultiplier($product->disposable_income_multiplier)
-                ->setProcessingFee(0);
+                ->setInterestRate($property->getInterestRate())
+//                ->setPercentMiscellaneousFees(Percent::ofFraction($percent_miscellaneous_fee))
+                ->setProcessingFee(0)
+                ->setLendingInstitution($property->getLendingInstitution())
+//                ->setTotalContractPrice($total_contract_price)
+            ;
 
             $inputs = InputsData::fromBooking($buyer, $property, $order);
+
             $result = QualificationResultData::fromInputs($inputs);
 
             return new MatchResultData(
                 qualified: $result->qualifies,
-                product_code: $product->code,
+                product_code: method_exists($property, 'getCode') ? $property->getCode() : 'N/A',
                 monthly_amortization: $result->monthly_amortization,
                 income_required: $result->income_required,
                 suggested_equity: $result->loan_difference,
                 gap: $result->income_gap->inclusive()->getAmount()->toFloat(),
-                reason: $result->reason,
+                reason: $result->reason
             );
         });
     }
 
     /**
-     * Filter and return only qualified products
+     * Return only qualified properties based on buyer profile.
      *
-     * @param  Buyer  $buyer
-     * @param  Collection<int, LoanProductData>  $products
+     * @param Buyer $buyer
+     * @param Collection<int, PropertyInterface> $properties
      * @return Collection<int, MatchResultData>
      */
-    public function matchQualifiedOnly(Buyer $buyer, Collection $products): Collection
+    public function matchQualifiedOnly(Buyer $buyer, Collection $properties): Collection
     {
-        return $this->match($buyer, $products)
+        return $this->match($buyer, $properties)
             ->filter(fn (MatchResultData $result) => $result->qualified)
-            ->values(); // reindex the collection
+            ->values(); // reindex
     }
 }

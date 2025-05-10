@@ -70,7 +70,7 @@ it('returns correct human-readable name', function () {
 
 it('returns correct default multipliers', function () {
     expect(MarketSegment::OPEN->defaultPercentLoanableValue())->toEqualPercent(0.90)
-        ->and(MarketSegment::ECONOMIC->defaultPercentDisposableIncomeRequirement())->toEqualPercent(0.35);
+        ->and(MarketSegment::ECONOMIC->defaultIncomeRequirementMultiplier())->toEqualPercent(0.35);
 });
 
 it('returns default MarketSegment', function () {
@@ -156,7 +156,7 @@ it('determines market segment and financial multipliers correctly', function (
     $segment = MarketSegment::fromPrice($tcp, $dev, $form);
 
     expect($segment)->toBe($expectedSegment)
-        ->and($segment->defaultPercentDisposableIncomeRequirement())->toEqualPercent($expectedDisposableMultiplier)
+        ->and($segment->defaultIncomeRequirementMultiplier())->toEqualPercent($expectedDisposableMultiplier)
         ->and($segment->defaultPercentLoanableValue())->toEqualPercent($expectedLoanableMultiplier)
     ;
 })->with('market_segments');

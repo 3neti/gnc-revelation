@@ -47,14 +47,14 @@ it('sets and gets buffer margin as Percent', function () {
 it('computes default disposable income requirement from segment', function () {
     $property = new Property(850_000);
 
-    expect($property->getPercentDisposableIncomeRequirement())->toEqualPercent(0.35);
+    expect($property->getIncomeRequirementMultiplier())->toEqualPercent(0.35);
 });
 
 it('allows setting custom disposable income requirement', function () {
     $property = new Property(1_000_000);
-    $property->setPercentDisposableIncomeRequirement(0.4);
+    $property->setIncomeRequirementMultiplier(0.4);
 
-    expect($property->getPercentDisposableIncomeRequirement())->toEqualPercent(0.4);
+    expect($property->getIncomeRequirementMultiplier())->toEqualPercent(0.4);
 });
 
 it('computes default loanable value percent from segment', function () {

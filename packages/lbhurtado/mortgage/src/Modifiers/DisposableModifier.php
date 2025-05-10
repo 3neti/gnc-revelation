@@ -2,9 +2,10 @@
 
 namespace LBHurtado\Mortgage\Modifiers;
 
+use LBHurtado\Mortgage\Exceptions\IncomeRequirementMultiplierNotSetException;
+use LBHurtado\Mortgage\ValueObjects\Percent;
 use Brick\Money\{AbstractMoney, Money};
 use LBHurtado\Mortgage\Classes\Buyer;
-use LBHurtado\Mortgage\Exceptions\IncomeRequirementMultiplierNotSetException;
 use Whitecube\Price\PriceAmendable;
 use Brick\Math\RoundingMode;
 use Whitecube\Price\Vat;
@@ -13,10 +14,13 @@ class DisposableModifier implements PriceAmendable
 {
     protected string $type = 'default';
     protected Buyer $buyer;
+    protected Percent $incomeRequirementMultiplier;
 
-    public function __construct(Buyer $buyer)
+    public function __construct(Percent $incomeRequirementMultiplier)
     {
-        $this->buyer = $buyer;
+//        $this->buyer = $buyer;
+//        $this->incomeRequirementMultiplier = $buyer->getIncomeRequirementMultiplier();
+        $this->incomeRequirementMultiplier = $incomeRequirementMultiplier;
     }
 
     public function type(): string
@@ -39,8 +43,7 @@ class DisposableModifier implements PriceAmendable
     {
         return [
             'modifier' => 'disposable income multiplier',
-            'disposable_income_multiplier' => $this->buyer->getIncomeRequirementMultiplier(),
-
+            'disposable_income_multiplier' => $this->incomeRequirementMultiplier->asPercent(),
             'default_disposable_income_multiplier' => config('gnc-revelation.default_disposable_income_multiplier'),
         ];
     }
@@ -52,7 +55,7 @@ class DisposableModifier implements PriceAmendable
 
     public function apply(AbstractMoney $build, float $units, bool $perUnit, ?AbstractMoney $exclusive = null, ?Vat $vat = null): ?AbstractMoney
     {
-        $multiplier = $this->buyer->getIncomeRequirementMultiplier()?->value();
+        $multiplier = $this->incomeRequirementMultiplier?->value();
         if ($multiplier === null) {
             throw new IncomeRequirementMultiplierNotSetException();
         }

@@ -2,6 +2,7 @@
 
 namespace LBHurtado\Mortgage\Traits;
 
+use LBHurtado\Mortgage\Classes\LendingInstitution;
 use LBHurtado\Mortgage\ValueObjects\Percent;
 
 trait HasFinancialAttributes
@@ -9,6 +10,7 @@ trait HasFinancialAttributes
     protected Percent $interest_rate;
     protected ?Percent $incomeRequirementMultiplier = null;
     protected ?Percent $percentMiscellaneousFees = null;
+    protected ?LendingInstitution $lendingInstitution = null;
 
     public function setInterestRate(Percent|float|int $value): static
     {
@@ -76,6 +78,19 @@ trait HasFinancialAttributes
             is_null($value)                 => null,
             default                         => throw new \InvalidArgumentException("Invalid value for miscellaneous fees."),
         };
+
+        return $this;
+    }
+
+    public function getLendingInstitution(): ?LendingInstitution
+    {
+        return $this->lendingInstitution;
+    }
+
+    public function setLendingInstitution(LendingInstitution $institution): static
+    {
+        $this->lendingInstitution = $institution;
+        $this->setIncomeRequirementMultiplier($this->lendingInstitution->getIncomeRequirementMultiplier());
 
         return $this;
     }

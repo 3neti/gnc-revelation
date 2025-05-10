@@ -2,10 +2,10 @@
 
 namespace LBHurtado\Mortgage\Classes;
 
+use LBHurtado\Mortgage\ValueObjects\Percent;
 use LBHurtado\Mortgage\Services\AgeService;
 use Illuminate\Support\{Arr, Carbon};
 use InvalidArgumentException;
-use LBHurtado\Mortgage\ValueObjects\Percent;
 
 class LendingInstitution
 {

@@ -7,6 +7,7 @@ use LBHurtado\Mortgage\ValueObjects\Percent;
 use Spatie\LaravelData\Data;
 use Whitecube\Price\Price;
 
+/** TODO: deprecate this  */
 class IncomeInputsData extends Data
 {
     public function __construct(

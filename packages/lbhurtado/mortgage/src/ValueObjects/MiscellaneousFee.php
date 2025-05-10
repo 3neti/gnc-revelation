@@ -28,7 +28,7 @@ class MiscellaneousFee
         $percent_mf = $inputs->fees->percent_mf?->value() ?? 0.0;
         $percent_dp = $inputs->loanable->down_payment->percent_dp?->value() ?? 0.0;
 
-        $rules ??= FeeRulesFactory::make($inputs->buyer()->getLendingInstitution());
+        $rules ??= FeeRulesFactory::make($inputs->order()->getLendingInstitution() ?? $inputs->buyer()->getLendingInstitution());
 
         $override_multiplier = $rules->shouldApplyMiscellaneousFee($tcp)
             ? $rules->getPartialMiscellaneousFeeMultiplier($tcp, Percent::ofFraction($percent_dp))?->value()
