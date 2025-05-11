@@ -6,6 +6,7 @@ use LBHurtado\Mortgage\Enums\Property\DevelopmentType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use LBHurtado\Mortgage\Classes\LendingInstitution;
 use Brick\Math\Exception\NumberFormatException;
+use LBHurtado\Mortgage\Enums\Property\HousingType;
 use LBHurtado\Mortgage\Factories\MoneyFactory;
 use LBHurtado\Mortgage\ValueObjects\Percent;
 use LBHurtado\Mortgage\Models\Property;
@@ -264,6 +265,81 @@ test('it gracefully handles invalid development_form values in meta', function (
     $property->getAttribute('meta')->set(Property::DEVELOPMENT_FORM, 'invalid_value');
 })->throws(TypeError::class)->skip();
 /*** Property::DEVELOPMENT_FORM ****/
+
+/*** Property::HOUSING_TYPE ***/
+
+test('it can set and get housing_type attribute', function () {
+    // Create a Property instance
+    $property = Property::factory()->create();
+
+    // Example housing type enum instance
+    $housingType = HousingType::CONDOMINIUM;
+
+    // Use the setter to set the value
+    $property->update([Property::HOUSING_TYPE => $housingType->value]);
+    $property->save();
+
+    // Assert that the value retrieved from the getter matches what we set
+    expect($property->housing_type)
+        ->toBeInstanceOf(HousingType::class) // Ensures it returns an enum
+        ->and($property->housing_type->value)->toBe($housingType->value); // Ensures the value matches the set value
+});
+
+test('it can set and get housing_type as an enum instance', function () {
+    // Create a Property instance
+    $property = Property::factory()->create();
+
+    // Example housing type enum instance
+    $housingType = HousingType::ROW_HOUSE;
+
+    // Use the setter to set the housing_type
+    $property->update([Property::HOUSING_TYPE => $housingType->value]);
+    $property->save();
+
+    // Assert that the getter returns the same enum instance
+    expect($property->housing_type)
+        ->toBeInstanceOf(HousingType::class) // Ensures it's an enum
+        ->and($property->housing_type->value)->toBe($housingType->value); // Ensures the value matches
+});
+
+test('it can set and get housing_type as a string value', function () {
+    // Create a Property instance
+    $property = Property::factory()->create();
+
+    // Example housing_type value as a string
+    $housingTypeValue = 'townhouse'; // Corresponds to HousingType::TOWNHOUSE
+
+    // Use the setter to set the housing_type as a string
+    $property->update([Property::HOUSING_TYPE => $housingTypeValue]);
+    $property->save();
+
+    // Assert that the getter converts it back to an enum
+    expect($property->housing_type)
+        ->toBeInstanceOf(HousingType::class) // Ensures it's an enum
+        ->and($property->housing_type->value)->toBe($housingTypeValue); // Ensures the value matches
+});
+
+test('it returns null from getHousingType if no value is set', function () {
+    // Create a Property instance
+    $property = Property::factory()->create();
+
+    // Assert that the getter returns null when no value is set in the meta field
+    expect($property->housing_type)->toBeNull();
+});
+
+test('it gracefully handles invalid housing_type values in meta', function () {
+    // Create a Property instance
+    $property = Property::factory()->create();
+
+    // Simulate an invalid value in the meta field
+    $property->update([Property::HOUSING_TYPE =>  'invalid_value']);
+    $property->save();
+
+    // Assert that the getter returns null for invalid values
+    expect($property->housing_type)->toBeNull();
+})->skip();
+
+/*** Property::HOUSING_TYPE ***/
 
 /*** Property::REQUIRED_BUFFER_MARGIN ****/
 test('it can set and get required_buffer_margin as a Percent instance', function () {
@@ -574,93 +650,6 @@ test('it can remove (unset) processing_fee by passing null', function () {
     expect($property->processing_fee)->toBeNull();
 });
 /*** Property::PROCESSING_FEE ****/
-
-///*** Property::PERCENT_DISPOSABLE_INCOME_REQUIREMENT ****/
-//test('it can set and get percent_disposable_income_requirement as a Percent instance', function () {
-//    // Create a Property instance
-//    $property = Property::factory()->create();
-//
-//    // Example Percent instance
-//    $percentDisposableIncomeRequirement = Percent::ofPercent(35);
-//
-//    // Use the setter to set the percent_disposable_income_requirement
-//    $property->update([Property::PERCENT_DISPOSABLE_INCOME_REQUIREMENT => $percentDisposableIncomeRequirement->value()]);
-//    $property->save();
-//
-//    // Assert that the getter returns the same Percent instance
-//    expect($property->percent_disposable_income_requirement)
-//        ->toBeInstanceOf(Percent::class) // Ensures it is a Percent instance
-//        ->and($property->percent_disposable_income_requirement->value())->toBe($percentDisposableIncomeRequirement->value()); // Ensures the percent value matches
-//});
-//
-//test('it can set and get percent_disposable_income_requirement as an integer percentage', function () {
-//    // Create a Property instance
-//    $property = Property::factory()->create();
-//
-//    // Example disposable income requirement as an integer percentage
-//    $percentDisposableIncomeRequirementValue = 40; // 40%
-//
-//    // Use the setter to set the percent_disposable_income_requirement as an integer
-//    $property->update([Property::PERCENT_DISPOSABLE_INCOME_REQUIREMENT => $percentDisposableIncomeRequirementValue]);
-//    $property->save();
-//
-//    // Assert that the getter converts it to a Percent instance
-//    expect($property->percent_disposable_income_requirement)
-//        ->toBeInstanceOf(Percent::class) // Ensures it is a Percent instance
-//        ->and($property->percent_disposable_income_requirement->asPercent())
-//        ->toBe((float) $percentDisposableIncomeRequirementValue); // Ensures the percent value matches
-//});
-//
-//test('it can set and get percent_disposable_income_requirement as a fractional float (value <= 1)', function () {
-//    // Create a Property instance
-//    $property = Property::factory()->create();
-//
-//    // Example disposable income requirement as a fractional float
-//    $percentDisposableIncomeRequirementValue = 0.45; // 45%
-//
-//    // Use the setter to set the percent_disposable_income_requirement as a fractional float
-//    $property->update([Property::PERCENT_DISPOSABLE_INCOME_REQUIREMENT => $percentDisposableIncomeRequirementValue]);
-//    $property->save();
-//
-//    // Assert that the getter converts it to a Percent instance
-//    expect($property->percent_disposable_income_requirement)
-//        ->toBeInstanceOf(Percent::class) // Ensures it is a Percent instance
-//        ->and($property->percent_disposable_income_requirement->asPercent())->toBe(45.0); // Ensures the fraction is correctly converted to 45%
-//});
-//
-//test('it can set and get percent_disposable_income_requirement as a float percentage', function () {
-//    // Create a Property instance
-//    $property = Property::factory()->create();
-//
-//    // Example disposable income requirement as a float percentage
-//    $percentDisposableIncomeRequirementValue = 56.5; // 56.5%
-//
-//    // Use the setter to set the percent_disposable_income_requirement as a float
-//    $property->update([Property::PERCENT_DISPOSABLE_INCOME_REQUIREMENT => $percentDisposableIncomeRequirementValue]);
-//    $property->save();
-//
-//    // Assert that the getter converts it to a Percent instance
-//    expect($property->percent_disposable_income_requirement)
-//        ->toBeInstanceOf(Percent::class) // Ensures it is a Percent instance
-//        ->and($property->percent_disposable_income_requirement->asPercent())->toBeCloseTo($percentDisposableIncomeRequirementValue); // Ensures the percent value matches
-//});
-//
-//test('it returns null from getPercentDisposableIncomeRequirement if no value is set', function () {
-//    // Create a Property instance
-//    $property = Property::factory()->create();
-//
-//    // Assert that the getter returns null when no value is set
-//    expect($property->percent_disposable_income_requirement)->toBeNull();
-//});
-//
-//test('it throws an exception when setting an invalid percent_disposable_income_requirement', function () {
-//    // Create a Property instance
-//    $property = Property::factory()->create();
-//
-//    // Try to set an invalid value and expect an exception
-//    $property->update([Property::PERCENT_DISPOSABLE_INCOME_REQUIREMENT => 'invalid_value']);
-//})->throws(TypeError::class);
-///*** Property::PERCENT_DISPOSABLE_INCOME_REQUIREMENT ****/
 
 /*** Property::PERCENT_LOANABLE_VALUE ****/
 test('it can set and get percent_loanable_value as a Percent instance', function () {

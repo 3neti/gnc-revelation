@@ -1,5 +1,8 @@
 <?php
 
+use LBHurtado\Mortgage\Enums\Property\DevelopmentForm;
+use LBHurtado\Mortgage\Enums\Property\DevelopmentType;
+use LBHurtado\Mortgage\Enums\Property\HousingType;
 use Brick\Math\RoundingMode;
 
 return [
@@ -114,8 +117,9 @@ return [
             ],
         ],
         'default' => [
-            'development_type' => env('PROPERTY_DEFAULT_DEVELOPMENT_TYPE', 'bp_220'),
-            'development_form' => env('PROPERTY_DEFAULT_DEVELOPMENT_FORM', 'horizontal'),
+            'development_type' => env('PROPERTY_DEFAULT_DEVELOPMENT_TYPE', DevelopmentType::BP_957->value),
+            'development_form' => env('PROPERTY_DEFAULT_DEVELOPMENT_FORM', DevelopmentForm::HORIZONTAL->value),
+            'housing_type' => env('PROPERTY_DEFAULT_HOUSING_TYPE', HousingType::SINGLE_DETACHED->value),
             'processing_fee' => env('PROPERTY_DEFAULT_PROCESSING_FEE', 0.0),
             'percent_dp' => env('PROPERTY_DEFAULT_PERCENT_DP', 0), // 10%
             'dp_term' => env('PROPERTY_DEFAULT_DP_TERM', 12), // in months

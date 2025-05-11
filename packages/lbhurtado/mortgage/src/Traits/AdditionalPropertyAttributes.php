@@ -5,6 +5,7 @@ namespace LBHurtado\Mortgage\Traits;
 use LBHurtado\Mortgage\Classes\LendingInstitution;
 use LBHurtado\Mortgage\Enums\Property\DevelopmentForm;
 use LBHurtado\Mortgage\Enums\Property\DevelopmentType;
+use LBHurtado\Mortgage\Enums\Property\HousingType;
 use LBHurtado\Mortgage\Factories\MoneyFactory;
 use LBHurtado\Mortgage\ValueObjects\Percent;
 use Brick\Math\Exception\MathException;
@@ -17,6 +18,7 @@ trait AdditionalPropertyAttributes
     const APPRAISAL_VALUE = 'appraisal_value';
     const DEVELOPMENT_TYPE = 'development_type';
     const DEVELOPMENT_FORM = 'development_form';
+    const HOUSING_TYPE = 'housing_type';
     const PERCENT_LOANABLE_VALUE = 'percent_loanable_value';
     const PERCENT_MISCELLANEOUS_FEES = 'percent_miscellaneous_fees';
     const PROCESSING_FEE = 'processing_fee';
@@ -33,6 +35,7 @@ trait AdditionalPropertyAttributes
             self::PERCENT_LOANABLE_VALUE,
             self::DEVELOPMENT_TYPE,
             self::DEVELOPMENT_FORM,
+            self::HOUSING_TYPE,
             self::REQUIRED_BUFFER_MARGIN,
             self::PERCENT_MISCELLANEOUS_FEES,
             self::LENDING_INSTITUTION,
@@ -45,6 +48,7 @@ trait AdditionalPropertyAttributes
             self::PERCENT_LOANABLE_VALUE,
             self::DEVELOPMENT_TYPE,
             self::DEVELOPMENT_FORM,
+            self::HOUSING_TYPE,
             self::REQUIRED_BUFFER_MARGIN,
             self::PERCENT_MISCELLANEOUS_FEES,
             self::LENDING_INSTITUTION,
@@ -157,6 +161,26 @@ trait AdditionalPropertyAttributes
     public function setDevelopmentFormAttribute(DevelopmentForm|string $value): static
     {
         $this->getAttribute('meta')->set(self::DEVELOPMENT_FORM, $value instanceof DevelopmentForm ? $value->value : $value);
+
+        return $this;
+    }
+
+    /**
+     * Get housing_type.
+     */
+    public function getHousingTypeAttribute(): ?HousingType
+    {
+        $type = $this->getAttribute('meta')->get(self::HOUSING_TYPE);
+
+        return $type !== null ? HousingType::from($type) : null;
+    }
+
+    /**
+     * Set housing_type.
+     */
+    public function setHousingTypeAttribute(HousingType|string $value): static
+    {
+        $this->getAttribute('meta')->set(self::HOUSING_TYPE, $value instanceof HousingType ? $value->value : $value);
 
         return $this;
     }

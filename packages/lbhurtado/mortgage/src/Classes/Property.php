@@ -2,7 +2,7 @@
 
 namespace LBHurtado\Mortgage\Classes;
 
-use LBHurtado\Mortgage\Enums\Property\{DevelopmentForm, DevelopmentType, MarketSegment};
+use LBHurtado\Mortgage\Enums\Property\{DevelopmentForm, DevelopmentType, HousingType, MarketSegment};
 use LBHurtado\Mortgage\Traits\HasFinancialAttributes;
 use LBHurtado\Mortgage\Contracts\PropertyInterface;
 use LBHurtado\Mortgage\Factories\MoneyFactory;
@@ -17,6 +17,7 @@ class Property implements PropertyInterface
     protected Price $total_contract_price;
     protected DevelopmentType $development_type;
     protected DevelopmentForm $development_form;
+    protected HousingType $housing_type;
     protected Percent $required_buffer_margin;
     protected ?Percent $income_requirement_multiplier;
     protected Percent $percent_loanable_value;
@@ -27,7 +28,8 @@ class Property implements PropertyInterface
     public function __construct(
         float|int|string $total_contract_price,
         ?DevelopmentType $development_type = null,
-        ?DevelopmentForm $development_form = null
+        ?DevelopmentForm $development_form = null,
+        ?HousingType $housing_type = null,
     ) {
         $this->setTotalContractPrice($total_contract_price);
 
@@ -42,6 +44,13 @@ class Property implements PropertyInterface
             config('gnc-revelation.property.default.development_form')
         )
         );
+
+        $this->setHousingType(
+            $housing_type ?? HousingType::from(
+            config('gnc-revelation.property.default.housing_type')
+        )
+        );
+
 
         $buffer = config('gnc-revelation.default_buffer_margin');
 
@@ -86,6 +95,17 @@ class Property implements PropertyInterface
     public function getDevelopmentForm(): DevelopmentForm
     {
         return $this->development_form;
+    }
+
+    public function setHousingType(HousingType $housingType): static
+    {
+        $this->housing_type = $housingType;
+        return $this;
+    }
+
+    public function getHousingType(): HousingType
+    {
+        return $this->housing_type;
     }
 
     public function setRequiredBufferMargin(Percent|float|int $value): static

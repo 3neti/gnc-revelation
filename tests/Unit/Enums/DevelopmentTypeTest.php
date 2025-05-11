@@ -5,8 +5,8 @@ use LBHurtado\Mortgage\Factories\MoneyFactory;
 use LBHurtado\Mortgage\ValueObjects\Percent;
 
 it('returns correct name for each development type', function () {
-    expect(DevelopmentType::BP_220->getName())->toBe('BP 220')
-        ->and(DevelopmentType::BP_957->getName())->toBe('BP 957');
+    expect(DevelopmentType::BP_220->getName())->toBe('Open Market Housing')
+        ->and(DevelopmentType::BP_957->getName())->toBe('Socialized/Economic Market Housing');
 });
 
 it('returns valid options array', function () {
@@ -14,8 +14,8 @@ it('returns valid options array', function () {
 
     expect($options)->toBeArray()
         ->and($options)->toContain(
-            ['value' => 'bp_220', 'label' => 'BP 220'],
-            ['value' => 'bp_957', 'label' => 'BP 957'],
+            ['value' => 'bp_220', 'label' => 'Open Market Housing'],
+            ['value' => 'bp_957', 'label' => 'Socialized/Economic Market Housing'],
         );
 });
 

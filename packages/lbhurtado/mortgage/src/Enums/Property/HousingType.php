@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Enums\Property;
+namespace LBHurtado\Mortgage\Enums\Property;
 
 enum HousingType: string
 {

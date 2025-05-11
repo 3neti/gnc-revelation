@@ -2,8 +2,8 @@
 
 use LBHurtado\Mortgage\Http\Controllers\LoanMatchController;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Database\Seeders\PropertySeeder;
 use Illuminate\Support\Facades\Route;
+use Database\Seeders\PropertySeeder;
 
 uses(RefreshDatabase::class);
 

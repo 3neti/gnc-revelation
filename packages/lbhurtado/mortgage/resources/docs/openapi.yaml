@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Loan Matching & Mortgage API
-  version: 1.0.7
+  version: 1.0.9
   description: Strict input definitions for buyer qualification and mortgage computation.
 
 servers:
@@ -21,7 +21,7 @@ paths:
     post:
       tags:
         - Loan Matching
-      summary: Match buyer to qualified loan products
+      summary: Match buyer to qualified loan products from available properties
       operationId: matchLoanProducts
       requestBody:
         required: true
@@ -32,51 +32,56 @@ paths:
               required:
                 - age
                 - monthly_income
-                - products
               properties:
                 age:
                   type: integer
-                  enum: [30, 44, 49]
+                  example: 40
+                  minimum: 18
+                  maximum: 65
                 monthly_income:
                   type: number
-                  enum: [17000, 25000]
-                products:
-                  type: array
-                  items:
-                    type: object
-                    required:
-                      - code
-                      - name
-                      - tcp
-                      - interest_rate
-                      - max_term_years
-                      - max_loanable_percent
-                      - disposable_income_multiplier
-                    properties:
-                      code:
-                        type: string
-                        enum: [P750, P1000, P1500, P2000]
-                      name:
-                        type: string
-                        enum: [RDG750, RDG1000, RDG1500, RDG2000]
-                      tcp:
-                        type: number
-                        enum: [750000, 1000000, 1500000, 2000000]
-                      interest_rate:
-                        type: number
-                        enum: [0.0625]
-                      max_term_years:
-                        type: integer
-                        enum: [20, 25, 30]
-                      max_loanable_percent:
-                        type: number
-                        enum: [1.0]
-                      disposable_income_multiplier:
-                        type: number
-                        enum: [0.35]
+                  example: 18000
+                additional_income:
+                  type: number
+                  nullable: true
+                  example: 10000
+                co_borrower:
+                  type: object
+                  nullable: true
+                  properties:
+                    age:
+                      type: integer
+                      example: 35
+                      minimum: 18
+                      maximum: 65
+                    monthly_income:
+                      type: number
+                      example: 15000
+                development_form:
+                  type: string
+                  nullable: true
+                  enum: [ horizontal, vertical ]
+                  example: horizontal
+                project_code:
+                  type: string
+                  nullable: true
+                  example: "TLP001"
+                house_type:
+                  type: string
+                  nullable: true
+                  enum:
+                    - condominium
+                    - duplex
+                    - row_house
+                    - single_attached
+                    - single_detached
+                    - quadruplex
+                    - townhouse
+                    - twin_homes
+                  example: row_house
       responses:
         '200':
-          description: A list of matched loan products
+          description: A list of matched properties the buyer qualifies for
           content:
             application/json:
               schema:
@@ -241,9 +246,38 @@ paths:
             type: number
             example: 3000000
           description: Maximum total contract price (PHP)
+        - in: query
+          name: development_type
+          schema:
+            type: string
+            enum: [ bp_220, bp_957 ]
+            example: bp_957
+          description: Filter by development type
+        - in: query
+          name: development_form
+          schema:
+            type: string
+            enum: [ horizontal, vertical ]
+            example: horizontal
+          description: Filter by development form
+        - in: query
+          name: housing_type
+          schema:
+            type: string
+            enum:
+              - condominium
+              - duplex
+              - row_house
+              - single_attached
+              - single_detached
+              - quadruplex
+              - townhouse
+              - twin_homes
+            example: row_house
+          description: Filter by housing type
       responses:
         '200':
-          description: A list of filtered properties with financial and metadata
+          description: A list of filtered properties with financial and classification metadata
           content:
             application/json:
               schema:
@@ -266,7 +300,7 @@ paths:
                       example: 1000000
                     appraisal_value:
                       type: number
-                      example: 1000000
+                      example: 950000
                     percent_loanable_value:
                       type: number
                       example: 1.0
@@ -276,6 +310,27 @@ paths:
                     processing_fee:
                       type: number
                       example: 10000
+                    development_type:
+                      type: string
+                      enum: [ bp_220, bp_957 ]
+                      example: bp_957
+                    development_form:
+                      type: string
+                      enum: [ horizontal, vertical ]
+                      example: horizontal
+                    housing_type:
+                      type: string
+                      enum:
+                        - condominium
+                        - duplex
+                        - row_house
+                        - single_attached
+                        - single_detached
+                        - quadruplex
+                        - townhouse
+                        - twin_homes
+                      example: row_house
                     lending_institution:
                       type: string
+                      enum: [ hdmf, rcbc ]
                       example: hdmf

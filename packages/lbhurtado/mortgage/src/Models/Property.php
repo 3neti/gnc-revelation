@@ -2,19 +2,18 @@
 
 namespace LBHurtado\Mortgage\Models;
 
-use LBHurtado\Mortgage\Classes\LendingInstitution;
-use LBHurtado\Mortgage\Data\Models\PropertyData;
-use LBHurtado\Mortgage\Enums\Property\DevelopmentForm;
-use LBHurtado\Mortgage\Enums\Property\DevelopmentType;
+use LBHurtado\Mortgage\Enums\Property\{DevelopmentForm, DevelopmentType, HousingType};
 use LBHurtado\Mortgage\Traits\AdditionalPropertyAttributes;
-use LBHurtado\Mortgage\ValueObjects\Percent;
 use LBHurtadp\Mortgage\Database\Factories\PropertyFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use LBHurtado\Mortgage\Classes\LendingInstitution;
+use LBHurtado\Mortgage\Data\Models\PropertyData;
+use LBHurtado\Mortgage\ValueObjects\Percent;
 use Illuminate\Database\Eloquent\Model;
 use LBHurtado\Mortgage\Traits\HasMeta;
-use Whitecube\Price\Price;
 use Spatie\LaravelData\WithData;
+use Whitecube\Price\Price;
 
 /**
  * Class Property
@@ -31,6 +30,7 @@ use Spatie\LaravelData\WithData;
  * @property Price  $appraisal_value
  * @property DevelopmentType $development_type
  * @property DevelopmentForm $development_form
+ * @property HousingType $housing_type
  * @property Percent $percent_loanable_value
  * @property Percent $percent_miscellaneous_fees
  * @property Price $processing_fee
@@ -85,7 +85,8 @@ class Property extends Model
         return (new \LBHurtado\Mortgage\Classes\Property(
             $this->total_contract_price->inclusive()->getAmount()->toFloat(),
             $this->development_type,
-            $this->development_form
+            $this->development_form,
+            $this->housing_type,
         ))
             ->setRequiredBufferMargin($this->required_buffer_margin)
             ->setAppraisalValue($this->appraisal_value)

@@ -14,8 +14,9 @@ enum DevelopmentType: string
     public function getName(): string
     {
         return match ($this) {
-            self::BP_957 => 'BP 957',
-            self::BP_220 => 'BP 220',
+            self::BP_220 => 'Open Market Housing',
+            self::BP_957 => 'Socialized/Economic Market Housing',
+
         };
     }
 

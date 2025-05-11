@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use LBHurtado\Mortgage\Enums\Property\DevelopmentForm;
 use LBHurtado\Mortgage\Enums\Property\DevelopmentType;
+use LBHurtado\Mortgage\Enums\Property\HousingType;
 use LBHurtado\Mortgage\Models\Property;
 use Illuminate\Database\Seeder;
 
@@ -23,6 +24,7 @@ class PropertySeeder extends Seeder
         $statuses = ['available', 'unavailable'];
         $developmentTypes = array_map(fn($enum) => $enum->value, DevelopmentType::cases());
         $developmentForms = array_map(fn($enum) => $enum->value, DevelopmentForm::cases());
+        $housingTypes = array_map(fn($enum) => $enum->value, HousingType::cases());
         $bufferMargins = [5, 10, 15];
         $lendingInstitutions = ['hdmf', 'rcbc'];
         $incomeRequirementMultiplier = [30, 32, 35];
@@ -44,6 +46,7 @@ class PropertySeeder extends Seeder
                 Property::PROCESSING_FEE => 10_000,
                 Property::DEVELOPMENT_TYPE => $developmentTypes[$serial % count($developmentTypes)],
                 Property::DEVELOPMENT_FORM => $developmentForms[$serial % count($developmentForms)],
+                Property::HOUSING_TYPE => $housingTypes[$serial % count($housingTypes)],
                 Property::REQUIRED_BUFFER_MARGIN => $bufferMargins[$serial % count($bufferMargins)],
 //                Property::LENDING_INSTITUTION => $lendingInstitutions[$serial % count($lendingInstitutions)],
                 Property::LENDING_INSTITUTION => 'hdmf',
