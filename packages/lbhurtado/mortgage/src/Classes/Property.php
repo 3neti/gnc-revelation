@@ -18,7 +18,7 @@ class Property implements PropertyInterface
     protected DevelopmentType $development_type;
     protected DevelopmentForm $development_form;
     protected Percent $required_buffer_margin;
-    protected Percent $income_requirement_multiplier;
+    protected ?Percent $income_requirement_multiplier;
     protected Percent $percent_loanable_value;
     protected ?Price $appraisal_value = null;
     protected ?Price $processing_fee = null;
@@ -111,20 +111,21 @@ class Property implements PropertyInterface
         return MarketSegment::fromPrice($this->total_contract_price, $this->development_type);
     }
 
-    public function setIncomeRequirementMultiplier(Percent|float|int $value): static
+    public function setIncomeRequirementMultiplier(Percent|float|int|null $value): static
     {
         $this->income_requirement_multiplier = match (true) {
             $value instanceof Percent       => $value,
             is_int($value)                  => Percent::ofPercent($value),
             is_float($value) && $value <= 1 => Percent::ofFraction($value),
             is_float($value)                => Percent::ofPercent($value),
+            is_null($value)                 => null,
             default                         => throw new \InvalidArgumentException("Invalid value for disposable income requirement."),
         };
 
         return $this;
     }
 
-    public function getIncomeRequirementMultiplier(): Percent
+    public function getIncomeRequirementMultiplier(): ?Percent
     {
         return $this->income_requirement_multiplier
             ?? $this->getMarketSegment()->defaultIncomeRequirementMultiplier();

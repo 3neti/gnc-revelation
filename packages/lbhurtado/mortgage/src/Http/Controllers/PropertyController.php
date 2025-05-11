@@ -14,6 +14,11 @@ class PropertyController
     {
         $query = Property::query();
 
+        // Filter by availability: defaults to "available" status unless explicitly set to show all
+        if (!$request->has('available_only') || $request->boolean('available_only', true)) {
+            $query->where('status', 'available');
+        }
+
         // Optional filter by code
         if ($request->filled('code')) {
             $query->where('code', $request->string('code'));
@@ -25,6 +30,10 @@ class PropertyController
         }
 
         // Use withMeta for meta filtering
+        if ($request->filled('lending_institution')) {
+            $query->whereIn('meta->lending_institution', (array) $request->lending_institution);
+        }
+
         if ($request->filled('min_price')) {
             $query->withMeta('total_contract_price', '>=', (int) $request->min_price * 100);
         }

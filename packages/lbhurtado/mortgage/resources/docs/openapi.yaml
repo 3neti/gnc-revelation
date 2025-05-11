@@ -214,6 +214,22 @@ paths:
             example: PROP0001
           description: Filter by property code
         - in: query
+          name: available_only
+          schema:
+            type: boolean
+            example: true
+          description: Show only available properties (status = available)
+        - in: query
+          name: lending_institution
+          schema:
+            oneOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+            example: hdmf
+          description: Filter by lending institution (e.g., hdmf, rcbc)
+        - in: query
           name: min_price
           schema:
             type: number
@@ -225,15 +241,9 @@ paths:
             type: number
             example: 3000000
           description: Maximum total contract price (PHP)
-        - in: query
-          name: available_only
-          schema:
-            type: boolean
-            example: true
-          description: Show only available properties (status = available)
       responses:
         '200':
-          description: A list of available properties with financial details
+          description: A list of filtered properties with financial and metadata
           content:
             application/json:
               schema:
@@ -249,6 +259,7 @@ paths:
                       example: Property ₱1,000,000
                     status:
                       type: string
+                      enum: [ available, sold, reserved ]
                       example: available
                     total_contract_price:
                       type: number
@@ -265,3 +276,6 @@ paths:
                     processing_fee:
                       type: number
                       example: 10000
+                    lending_institution:
+                      type: string
+                      example: hdmf

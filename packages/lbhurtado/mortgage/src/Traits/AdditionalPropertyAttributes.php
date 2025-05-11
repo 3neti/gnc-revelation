@@ -2,6 +2,7 @@
 
 namespace LBHurtado\Mortgage\Traits;
 
+use LBHurtado\Mortgage\Classes\LendingInstitution;
 use LBHurtado\Mortgage\Enums\Property\DevelopmentForm;
 use LBHurtado\Mortgage\Enums\Property\DevelopmentType;
 use LBHurtado\Mortgage\Factories\MoneyFactory;
@@ -18,9 +19,10 @@ trait AdditionalPropertyAttributes
     const DEVELOPMENT_FORM = 'development_form';
     const PERCENT_LOANABLE_VALUE = 'percent_loanable_value';
     const PERCENT_MISCELLANEOUS_FEES = 'percent_miscellaneous_fees';
-    const PERCENT_DISPOSABLE_INCOME_REQUIREMENT = 'percent_disposable_income_requirement';
     const PROCESSING_FEE = 'processing_fee';
     const REQUIRED_BUFFER_MARGIN = 'required_buffer_margin';
+    const LENDING_INSTITUTION = 'lending_institution';
+    const INCOME_REQUIREMENT_MULTIPLIER = 'income_requirement_multiplier';
 
     public function initializeAdditionalPropertyAttributes(): void
     {
@@ -28,23 +30,25 @@ trait AdditionalPropertyAttributes
             self::TOTAL_CONTRACT_PRICE,
             self::APPRAISAL_VALUE,
             self::PROCESSING_FEE,
-            self::PERCENT_DISPOSABLE_INCOME_REQUIREMENT,
             self::PERCENT_LOANABLE_VALUE,
             self::DEVELOPMENT_TYPE,
             self::DEVELOPMENT_FORM,
             self::REQUIRED_BUFFER_MARGIN,
             self::PERCENT_MISCELLANEOUS_FEES,
+            self::LENDING_INSTITUTION,
+            self::INCOME_REQUIREMENT_MULTIPLIER,
         ]);
         $this->appends = array_merge($this->appends, [
             self::TOTAL_CONTRACT_PRICE,
             self::APPRAISAL_VALUE,
             self::PROCESSING_FEE,
-            self::PERCENT_DISPOSABLE_INCOME_REQUIREMENT,
             self::PERCENT_LOANABLE_VALUE,
             self::DEVELOPMENT_TYPE,
             self::DEVELOPMENT_FORM,
             self::REQUIRED_BUFFER_MARGIN,
             self::PERCENT_MISCELLANEOUS_FEES,
+            self::LENDING_INSTITUTION,
+            self::INCOME_REQUIREMENT_MULTIPLIER,
         ]);
     }
 
@@ -200,40 +204,13 @@ trait AdditionalPropertyAttributes
     public function setPercentMiscellaneousFeesAttribute(Percent|int|float|null $value): static
     {
         $percent = match (true) {
-            $value instanceof Percent       => $value,
-            is_float($value) && $value <= 1 => Percent::ofFraction($value),
+            $value instanceof Percent        => $value,
+            is_float($value) && $value <= 1  => Percent::ofFraction($value),
             is_int($value), is_float($value) => Percent::ofPercent($value),
-            default                         => throw new \InvalidArgumentException('Invalid miscellaneous fees.'),
+            default                          => throw new \InvalidArgumentException('Invalid miscellaneous fees.'),
         };
 
         $this->getAttribute('meta')->set('percent_miscellaneous_fees', $percent->value());
-
-        return $this;
-    }
-
-    /**
-     * Get percent_disposable_income_requirement.
-     */
-    public function getPercentDisposableIncomeRequirementAttribute(): ?Percent
-    {
-        $requirement = $this->getAttribute('meta')->get(self::PERCENT_DISPOSABLE_INCOME_REQUIREMENT);
-
-        return $requirement !== null ? Percent::ofFraction($requirement) : null;
-    }
-
-    /**
-     * Set percent_disposable_income_requirement.
-     */
-    public function setPercentDisposableIncomeRequirementAttribute(Percent|int|float $value): static
-    {
-        $percent = match (true) {
-            $value instanceof Percent       => $value,
-            is_float($value) && $value <= 1 => Percent::ofFraction($value),
-            is_int($value), is_float($value) => Percent::ofPercent($value),
-            default                         => throw new \InvalidArgumentException('Invalid disposable income requirement.'),
-        };
-
-        $this->getAttribute('meta')->set(self::PERCENT_DISPOSABLE_INCOME_REQUIREMENT, $percent->value());
 
         return $this;
     }
@@ -281,4 +258,66 @@ trait AdditionalPropertyAttributes
         return $this;
     }
 
+    /**
+     * Get lending_institution.
+     */
+    public function getLendingInstitutionAttribute(): ?LendingInstitution
+    {
+        $key = $this->getAttribute('meta')->get(self::LENDING_INSTITUTION);
+
+        return $key !== null ? new LendingInstitution($key) : null;
+    }
+
+    /**
+     * Set lending_institution.
+     */
+    public function setLendingInstitutionAttribute(LendingInstitution|string|null $value): static
+    {
+        if (is_null($value)) {
+            // Remove the attribute if the value is null.
+            $this->getAttribute('meta')->forget(self::LENDING_INSTITUTION);
+        } else {
+            // Set the key for the LendingInstitution.
+            $key = $value instanceof LendingInstitution ? $value->key() : $value;
+
+            if (!in_array($key, LendingInstitution::keys())) {
+                throw new \InvalidArgumentException("Invalid lending institution key: {$key}");
+            }
+
+            $this->getAttribute('meta')->set(self::LENDING_INSTITUTION, $key);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Get income_requirement_multiplier.
+     */
+    public function getIncomeRequirementMultiplierAttribute(): ?Percent
+    {
+        $multiplier = $this->getAttribute('meta')->get(self::INCOME_REQUIREMENT_MULTIPLIER);
+
+        return $multiplier !== null ? Percent::ofFraction($multiplier) : null;
+    }
+
+    /**
+     * Set income_requirement_multiplier.
+     */
+    public function setIncomeRequirementMultiplierAttribute(Percent|int|float|null $value): static
+    {
+        if (is_null($value)) {
+            $this->getAttribute('meta')->forget(self::INCOME_REQUIREMENT_MULTIPLIER);
+        } else {
+            $percent = match (true) {
+                $value instanceof Percent        => $value,
+                is_float($value) && $value <= 1  => Percent::ofFraction($value),
+                is_int($value), is_float($value) => Percent::ofPercent($value),
+                default                          => throw new \InvalidArgumentException('Invalid income requirement multiplier.'),
+            };
+
+            $this->getAttribute('meta')->set(self::INCOME_REQUIREMENT_MULTIPLIER, $percent->value());
+        }
+
+        return $this;
+    }
 }

@@ -10,7 +10,7 @@ interface PropertyInterface
 {
     public function getRequiredBufferMargin(): ?Percent;
     public function getTotalContractPrice(): Price;
-    public function getIncomeRequirementMultiplier(): Percent;
+    public function getIncomeRequirementMultiplier(): ?Percent;
     public function getPercentLoanableValue(): ?Percent;
     public function getLoanableAmount(): Price;
     public function getAppraisalValue(): ?Price;

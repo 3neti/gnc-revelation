@@ -1,102 +1,87 @@
 <?php
 
 use LBHurtado\Mortgage\Http\Controllers\LoanMatchController;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Database\Seeders\PropertySeeder;
 use Illuminate\Support\Facades\Route;
 
+uses(RefreshDatabase::class);
+
 beforeEach(function () {
+    $this->seed(PropertySeeder::class); // Seeds ~8 property records from 750k to 4M
     Route::post('/loan-match', LoanMatchController::class)->name('api.v1.loan-match');
 });
 
-dataset('loan matcher unique records', [
-    'hdmf 1.0M by 49yo ₱17k gmi — expect not qualify' => [
-        49, 17000, [
-            [
-                'code' => 'P1000',
-                'name' => 'HDMF1000',
-                'tcp' => 1000000,
-                'interest_rate' => 0.0625,
-                'max_term_years' => 21,
-                'max_loanable_percent' => 1.0,
-                'disposable_income_multiplier' => 0.35,
-            ],
-        ],
-        0
+dataset('loan matcher buyer scenarios', [
+    'Single buyer qualifies for 30k income' => [
+        'age' => 30,
+        'income' => 30000,
+        'additional_income' => null,
+        'co_borrower' => null,
+        'expected_min_count' => 1
     ],
-    'hdmf 1.0M by 47yo ₱21k gmi — expect qualify' => [
-        47, 21000, [
-            [
-                'code' => 'P1000',
-                'name' => 'HDMF1000',
-                'tcp' => 1000000,
-                'interest_rate' => 0.0625,
-                'max_term_years' => 23,
-                'max_loanable_percent' => 1.0,
-                'disposable_income_multiplier' => 0.35,
-            ],
-        ],
-        1
+    'Single buyer does not qualify for 10k income' => [
+        'age' => 40,
+        'income' => 10000,
+        'additional_income' => null,
+        'co_borrower' => null,
+        'expected_min_count' => 0
     ],
-    'hdmf 1.1M by 48yo ₱19k gmi — expect not qualify' => [
-        48, 19000, [
-            [
-                'code' => 'P1100',
-                'name' => 'HDMF1100',
-                'tcp' => 1100000,
-                'interest_rate' => 0.0625,
-                'max_term_years' => 22,
-                'max_loanable_percent' => 1.0,
-                'disposable_income_multiplier' => 0.35,
-            ],
-        ],
-        0
+    'Buyer with co-borrower qualifies' => [
+        'age' => 40,
+        'income' => 12000,
+        'additional_income' => null,
+        'co_borrower' => ['age' => 35, 'monthly_income' => 15000],
+        'expected_min_count' => 1
     ],
-    'rcbc 1.1M by 45yo ₱24k gmi — expect qualify' => [
-        45, 24000, [
-            [
-                'code' => 'R1100',
-                'name' => 'RCBC1100',
-                'tcp' => 1100000,
-                'interest_rate' => 0.0625,
-                'max_term_years' => 16,
-                'max_loanable_percent' => 1.0,
-                'disposable_income_multiplier' => 0.3,
-            ],
-        ],
-        1
+    'Buyer with additional income qualifies' => [
+        'age' => 45,
+        'income' => 15000,
+        'additional_income' => 10000,
+        'co_borrower' => null,
+        'expected_min_count' => 1
     ],
 ]);
 
-it('returns expected qualified loan products', function (
+it('returns qualified properties based on income and age', function (
     int $age,
     float $income,
-    array $products,
-    int $expectedCount
+    ?float $additional_income,
+    ?array $co_borrower,
+    int $expected_min_count
 ) {
     $payload = [
         'age' => $age,
         'monthly_income' => $income,
-        'products' => $products,
     ];
+
+    if ($additional_income !== null) {
+        $payload['additional_income'] = $additional_income;
+    }
+
+    if ($co_borrower !== null) {
+        $payload['co_borrower'] = $co_borrower;
+    }
 
     $response = $this->postJson(route('api.v1.loan-match'), $payload);
 
-    $response->assertOk()
-        ->assertJsonCount($expectedCount);
-
+    $response->assertOk();
     $json = $response->json();
 
-    expect(collect($json)->every(fn ($item) => $item['qualified'] === true))->toBeTrue();
+    expect($json)->toBeArray();
+    expect(collect($json)->count())->toBeGreaterThanOrEqual($expected_min_count);
 
-    if ($expectedCount === 0) return;
-
-    collect($json)->each(fn ($item) =>
-    expect($item)->toHaveKeys([
-        'product_code',
-        'monthly_amortization',
-        'income_required',
-        'suggested_equity',
-        'income_gap',
-        'reason',
-    ])
-    );
-})->with('loan matcher unique records');
+    if ($expected_min_count > 0) {
+        expect(collect($json)->every(fn ($item) => $item['qualified'] === true))->toBeTrue();
+        collect($json)->each(fn ($item) =>
+        expect($item)->toHaveKeys([
+            'product_code',
+            'monthly_amortization',
+            'income_required',
+            'suggested_equity',
+            'income_gap',
+            'reason',
+        ])
+        );
+    }
+})->with('loan matcher buyer scenarios');

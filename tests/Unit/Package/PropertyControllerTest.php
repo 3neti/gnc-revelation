@@ -18,6 +18,7 @@ beforeEach(function () {
         'percent_loanable_value' => 1.0,
         'percent_miscellaneous_fees' => 0.085,
         'processing_fee' => 10000,
+        'lending_institution' => 'hdmf'
     ]);
 });
 
@@ -41,7 +42,7 @@ it('returns the correct response structure from properties endpoint', function (
 it('returns seeded property data from properties endpoint', function () {
     $property = Property::where('code', 'PROP0002')->first();
 
-    $this->getJson(route('api.v1.properties'))
+    $this->getJson(route('api.v1.properties', ['available_only' => false]))
         ->assertOk()
         ->assertJsonFragment([
             'code' => $property->code,
@@ -55,8 +56,14 @@ it('returns seeded property data from properties endpoint', function () {
         ]);
 });
 
-it('returns all properties', function () {
+it('returns only available properties', function () {
     $this->getJson(route('api.v1.properties'))
+        ->assertOk()
+        ->assertJsonCount(3);
+});
+
+it('returns all properties', function () {
+    $this->getJson(route('api.v1.properties', ['available_only' => false]))
         ->assertOk()
         ->assertJsonCount(5);
 });
@@ -73,9 +80,9 @@ it('filters only available properties', function () {
         ->assertOk()
         ->assertJsonCount(3)
         ->assertJson(fn($json) =>
-        $json->each(fn($property) =>
-        $property->where('status', 'available')->etc()
-        )
+            $json->each(fn($property) =>
+                $property->where('status', 'available')->etc()
+            )
         );
 });
 
@@ -91,7 +98,7 @@ it('filters by minimum price', function () {
         ->all();
 
     // Act
-    $response = $this->getJson(route('api.v1.properties', ['min_price' => 1_400_000]));
+    $response = $this->getJson(route('api.v1.properties', ['min_price' => 1_400_000, 'available_only' => false]));
 
     // Assert
     $response->assertOk()->assertJsonCount(4);
@@ -103,5 +110,42 @@ it('filters by minimum price', function () {
 it('filters by max price', function () {
     $this->getJson(route('api.v1.properties', ['max_price' => 1_500_000]))
         ->assertOk()
-        ->assertJsonCount(5);
+        ->assertJsonCount(3);
+});
+
+it('filters properties by lending institutions', function () {
+    // Add additional properties with a different lending institution
+    Property::factory()->count(3)->sequence(
+        ['code' => 'PROP0006', 'status' => 'available'],
+        ['code' => 'PROP0007', 'status' => 'available'],
+        ['code' => 'PROP0008', 'status' => 'sold']
+    )->create([
+        'total_contract_price' => 2000000,
+        'appraisal_value' => 1800000,
+        'percent_loanable_value' => 0.85,
+        'percent_miscellaneous_fees' => 0.1,
+        'processing_fee' => 12000,
+        'lending_institution' => 'rcbc' // Different institution
+    ]);
+
+    // Perform a GET request with the lending_institutions filter
+    $response = $this->getJson(route('api.v1.properties', ['lending_institution' => 'hdmf']));
+
+    // Assert the response contains only properties with 'hdmf' as the lending institution
+    $response->assertOk()
+        ->assertJsonCount(3) // Since 5 out of 8 have lending_institution = 'hdmf'
+        ->assertJsonFragment(['code' => 'PROP0001'])
+        ->assertJsonFragment(['code' => 'PROP0003'])
+        ->assertJsonFragment(['code' => 'PROP0005'])
+    ;
+
+    // Perform another GET request with 'rcbc' as the filter
+    $response = $this->getJson(route('api.v1.properties', ['lending_institution' => 'rcbc', 'available_only' => true]));
+
+    // Assert the response contains the correct properties with 'rcbc'
+    $response->assertOk()
+        ->assertJsonCount(2) // 3 properties have lending_institution = 'rcbc'
+        ->assertJsonFragment(['code' => 'PROP0006'])
+        ->assertJsonFragment(['code' => 'PROP0007'])
+    ;
 });

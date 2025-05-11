@@ -2,6 +2,7 @@
 
 namespace LBHurtado\Mortgage\Models;
 
+use LBHurtado\Mortgage\Classes\LendingInstitution;
 use LBHurtado\Mortgage\Data\Models\PropertyData;
 use LBHurtado\Mortgage\Enums\Property\DevelopmentForm;
 use LBHurtado\Mortgage\Enums\Property\DevelopmentType;
@@ -32,9 +33,10 @@ use Spatie\LaravelData\WithData;
  * @property DevelopmentForm $development_form
  * @property Percent $percent_loanable_value
  * @property Percent $percent_miscellaneous_fees
- * @property Percent $percent_disposable_income_requirement
  * @property Price $processing_fee
  * @property Percent $required_buffer_margin
+ * @property LendingInstitution $lending_institution
+ * @property Percent $income_requirement_multiplier
  *
  * @method int getKey()
  */
@@ -90,6 +92,9 @@ class Property extends Model
             ->setProcessingFee($this->processing_fee)
             ->setPercentLoanableValue($this->percent_loanable_value)
             ->setPercentMiscellaneousFees($this->percent_miscellaneous_fees)
-            ->setIncomeRequirementMultiplier($this->percent_disposable_income_requirement);
+            ->setIncomeRequirementMultiplier($this->percent_disposable_income_requirement)
+            ->setLendingInstitution($this->lending_institution)
+            ->setIncomeRequirementMultiplier($this->income_requirement_multiplier)
+            ;
     }
 }
