@@ -87,10 +87,15 @@ trait HasFinancialAttributes
         return $this->lendingInstitution;
     }
 
-    public function setLendingInstitution(LendingInstitution $institution): static
+    /**
+     * Set the lending institution if not null.
+     */
+    public function setLendingInstitution(?LendingInstitution $institution): static
     {
-        $this->lendingInstitution = $institution;
-        $this->setIncomeRequirementMultiplier($this->lendingInstitution->getIncomeRequirementMultiplier());
+        if (!is_null($institution)) {
+            $this->lendingInstitution = $institution;
+            $this->setIncomeRequirementMultiplier($institution->getIncomeRequirementMultiplier());
+        }
 
         return $this;
     }
