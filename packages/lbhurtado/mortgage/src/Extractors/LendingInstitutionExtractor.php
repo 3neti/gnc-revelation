@@ -12,6 +12,6 @@ class LendingInstitutionExtractor extends BaseExtractor
     public function extract(): LendingInstitution
     {
         return ($this->inputs->buyer()->getLendingInstitution() ?? $this->inputs->order()->getLendingInstitution())
-            ?? new LendingInstitution();
+            ?? $this->inputs->property()->getLendingInstitution();
     }
 }

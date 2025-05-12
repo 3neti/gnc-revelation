@@ -92,9 +92,7 @@ test('mortgage computations', function (
         ->setLendingInstitution(new LendingInstitution($lending_institution))
     ;
 
-    $order = (new Order())
-        ->setLendingInstitution($property->getLendingInstitution()) //TODO: refactor this, decouple lending institution from order - used in Monthly Fee
-    ;
+    $order = new Order;
 
     if ($percent_miscellaneous_fee) {
         $order->setPercentMiscellaneousFees(Percent::ofFraction($percent_miscellaneous_fee));
@@ -125,6 +123,8 @@ test('mortgage computations', function (
     $actual_loanable_amount = CalculatorFactory::make(CalculatorType::LOANABLE_AMOUNT, $inputs)->calculate()->getAmount()->toFloat();
     $actual_add_on_fees = CalculatorFactory::make(CalculatorType::FEES, $inputs)->total()->getAmount()->toFloat();
     $actual_miscellaneous_fee = MiscellaneousFee::fromInputs($inputs)->total()->getAmount()->toFloat();
+
+//    dd($actual_term_years, $expected_balance_payment_term);
 
     // Assert
     expect($buyer->getMonthlyGrossIncome()->inclusive()->getAmount()->toFloat())->toBe($monthly_gross_income + $additional_income)
