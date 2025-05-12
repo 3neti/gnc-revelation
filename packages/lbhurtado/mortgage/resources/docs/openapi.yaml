@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Loan Matching & Mortgage API
-  version: 1.0.9
+  version: 1.0.10
   description: Strict input definitions for buyer qualification and mortgage computation.
 
 servers:
@@ -109,6 +109,9 @@ paths:
       tags:
         - Mortgage Computation
       summary: Compute mortgage result and qualification
+      description: |
+        Computes amortization, cash out, and loan qualification based on the buyer's financial profile.
+        Financial attributes such as down payment, interest rate, and fees are inferred from the selected property's defaults.
       operationId: computeMortgage
       requestBody:
         required: true
@@ -128,16 +131,25 @@ paths:
                   enum: [hdmf, rcbc]
                 total_contract_price:
                   type: number
-                  enum: [1000000, 1100000, 1200000, 1300000, 1400000]
+                  example: 1000000
+                  description: |
+                    Used to match against an existing property.
+                    All default financial parameters will be derived from this property.
                 percent_down_payment:
                   type: number
-                  enum: [0, 0.10]
+                  nullable: true
+                  example: 0.10
+                  description: Optional. If omitted, uses the property's default down payment percent.
                 percent_miscellaneous_fee:
                   type: number
-                  enum: [0.0, 0.085]
+                  nullable: true
+                  example: 0.085
+                  description: Optional. If omitted, uses the property's default miscellaneous fee rate.
                 processing_fee:
                   type: number
-                  enum: [0, 10000]
+                  nullable: true
+                  example: 10000
+                  description: Optional. If omitted, uses the property's default processing fee.
                 add_mri:
                   type: boolean
                 add_fi:

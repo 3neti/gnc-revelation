@@ -21,16 +21,8 @@ class LoanMatcherService
     public function match(Buyer $buyer, Collection $properties): Collection
     {
         return $properties->map(function (PropertyInterface $property) use ($buyer): MatchResultData {
-            $order = (new Order())
-                ->setInterestRate($property->getInterestRate())
-//                ->setPercentMiscellaneousFees(Percent::ofFraction($percent_miscellaneous_fee))
-                ->setProcessingFee(0)
-                ->setLendingInstitution($property->getLendingInstitution())
-//                ->setTotalContractPrice($total_contract_price)
-            ;
-
+            $order = new Order;
             $inputs = InputsData::fromBooking($buyer, $property, $order);
-
             $result = QualificationResultData::fromInputs($inputs);
 
             return new MatchResultData(
