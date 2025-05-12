@@ -7,7 +7,7 @@ use LBHurtado\Mortgage\Traits\HasFinancialAttributes;
 use LBHurtado\Mortgage\Contracts\OrderInterface;
 use LBHurtado\Mortgage\Factories\MoneyFactory;
 use LBHurtado\Mortgage\Enums\MonthlyFee;
-use Illuminate\Support\Collection; //used by $monthlyAddOnFees
+use Illuminate\Support\Collection;
 use Whitecube\Price\Price;
 
 class Order implements OrderInterface
@@ -83,35 +83,22 @@ class Order implements OrderInterface
 
     public function addMonthlyFee(MonthlyFee $fee, ?Price $amount = null): static
     {
-//        $price = $amount
-//            ?: match (true) {
-//                $this->tcp instanceof Price && $this->lendingInstitution instanceof LendingInstitution
-//                => $type->computeFromTCP(
-//                    $this->tcp->inclusive()->getAmount()->toFloat(),
-//                    $this->lendingInstitution
-//                ),
-//                default => throw new \LogicException("TCP and Lending Institution must be set before computing a monthly fee."),
-//            };
-//
-//        $this->monthlyFees->addAddOn($type->label(), $price->inclusive());
-
-        /** start of $this->monthlyAddOnFees */
         $this->monthlyFeeEnums->add($fee);
 
         return $this;
     }
 
-    public function setMonthlyFee(MonthlyFee $type, float $value): static
+    public function setMonthlyFee(MonthlyFee $fee, float $amount): static
     {
-        $this->monthlyFees->addAddOn($type->label(), $value);
+        $this->monthlyFees->addAddOn($fee->label(), $amount);
         return $this;
     }
 
-    public function getMonthlyFee(MonthlyFee $type): ?float
+    public function getMonthlyFee(MonthlyFee $fee): ?float
     {
         return $this->monthlyFees
             ->allAddOns()
-            ->get($type->label())?->getAmount()
+            ->get($fee->label())?->getAmount()
             ?->toFloat();
     }
 

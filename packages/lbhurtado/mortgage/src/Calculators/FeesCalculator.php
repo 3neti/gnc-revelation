@@ -3,14 +3,9 @@
 namespace LBHurtado\Mortgage\Calculators;
 
 use LBHurtado\Mortgage\Enums\{CalculatorType, ExtractorType, MonthlyFee};
-use Illuminate\Support\Collection;
-use LBHurtado\Mortgage\Data\Inputs\InputsData;
-use LBHurtado\Mortgage\Factories\CalculatorFactory;
-use LBHurtado\Mortgage\Factories\ExtractorFactory;
+use LBHurtado\Mortgage\Factories\{ExtractorFactory, MoneyFactory};
 use LBHurtado\Mortgage\ValueObjects\FeeCollection;
 use LBHurtado\Mortgage\Attributes\CalculatorFor;
-use LBHurtado\Mortgage\Contracts\OrderInterface;
-use LBHurtado\Mortgage\Factories\MoneyFactory;
 use Whitecube\Price\Price;
 
 #[CalculatorFor(CalculatorType::FEES)]
@@ -19,7 +14,7 @@ final class FeesCalculator extends BaseCalculator
     public function calculate(): FeeCollection
     {
         $monthlyFees = new FeeCollection();
-        $tcp = $this->inputs->property()->getTotalContractPrice()->inclusive()->getAmount()->toFloat();
+        $tcp = ExtractorFactory::make(ExtractorType::TOTAL_CONTRACT_PRICE, $this->inputs)->toFloat();
         $lending_institution = ExtractorFactory::make(ExtractorType::LENDING_INSTITUTION, $this->inputs)->extract();
         $this->inputs->order()->getMonthlyFeeEnums()->each(function (MonthlyFee $monthlyFee) use ($monthlyFees, $tcp, $lending_institution) {
             $price = $monthlyFee->computeFromTCP($tcp, $lending_institution);

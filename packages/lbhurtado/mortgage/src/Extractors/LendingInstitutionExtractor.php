@@ -2,9 +2,9 @@
 
 namespace LBHurtado\Mortgage\Extractors;
 
+use LBHurtado\Mortgage\Classes\LendingInstitution;
 use LBHurtado\Mortgage\Attributes\ExtractorFor;
 use LBHurtado\Mortgage\Enums\ExtractorType;
-use LBHurtado\Mortgage\Classes\LendingInstitution;
 
 #[ExtractorFor(ExtractorType::LENDING_INSTITUTION)]
 class LendingInstitutionExtractor extends BaseExtractor
