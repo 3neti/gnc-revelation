@@ -196,4 +196,10 @@ class Order implements OrderInterface
     {
         return $this->bpTerm;
     }
+
+    /** override the HasFinancialAttributes::getInterestRate() */
+    public function getInterestRate(): ?Percent
+    {
+        return $this->interest_rate ?? null;
+    }
 }

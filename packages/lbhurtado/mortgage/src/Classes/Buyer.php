@@ -8,6 +8,7 @@ use LBHurtado\Mortgage\Modifiers\DisposableModifier;
 use LBHurtado\Mortgage\Exceptions\BirthdateNotSet;
 use LBHurtado\Mortgage\Contracts\BuyerInterface;
 use LBHurtado\Mortgage\Factories\MoneyFactory;
+use LBHurtado\Mortgage\ValueObjects\Percent;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Carbon;
 use Whitecube\Price\Price;
@@ -198,5 +199,11 @@ class Buyer implements BuyerInterface
         }, MoneyFactory::zero());
 
         return MoneyFactory::price($sum);
+    }
+
+    /** override the HasFinancialAttributes::getInterestRate() */
+    public function getInterestRate(): ?Percent
+    {
+        return $this->interest_rate ?? null;
     }
 }

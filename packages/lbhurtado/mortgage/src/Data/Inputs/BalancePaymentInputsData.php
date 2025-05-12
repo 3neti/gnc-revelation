@@ -18,8 +18,12 @@ class BalancePaymentInputsData extends Data
     {
         return new static(
             bp_term: 0,
-            bp_interest_rate: $order->getInterestRate() ?? ($buyer->getInterestRate() ?? $property->getInterestRate())
+            bp_interest_rate: Percent::ofFraction(0)
         );
+//        return new static(
+//            bp_term: 0,
+//            bp_interest_rate: $order->getInterestRate() ?? ($buyer->getInterestRate() ?? $property->getInterestRate())
+//        );
 //        return new static(
 //            bp_term: $order->getBalancePaymentTerm() ?? $buyer->getJointMaximumTermAllowed(),
 //            bp_interest_rate: $order->getInterestRate() ?? ($buyer->getInterestRate() ?? $property->getInterestRate())

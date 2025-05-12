@@ -3,7 +3,9 @@
 namespace LBHurtado\Mortgage\Calculators;
 
 use LBHurtado\Mortgage\Data\MonthlyAmortizationBreakdownData;
+use LBHurtado\Mortgage\Enums\ExtractorType;
 use LBHurtado\Mortgage\Factories\CalculatorFactory;
+use LBHurtado\Mortgage\Factories\ExtractorFactory;
 use LBHurtado\Mortgage\Modifiers\PeriodicPaymentModifier;
 use LBHurtado\Mortgage\Attributes\CalculatorFor;
 use LBHurtado\Mortgage\Factories\MoneyFactory;
@@ -53,7 +55,10 @@ final class MonthlyAmortizationCalculator extends BaseCalculator
 
     protected function getBalancePaymentInterestRateInMonths(): float
     {
-        return round($this->inputs->balance_payment->bp_interest_rate->value() / 12, 15);
+        $balance_payment_interest_rate = ExtractorFactory::make(ExtractorType::INTEREST_RATE, $this->inputs)->extract()->value();
+
+        return round($balance_payment_interest_rate / 12, 15);
+//        return round($this->inputs->balance_payment->bp_interest_rate->value() / 12, 15);
     }
 
 //    public function monthlyMiscFeeContribution(): Price

@@ -3,8 +3,10 @@
 namespace LBHurtado\Mortgage\ValueObjects;
 
 use LBHurtado\Mortgage\Contracts\FeeRulesInterface;
+use LBHurtado\Mortgage\Factories\ExtractorFactory;
 use LBHurtado\Mortgage\Factories\FeeRulesFactory;
 use LBHurtado\Mortgage\Data\Inputs\InputsData;
+use LBHurtado\Mortgage\Enums\ExtractorType;
 use Brick\Money\Money;
 
 class MiscellaneousFee
@@ -27,8 +29,8 @@ class MiscellaneousFee
         $tcp = $inputs->loanable->total_contract_price->inclusive()->getAmount()->toFloat();
         $percent_mf = $inputs->fees->percent_mf?->value() ?? 0.0;
         $percent_dp = $inputs->loanable->down_payment->percent_dp?->value() ?? 0.0;
-
-        $rules ??= FeeRulesFactory::make($inputs->order()->getLendingInstitution() ?? $inputs->buyer()->getLendingInstitution());
+        $lending_institution = ExtractorFactory::make(ExtractorType::LENDING_INSTITUTION, $inputs)->extract();
+        $rules ??= FeeRulesFactory::make(institution: $lending_institution);
 
         $override_multiplier = $rules->shouldApplyMiscellaneousFee($tcp)
             ? $rules->getPartialMiscellaneousFeeMultiplier($tcp, Percent::ofFraction($percent_dp))?->value()

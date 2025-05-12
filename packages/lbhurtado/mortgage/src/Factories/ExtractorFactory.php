@@ -2,7 +2,10 @@
 
 namespace LBHurtado\Mortgage\Factories;
 
-use LBHurtado\Mortgage\Extractors\{BaseExtractor, IncomeRequirementMultiplierExtractor, LendingInstitutionExtractor};
+use LBHurtado\Mortgage\Extractors\{BaseExtractor,
+    IncomeRequirementMultiplierExtractor,
+    InterestRateExtractor,
+    LendingInstitutionExtractor};
 use LBHurtado\Mortgage\Attributes\ExtractorFor;
 use LBHurtado\Mortgage\Data\Inputs\InputsData;
 use LBHurtado\Mortgage\Enums\ExtractorType;
@@ -55,6 +58,7 @@ final class ExtractorFactory
         $classes = [
             IncomeRequirementMultiplierExtractor::class,
             LendingInstitutionExtractor::class,
+            InterestRateExtractor::class
         ];
 
         foreach ($classes as $class) {
