@@ -7,6 +7,7 @@ use LBHurtado\Mortgage\Traits\HasFinancialAttributes;
 use LBHurtado\Mortgage\Contracts\OrderInterface;
 use LBHurtado\Mortgage\Factories\MoneyFactory;
 use LBHurtado\Mortgage\Enums\MonthlyFee;
+use Illuminate\Support\Collection; //used by $monthlyAddOnFees
 use Whitecube\Price\Price;
 
 class Order implements OrderInterface
@@ -15,6 +16,7 @@ class Order implements OrderInterface
 
     protected ?Percent $percentDownPayment = null;
     protected FeeCollection $monthlyFees;
+    protected Collection $monthlyFeeEnums;// the new $monthlyFees
     protected ?Price $discountAmount = null;
     protected ?Price $lowCashOut = null;
     protected ?Price $consultingFee = null;
@@ -28,6 +30,7 @@ class Order implements OrderInterface
     public function __construct()
     {
         $this->monthlyFees = new FeeCollection();
+        $this->monthlyFeeEnums = new Collection();
     }
 
     public function setPercentDownPayment(Percent|float|int $value): static
@@ -78,19 +81,22 @@ class Order implements OrderInterface
         return $this->tcp;
     }
 
-    public function addMonthlyFee(MonthlyFee $type, ?Price $amount = null): static
+    public function addMonthlyFee(MonthlyFee $fee, ?Price $amount = null): static
     {
-        $price = $amount
-            ?: match (true) {
-                $this->tcp instanceof Price && $this->lendingInstitution instanceof LendingInstitution
-                => $type->computeFromTCP(
-                    $this->tcp->inclusive()->getAmount()->toFloat(),
-                    $this->lendingInstitution
-                ),
-                default => throw new \LogicException("TCP and Lending Institution must be set before computing a monthly fee."),
-            };
+//        $price = $amount
+//            ?: match (true) {
+//                $this->tcp instanceof Price && $this->lendingInstitution instanceof LendingInstitution
+//                => $type->computeFromTCP(
+//                    $this->tcp->inclusive()->getAmount()->toFloat(),
+//                    $this->lendingInstitution
+//                ),
+//                default => throw new \LogicException("TCP and Lending Institution must be set before computing a monthly fee."),
+//            };
+//
+//        $this->monthlyFees->addAddOn($type->label(), $price->inclusive());
 
-        $this->monthlyFees->addAddOn($type->label(), $price->inclusive());
+        /** start of $this->monthlyAddOnFees */
+        $this->monthlyFeeEnums->add($fee);
 
         return $this;
     }
@@ -112,6 +118,11 @@ class Order implements OrderInterface
     public function getMonthlyFees(): FeeCollection
     {
         return $this->monthlyFees;
+    }
+
+    public function getMonthlyFeeEnums(): Collection
+    {
+        return $this->monthlyFeeEnums;
     }
 
     public function setDiscountAmount(?float $value): static

@@ -94,7 +94,6 @@ test('mortgage computations', function (
 
     $order = (new Order())
         ->setLendingInstitution($property->getLendingInstitution()) //TODO: refactor this, decouple lending institution from order - used in Monthly Fee
-        ->setTotalContractPrice($total_contract_price) //TODO: refactor this, decouple $total_contract_price from order - used in Monthly Fee
     ;
 
     if ($percent_miscellaneous_fee) {
