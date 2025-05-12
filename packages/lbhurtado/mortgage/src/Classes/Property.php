@@ -236,12 +236,13 @@ class Property implements PropertyInterface
     }
 
     /**
-     * Provides the default interest rate based on market segment and contract price.
+     * Provides the default interest rate based on lending rates or on market segment and contract price.
      * Used by HasFinancialAttributes if no explicit interest rate is set.
      */
     public function resolveDefaultInterestRate(): Percent
     {
-        return $this->getMarketSegment()->defaultInterestRateFor($this->getTotalContractPrice());
+        return $this->getLendingInstitution()?->getInterestRate()
+            ?? $this->getMarketSegment()->defaultInterestRateFor($this->getTotalContractPrice());
     }
 
     protected string $code = 'N/A';

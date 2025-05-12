@@ -33,7 +33,8 @@ return [
             'maximum_term' => 30,
             'maximum_paying_age' => 70,
             'buffer_margin' => 0.1,
-            'income_requirement_multiplier' => 0.35
+            'income_requirement_multiplier' => 0.35,
+            'interest_rate' => 0.0625
         ],
         'rcbc' => [
             'name' => 'Rizal Commercial Banking Corporation',
@@ -47,7 +48,8 @@ return [
             'maximum_term' => 20,
             'maximum_paying_age' => 65,
             'buffer_margin' => 0.15,
-            'income_requirement_multiplier' => 0.35
+            'income_requirement_multiplier' => 0.35,
+            'interest_rate' => 0.0625
         ],
         'cbc' => [
             'name' => 'China Banking Corporation',
@@ -61,7 +63,8 @@ return [
             'maximum_term' => 20,
             'maximum_paying_age' => 65,
             'buffer_margin' => 0.15,
-            'income_requirement_multiplier' => 0.35
+            'income_requirement_multiplier' => 0.35,
+            'interest_rate' => 0.0625
         ],
     ],
     'default_lending_institution' => env('DEFAULT_LENDING_INSTITUTION', 'hdmf'),

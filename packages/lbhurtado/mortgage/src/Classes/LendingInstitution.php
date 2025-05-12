@@ -99,4 +99,9 @@ class LendingInstitution
     {
         return Percent::ofFraction($this->get('income_requirement_multiplier'));
     }
+
+    public function getInterestRate(): ?Percent
+    {
+        return Percent::ofFraction($this->get('interest_rate'));
+    }
 }

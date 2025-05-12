@@ -94,7 +94,7 @@ trait HasFinancialAttributes
     {
         if (!is_null($institution)) {
             $this->lendingInstitution = $institution;
-            $this->setIncomeRequirementMultiplier($institution->getIncomeRequirementMultiplier());
+//            $this->setIncomeRequirementMultiplier($institution->getIncomeRequirementMultiplier());
         }
 
         return $this;

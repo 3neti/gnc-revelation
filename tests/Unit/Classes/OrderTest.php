@@ -15,7 +15,7 @@ it('initializes with no values set', function () {
         ->and($order->getDiscountAmount())->toBeNull()
         ->and($order->getLowCashOut())->toBeNull()
         ->and($order->getConsultingFee())->toBeNull()
-        ->and($order->getProcessingFee())->toBeNull()
+        ->and($order->getProcessingFee()->inclusive()->getAmount()->toFloat())->toBe(0.0)
         ->and($order->getWaivedProcessingFee())->toBeNull()
         ->and($order->getDownPaymentTerm())->toBeNull()
         ->and($order->getBalancePaymentTerm())->toBeNull();

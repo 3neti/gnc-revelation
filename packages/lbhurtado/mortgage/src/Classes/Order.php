@@ -152,16 +152,15 @@ class Order implements OrderInterface
 
     public function setProcessingFee(?float $value): static
     {
-        $this->processingFee = is_null($value)
-            ? null
-            : MoneyFactory::priceWithPrecision($value);
+        if ($value)
+            $this->processingFee =  MoneyFactory::priceWithPrecision($value);
 
         return $this;
     }
 
     public function getProcessingFee(): ?Price
     {
-        return $this->processingFee;
+        return $this->processingFee ?? MoneyFactory::priceZero();
     }
 
     public function setWaivedProcessingFee(?float $value): static
@@ -201,5 +200,10 @@ class Order implements OrderInterface
     public function getInterestRate(): ?Percent
     {
         return $this->interest_rate ?? null;
+    }
+
+    public function getPercentMiscellaneousFees(): Percent
+    {
+        return $this->percentMiscellaneousFees ?? Percent::ofFraction(0.0);
     }
 }
