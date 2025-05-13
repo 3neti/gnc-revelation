@@ -66,7 +66,7 @@ trait AdditionalPropertyAttributes
     {
         $amount = $this->getAttribute('meta')->get($key);
 
-        return $amount !== null ? MoneyFactory::priceOfMinor($amount)->setVat(0) : null;
+        return $amount !== null ? MoneyFactory::priceOfMinor($amount) : null;
     }
 
     /**

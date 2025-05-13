@@ -1,5 +1,6 @@
 <?php
 
+use Database\Seeders\PropertySeeder;
 use LBHurtado\Mortgage\Classes\Property as DomainProperty;
 use LBHurtado\Mortgage\Enums\Property\DevelopmentForm;
 use LBHurtado\Mortgage\Enums\Property\DevelopmentType;
@@ -1003,7 +1004,49 @@ test('it converts eloquent Property model to domain Property object', function (
         ->and($domain->getIncomeRequirementMultiplier()->asPercent())->toBeCloseTo($incomeRequirementMultiplier)
     ;
 });
-/*** Property::toDomain() ****/
+
+
+
+test('it converts eloquent Property model to domain Property object using seeded data', function () {
+    // Run the seeder to populate the database
+    $this->seed(PropertySeeder::class);
+
+    // Fetch a seeded property
+    $properties = Property::all();
+
+    // Convert to domain object
+    foreach ($properties as $eloquent) {
+        // Define expected values (should align with the seeded data for 'PROP0001')
+        $tcp = $eloquent->{Property::TOTAL_CONTRACT_PRICE};
+        $appraisal = $eloquent->{Property::APPRAISAL_VALUE};
+        $pf = $eloquent->{Property::PROCESSING_FEE};
+        $pdp = $eloquent->{Property::PERCENT_LOANABLE_VALUE};
+        $pmf = $eloquent->{Property::PERCENT_MISCELLANEOUS_FEES};
+        $buffer = $eloquent->{Property::REQUIRED_BUFFER_MARGIN};
+        $devType = DevelopmentType::from($eloquent->{Property::DEVELOPMENT_TYPE}->value);
+        $devForm = DevelopmentForm::from($eloquent->{Property::DEVELOPMENT_FORM}->value);
+        $lendingInstitution = $eloquent->{Property::LENDING_INSTITUTION};
+        $incomeRequirementMultiplier = $eloquent->{Property::INCOME_REQUIREMENT_MULTIPLIER};
+        $domain = $eloquent->toDomain();
+
+        // Assertions
+        expect($eloquent)->toBeInstanceOf(Property::class)
+            ->and($domain)->toBeInstanceOf(DomainProperty::class)
+            ->and($domain->getTotalContractPrice()->inclusive()->getAmount()->toFloat())->toBe($tcp->inclusive()->getAmount()->toFloat())
+            ->and($domain->getAppraisalValue()->inclusive()->getAmount()->toFloat())->toBe($appraisal->inclusive()->getAmount()->toFloat())
+            ->and($domain->getProcessingFee()->inclusive()->getAmount()->toFloat())->toBe($pf->inclusive()->getAmount()->toFloat())
+            ->and($domain->getPercentLoanableValue()->value())->toBeCloseTo($pdp->value())
+            ->and($domain->getPercentMiscellaneousFees()->value())->toBeCloseTo($pmf->value())
+            ->and($domain->getRequiredBufferMargin()->value())->toBeCloseTo($buffer->value())
+            ->and($domain->getDevelopmentType())->toBe($devType)
+            ->and($domain->getDevelopmentForm())->toBe($devForm)
+            ->and($domain->getLendingInstitution()->key())->toBe($lendingInstitution->key())
+            ->and($domain->getIncomeRequirementMultiplier()->value())->toBeCloseTo($incomeRequirementMultiplier->value());
+
+        break; //remove if you want to test all
+    }
+});
+///*** Property::toDomain() ****/
 
 /*** Property::getRouteKeyName() ****/
 test('property uses code as route key', function () {
@@ -1092,3 +1135,4 @@ test('it filters using withMeta with array of keys', function () {
     expect($results)->toContain('WMULTI1')->not->toContain('WMULTI2');
 });
 /*** Property::scopeWithMeta() ****/
+
