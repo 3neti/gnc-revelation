@@ -17,6 +17,7 @@ interface PropertyInterface
     public function getProcessingFee(): ?Price;
     public function getPercentMiscellaneousFees(): ?Percent;
     public function getLendingInstitution(): ?LendingInstitution;
+    public function getPercentDownPayment(): Percent;
 
     /**
      * Must return an interest rate, either explicitly set or via fallback logic.

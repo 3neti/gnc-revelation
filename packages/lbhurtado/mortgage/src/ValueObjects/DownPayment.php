@@ -5,6 +5,8 @@ namespace LBHurtado\Mortgage\ValueObjects;
 use LBHurtado\Mortgage\Data\Inputs\InputsData;
 use Brick\Math\RoundingMode;
 use Brick\Money\Money;
+use LBHurtado\Mortgage\Enums\ExtractorType;
+use LBHurtado\Mortgage\Factories\ExtractorFactory;
 
 /** TODO: change the name of this class */
 class DownPayment
@@ -20,8 +22,8 @@ class DownPayment
 
     public static function fromInputs(InputsData $inputs): self
     {
-        $tcp = $inputs->loanable->total_contract_price->inclusive()->getAmount()->toFloat();
-        $percent = $inputs->loanable->down_payment->percent_dp?->value() ?? 0.0;
+        $tcp = ExtractorFactory::make(ExtractorType::TOTAL_CONTRACT_PRICE, $inputs)->toFloat();
+        $percent = ExtractorFactory::make(ExtractorType::PERCENT_DOWN_PAYMENT, $inputs)->extract()->value();
 
         return new self($tcp, $percent);
     }

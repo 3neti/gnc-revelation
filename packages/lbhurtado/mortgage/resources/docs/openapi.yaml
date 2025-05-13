@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Loan Matching & Mortgage API
-  version: 1.0.10
+  version: 1.0.12
   description: Strict input definitions for buyer qualification and mortgage computation.
 
 servers:
@@ -15,6 +15,8 @@ tags:
     description: Compute amortization, equity, and loan qualification
   - name: Properties
     description: Fetch available property listings
+  - name: Lending Institutions
+    description: Explore supported lending institutions
 
 paths:
   /loan-match:
@@ -109,9 +111,6 @@ paths:
       tags:
         - Mortgage Computation
       summary: Compute mortgage result and qualification
-      description: |
-        Computes amortization, cash out, and loan qualification based on the buyer's financial profile.
-        Financial attributes such as down payment, interest rate, and fees are inferred from the selected property's defaults.
       operationId: computeMortgage
       requestBody:
         required: true
@@ -128,28 +127,19 @@ paths:
               properties:
                 lending_institution:
                   type: string
-                  enum: [hdmf, rcbc]
+                  enum: [hdmf, rcbc, cbc]
                 total_contract_price:
                   type: number
                   example: 1000000
-                  description: |
-                    Used to match against an existing property.
-                    All default financial parameters will be derived from this property.
                 percent_down_payment:
                   type: number
-                  nullable: true
                   example: 0.10
-                  description: Optional. If omitted, uses the property's default down payment percent.
                 percent_miscellaneous_fee:
                   type: number
-                  nullable: true
                   example: 0.085
-                  description: Optional. If omitted, uses the property's default miscellaneous fee rate.
                 processing_fee:
                   type: number
-                  nullable: true
                   example: 10000
-                  description: Optional. If omitted, uses the property's default processing fee.
                 add_mri:
                   type: boolean
                 add_fi:
@@ -160,23 +150,23 @@ paths:
                   properties:
                     age:
                       type: integer
-                      enum: [45, 46, 47, 48, 49, 50]
+                      example: 45
                     monthly_income:
                       type: number
-                      enum: [17000, 19000, 21000, 23000, 25000]
+                      example: 25000
                     additional_income:
                       type: number
-                      enum: [0, 19000]
+                      example: 0
                 co_borrower:
                   type: object
                   nullable: true
                   properties:
                     age:
                       type: integer
-                      enum: [0, 50]
+                      example: 50
                     monthly_income:
                       type: number
-                      enum: [0, 19000]
+                      example: 18000
       responses:
         '200':
           description: Computed mortgage result and qualification
@@ -245,7 +235,7 @@ paths:
                 items:
                   type: string
             example: hdmf
-          description: Filter by lending institution (e.g., hdmf, rcbc)
+          description: Filter by lending institution (e.g., hdmf, rcbc, cbc)
         - in: query
           name: min_price
           schema:
@@ -299,50 +289,133 @@ paths:
                   properties:
                     code:
                       type: string
-                      example: PROP0001
                     name:
                       type: string
-                      example: Property ₱1,000,000
                     status:
                       type: string
-                      enum: [ available, sold, reserved ]
-                      example: available
                     total_contract_price:
                       type: number
-                      example: 1000000
                     appraisal_value:
                       type: number
-                      example: 950000
                     percent_loanable_value:
                       type: number
-                      example: 1.0
                     percent_miscellaneous_fees:
                       type: number
-                      example: 0.085
                     processing_fee:
                       type: number
-                      example: 10000
                     development_type:
                       type: string
-                      enum: [ bp_220, bp_957 ]
-                      example: bp_957
                     development_form:
                       type: string
-                      enum: [ horizontal, vertical ]
-                      example: horizontal
                     housing_type:
                       type: string
-                      enum:
-                        - condominium
-                        - duplex
-                        - row_house
-                        - single_attached
-                        - single_detached
-                        - quadruplex
-                        - townhouse
-                        - twin_homes
-                      example: row_house
                     lending_institution:
                       type: string
-                      enum: [ hdmf, rcbc ]
-                      example: hdmf
+                    lending_institution_details:
+                      type: object
+                      properties:
+                        borrowing_age:
+                          type: object
+                          properties:
+                            minimum:
+                              type: integer
+                            maximum:
+                              type: integer
+                            offset:
+                              type: integer
+                        maximum_term:
+                          type: integer
+                        maximum_paying_age:
+                          type: integer
+                        buffer_margin:
+                          type: number
+                        income_requirement_multiplier:
+                          type: number
+                        interest_rate:
+                          type: number
+                        percent_dp:
+                          type: number
+
+  /lending-institutions:
+    get:
+      tags:
+        - Lending Institutions
+      summary: List all supported lending institutions
+      operationId: listLendingInstitutions
+      responses:
+        '200':
+          description: A list of supported lending institutions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    key:
+                      type: string
+                    name:
+                      type: string
+                    alias:
+                      type: string
+                    type:
+                      type: string
+
+  /lending-institutions/{key}:
+    get:
+      tags:
+        - Lending Institutions
+      summary: Show configuration of a specific lending institution
+      operationId: showLendingInstitution
+      parameters:
+        - in: path
+          name: key
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lending institution configuration
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  key:
+                    type: string
+                  name:
+                    type: string
+                  alias:
+                    type: string
+                  type:
+                    type: string
+                  borrowing_age:
+                    type: object
+                    properties:
+                      minimum:
+                        type: integer
+                      maximum:
+                        type: integer
+                      offset:
+                        type: integer
+                  maximum_term:
+                    type: integer
+                  maximum_paying_age:
+                    type: integer
+                  buffer_margin:
+                    type: number
+                  income_requirement_multiplier:
+                    type: number
+                  interest_rate:
+                    type: number
+                  percent_down_payment:
+                    type: number
+        '404':
+          description: Lending institution not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string

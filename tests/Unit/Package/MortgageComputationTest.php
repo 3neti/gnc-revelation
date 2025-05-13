@@ -37,11 +37,17 @@ dataset('simple amortization', [
     'hdmf 1.4M in 25 yrs @ 6.25% by a 45yo w/ [35%] ₱25,000 gmi; nil dp; 0.0% mf; ₱ _0k pf no add-ons w/o co-borrower w/o +inc' => [ 'hdmf', 1_400_000, 45, 25_000, 00, 25_000, 0_000, 0.0625, null, 0.000, 00_000.00, false, false, 25, 0.35,  8_750.0, 1_326_422.04,  73_577.96,  9_235.37,   0.00,       0.00, 1_400_000.00, 00_000.00,   485.37, 0.05 ],
     /** end working */
     'rcbc 1.0M in 15 yrs @ 6.25% by a 49yo w/ [35%] ₱17,000 gmi; _0% dp; 0.0% mf; ₱ _0k pf no add-ons w/o co-borrower w/o +inc' => [ 'rcbc', 1_000_000, 49, 17_000, 00, 17_000, 0_000, 0.0625, 0.00, 0.000, 00_000.00, false, false, 15, 0.35,  5_950.0,   693_939.97, 306_060.03,  8_574.23,   0.00,       0.00, 1_000_000.00, 00_000.00, 2_624.23, 0.30 ],
+    'rcbc 1.0M in 15 yrs @ 6.25% by a 49yo w/ [35%] ₱17,000 gmi; nil dp; 0.0% mf; ₱ _0k pf no add-ons w/o co-borrower w/o +inc' => [ 'rcbc', 1_000_000, 49, 17_000, 00, 17_000, 0_000, 0.0625, null, 0.000, 00_000.00, false, false, 15, 0.35,  5_950.0,   693_939.97, 206_060.03,  7_716.81,   0.00,  100_000.0,   900_000.00, 00_000.00, 1_766.81, 0.20 ],
     'rcbc 1.1M in 16 yrs @ 6.25% by a 48yo w/ [35%] ₱19,000 gmi; _0% dp; 0.0% mf; ₱ _0k pf no add-ons w/o co-borrower w/o +inc' => [ 'rcbc', 1_100_000, 48, 19_000, 00, 19_000, 0_000, 0.0625, 0.00, 0.000, 00_000.00, false, false, 16, 0.35,  6_650.0,   805_870.98, 294_129.02,  9_077.14,   0.00,       0.00, 1_100_000.00, 00_000.00, 2_427.14, 0.26 ],
+    'rcbc 1.1M in 16 yrs @ 6.25% by a 48yo w/ [35%] ₱19,000 gmi; nil dp; 0.0% mf; ₱ _0k pf no add-ons w/o co-borrower w/o +inc' => [ 'rcbc', 1_100_000, 48, 19_000, 00, 19_000, 0_000, 0.0625, null, 0.000, 00_000.00, false, false, 16, 0.35,  6_650.0,   805_870.98, 184_129.02,  8_169.42,   0.00,  110_000.0,   990_000.00, 00_000.00, 1_519.42, 0.16 ],
     'rcbc 1.2M in 17 yrs @ 6.25% by a 47yo w/ [35%] ₱21,000 gmi; _0% dp; 0.0% mf; ₱ _0k pf no add-ons w/o co-borrower w/o +inc' => [ 'rcbc', 1_200_000, 47, 21_000, 00, 21_000, 0_000, 0.0625, 0.00, 0.000, 00_000.00, false, false, 17, 0.35,  7_350.0,   922_155.72, 277_844.28,  9_564.55,   0.00,       0.00, 1_200_000.00, 00_000.00, 2_214.55, 0.23 ],
+    'rcbc 1.2M in 17 yrs @ 6.25% by a 47yo w/ [35%] ₱21,000 gmi; nil dp; 0.0% mf; ₱ _0k pf no add-ons w/o co-borrower w/o +inc' => [ 'rcbc', 1_200_000, 47, 21_000, 00, 21_000, 0_000, 0.0625, null, 0.000, 00_000.00, false, false, 17, 0.35,  7_350.0,   922_155.72, 157_844.28,  8_608.09,   0.00,  120_000.0, 1_080_000.00, 00_000.00, 1_258.09, 0.13 ],
     'rcbc 1.3M in 18 yrs @ 6.25% by a 46yo w/ [35%] ₱23,000 gmi; _0% dp; 0.0% mf; ₱ _0k pf no add-ons w/o co-borrower w/o +inc' => [ 'rcbc', 1_300_000, 46, 23_000, 00, 23_000, 0_000, 0.0625, 0.00, 0.000, 00_000.00, false, false, 18, 0.35,  8_050.0, 1_042_350.02, 257_649.98, 10_039.81,   0.00,       0.00, 1_300_000.00, 00_000.00, 1_989.81, 0.19 ],
+    'rcbc 1.3M in 18 yrs @ 6.25% by a 46yo w/ [35%] ₱23,000 gmi; nil dp; 0.0% mf; ₱ _0k pf no add-ons w/o co-borrower w/o +inc' => [ 'rcbc', 1_300_000, 46, 23_000, 00, 23_000, 0_000, 0.0625, null, 0.000, 00_000.00, false, false, 18, 0.35,  8_050.0, 1_042_350.02, 127_649.98,  9_035.83,   0.00,  130_000.0, 1_170_000.00, 00_000.00,   985.83, 0.09 ],
     'rcbc 1.4M in 19 yrs @ 6.25% by a 45yo w/ [35%] ₱25,000 gmi; _0% dp; 0.0% mf; ₱ _0k pf no add-ons w/o co-borrower w/o +inc' => [ 'rcbc', 1_400_000, 45, 25_000, 00, 25_000, 0_000, 0.0625, 0.00, 0.000, 00_000.00, false, false, 19, 0.35,  8_750.0, 1_166_047.51, 233_952.49, 10_505.58,   0.00,       0.00, 1_400_000.00, 00_000.00, 1_755.58, 0.16 ],
+    'rcbc 1.4M in 19 yrs @ 6.25% by a 45yo w/ [35%] ₱25,000 gmi; nil dp; 0.0% mf; ₱ _0k pf no add-ons w/o co-borrower w/o +inc' => [ 'rcbc', 1_400_000, 45, 25_000, 00, 25_000, 0_000, 0.0625, null, 0.000, 00_000.00, false, false, 19, 0.35,  8_750.0, 1_166_047.51,  93_952.49,  9_455.02,   0.00,  140_000.0, 1_260_000.00, 00_000.00,   705.02, 0.06 ],
     'rcbc 1.4M in 19 yrs @ 6.25% by a 45yo w/ [35%] ₱25,000 gmi; _0% dp; 0.0% mf; ₱ _0k pf no add-ons w/  co-borrower w/o +inc' => [ 'rcbc', 1_400_000, 45, 25_000, 50, 25_000, 0_000, 0.0625, 0.00, 0.000, 00_000.00, false, false, 14, 0.35, 17_500.0, 1_956_159.44,       0.00, 12_524.54,   0.00,       0.00, 1_400_000.00, 00_000.00,     0.00, 0.00 ],
+    'rcbc 1.4M in 19 yrs @ 6.25% by a 45yo w/ [35%] ₱25,000 gmi; nil dp; 0.0% mf; ₱ _0k pf no add-ons w/  co-borrower w/o +inc' => [ 'rcbc', 1_400_000, 45, 25_000, 50, 25_000, 0_000, 0.0625, null, 0.000, 00_000.00, false, false, 14, 0.35, 17_500.0, 1_956_159.44,       0.00, 11_272.09,   0.00,  140_000.0, 1_260_000.00, 00_000.00,     0.00, 0.00 ],
 ]);
 
 test('mortgage computations', function (
@@ -124,8 +130,11 @@ test('mortgage computations', function (
     $actual_add_on_fees = CalculatorFactory::make(CalculatorType::FEES, $inputs)->total()->getAmount()->toFloat();
     $actual_miscellaneous_fee = MiscellaneousFee::fromInputs($inputs)->total()->getAmount()->toFloat();
 
-//    dd($actual_term_years, $expected_balance_payment_term);
-
+    $actual_percent_dp = ExtractorFactory::make(ExtractorType::PERCENT_DOWN_PAYMENT, $inputs)->extract()->value();
+//    dd($actual_equity_float, $expected_required_equity);
+//    dd($actual_cash_out, $expected_cash_out);
+//    dd($actual_monthly_amortization_float, $expected_monthly_amortization);
+//    dd($actual_loanable_amount, $expected_loanable_amount);
     // Assert
     expect($buyer->getMonthlyGrossIncome()->inclusive()->getAmount()->toFloat())->toBe($monthly_gross_income + $additional_income)
         ->and($actual_term_years)->toBe($expected_balance_payment_term)
@@ -186,6 +195,8 @@ test('mortgage computations', function (
     ;
 
     $result = QualificationResultData::fromInputs($inputs);
+//    dd($result->income_gap->inclusive()->getAmount()->toFloat(), $expected_income_gap);
+//    dd($result->suggested_down_payment_percent->value(), $expected_percent_down_payment_remedy);
     expect($result)->toBeInstanceOf(QualificationResultData::class)
         ->and($result->mortgage)->toBeInstanceOf(MortgageResultData::class)
         ->and($result->loan_difference->inclusive()->getAmount()->toFloat())->toBeCloseTo($expected_required_equity)

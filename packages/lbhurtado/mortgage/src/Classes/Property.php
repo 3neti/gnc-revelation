@@ -23,6 +23,7 @@ class Property implements PropertyInterface
     protected Percent $percent_loanable_value;
     protected ?Price $appraisal_value = null;
     protected ?Price $processing_fee = null;
+    protected Percent $percentDownPayment;
     protected ?Percent $percent_miscellaneous_fees = null;
 
     public function __construct(
@@ -256,5 +257,27 @@ class Property implements PropertyInterface
     public function getCode(): string
     {
         return $this->code;
+    }
+
+    public function setPercentDownPayment(Percent|float|int $value): static
+    {
+        if ((is_numeric($value) && $value < 0) || ($value instanceof Percent && $value->value() < 0)) {
+            throw new \InvalidArgumentException("Down payment percent must not be negative.");
+        }
+
+        $this->percentDownPayment = match (true) {
+            $value instanceof Percent        => $value,
+            is_float($value) && $value <= 1  => Percent::ofFraction($value),
+            is_int($value), is_float($value) => Percent::ofPercent($value),
+            default                          => throw new \InvalidArgumentException("Unsupported value for percent down payment"),
+        };
+
+        return $this;
+    }
+
+    public function getPercentDownPayment(): Percent
+    {
+        return ($this->percentDownPayment ?? $this->getLendingInstitution()?->getPercentDownPayment())
+            ?? Percent::ofPercent(0);
     }
 }

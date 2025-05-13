@@ -1,8 +1,10 @@
 <?php
 
+use LBHurtado\Mortgage\Classes\LendingInstitution;
 use LBHurtado\Mortgage\Classes\Property;
 use LBHurtado\Mortgage\Enums\Property\{DevelopmentType};
 use LBHurtado\Mortgage\Enums\Property\DevelopmentForm;
+use LBHurtado\Mortgage\ValueObjects\Percent;
 use Whitecube\Price\Price;
 
 beforeEach(function () {
@@ -122,3 +124,59 @@ it('allows overriding interest rate', function () {
 
     expect($property->getInterestRate())->toEqualPercent(0.065);
 });
+
+it('defaults down payment to 0 percent if not set', function () {
+    $property = new Property(1_000_000);
+    $default = config('gnc-revelation.property.default.percent_dp');
+    expect($default)->toBe(0.0)
+        ->and($property->getPercentDownPayment()->value())->toBe($default);
+
+});
+
+it('defaults down payment to lending institution default if set', function () {
+    $property = new Property(1_000_000);
+    $lendingInstitution = new LendingInstitution('rcbc');
+    $property->setLendingInstitution($lendingInstitution);
+    $default = $lendingInstitution->getPercentDownPayment()->value();
+    expect($default)->toBe(0.10)
+        ->and($property->getPercentDownPayment()->value())->toBe($default);
+});
+
+it('accepts a numeric percent (e.g., 10 for 10%)', function () {
+    $property = new Property(1_000_000);
+    $property->setPercentDownPayment(10);
+
+    expect($property->getPercentDownPayment()->value())->toBe(0.10);
+});
+
+it('accepts a fraction (e.g., 0.10 for 10%)', function () {
+    $property = new Property(1_000_000);
+    $property->setPercentDownPayment(0.10);
+
+    expect($property->getPercentDownPayment())->toEqualPercent(0.10);
+});
+
+it('accepts a Percent instance', function () {
+    $property = new Property(1_000_000);
+    $property->setPercentDownPayment(Percent::ofPercent(15));
+
+    expect($property->getPercentDownPayment()->value())->toBe(0.15);
+});
+
+it('throws exception for negative numeric down payment', function () {
+    $property = new Property(1_000_000);
+
+    expect(fn () => $property->setPercentDownPayment(-5))
+        ->toThrow(\InvalidArgumentException::class, 'Down payment percent must not be negative.');
+});
+
+it('throws exception for negative Percent object', function () {
+    $property = new Property(1_000_000);
+    $negative = -15;
+    $property->setPercentDownPayment($negative);
+})->throws(InvalidArgumentException::class);
+
+it('throws exception for unsupported type', function () {
+    $property = new Property(1_000_000);
+    $property->setPercentDownPayment('ten percent');
+})->throws(TypeError::class);

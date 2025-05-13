@@ -34,7 +34,8 @@ return [
             'maximum_paying_age' => 70,
             'buffer_margin' => 0.1,
             'income_requirement_multiplier' => 0.35,
-            'interest_rate' => 0.0625
+            'interest_rate' => 0.0625,
+            'percent_dp' => 0.0
         ],
         'rcbc' => [
             'name' => 'Rizal Commercial Banking Corporation',
@@ -49,7 +50,8 @@ return [
             'maximum_paying_age' => 65,
             'buffer_margin' => 0.15,
             'income_requirement_multiplier' => 0.35,
-            'interest_rate' => 0.0625
+            'interest_rate' => 0.0625,
+            'percent_dp' => 0.10
         ],
         'cbc' => [
             'name' => 'China Banking Corporation',
@@ -64,7 +66,8 @@ return [
             'maximum_paying_age' => 65,
             'buffer_margin' => 0.15,
             'income_requirement_multiplier' => 0.35,
-            'interest_rate' => 0.0625
+            'interest_rate' => 0.0625,
+            'percent_dp' => 0.10
         ],
     ],
     'default_lending_institution' => env('DEFAULT_LENDING_INSTITUTION', 'hdmf'),
@@ -124,7 +127,7 @@ return [
             'development_form' => env('PROPERTY_DEFAULT_DEVELOPMENT_FORM', DevelopmentForm::HORIZONTAL->value),
             'housing_type' => env('PROPERTY_DEFAULT_HOUSING_TYPE', HousingType::SINGLE_DETACHED->value),
             'processing_fee' => env('PROPERTY_DEFAULT_PROCESSING_FEE', 0.0),
-            'percent_dp' => env('PROPERTY_DEFAULT_PERCENT_DP', 0), // 10%
+            'percent_dp' => env('PROPERTY_DEFAULT_PERCENT_DP', 0.0), // 10%
             'dp_term' => env('PROPERTY_DEFAULT_DP_TERM', 12), // in months
             'percent_mf' => env('PROPERTY_DEFAULT_PERCENT_MISC_FEES', 0.0), // 8.5%
         ],

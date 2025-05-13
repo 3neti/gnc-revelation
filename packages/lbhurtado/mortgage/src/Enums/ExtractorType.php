@@ -8,4 +8,5 @@ enum ExtractorType: string
     case LENDING_INSTITUTION = 'lending_institution';
     case INTEREST_RATE = 'interest_rate';
     case TOTAL_CONTRACT_PRICE = 'total_contract_price';
+    case PERCENT_DOWN_PAYMENT = 'percent_down_payment';
 }

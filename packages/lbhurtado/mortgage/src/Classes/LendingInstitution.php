@@ -104,4 +104,11 @@ class LendingInstitution
     {
         return Percent::ofFraction($this->get('interest_rate'));
     }
+
+    public function getPercentDownPayment(): Percent
+    {
+        $default = $this->get('percent_dp') ?? 0.0;
+
+        return Percent::ofFraction($default);
+    }
 }
