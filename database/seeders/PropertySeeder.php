@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use LBHurtado\Mortgage\Enums\Property\DevelopmentForm;
 use LBHurtado\Mortgage\Enums\Property\DevelopmentType;
 use LBHurtado\Mortgage\Enums\Property\HousingType;
@@ -16,9 +15,9 @@ class PropertySeeder extends Seeder
      */
     public function run(): void
     {
-        $start = 750_000;
-        $end = 4_000_000;
-        $step = 500_000;
+        $start = 800_000; // Start TCP at 800,000
+        $end = 4_000_000; // End at 4,000,000
+        $step = 50_000; // Increment of 50,000
         $serial = 1;
 
         $statuses = ['available', 'unavailable'];
@@ -26,11 +25,16 @@ class PropertySeeder extends Seeder
         $developmentForms = array_map(fn($enum) => $enum->value, DevelopmentForm::cases());
         $housingTypes = array_map(fn($enum) => $enum->value, HousingType::cases());
         $bufferMargins = [5, 10, 15];
-        $lendingInstitutions = ['hdmf', 'rcbc'];
+        $lendingInstitutionsAbove1M = ['rcbc', 'cbc']; // Lending institutions for TCP > 1M
         $incomeRequirementMultiplier = [30, 32, 35];
 
         for ($tcp = $start; $tcp <= $end; $tcp += $step, $serial++) {
             $code = 'PROP' . str_pad($serial, 4, '0', STR_PAD_LEFT);
+
+            // Determine lending institution based on TCP
+            $lendingInstitution = $tcp <= 1_000_000
+                ? 'hdmf' // Use 'hdmf' if TCP is less than or equal to 1M
+                : $lendingInstitutionsAbove1M[array_rand($lendingInstitutionsAbove1M)]; // Use 'rcbc' or 'cbc' randomly for TCP greater than 1M
 
             Property::create([
                 'code' => $code,
@@ -48,8 +52,7 @@ class PropertySeeder extends Seeder
                 Property::DEVELOPMENT_FORM => $developmentForms[$serial % count($developmentForms)],
                 Property::HOUSING_TYPE => $housingTypes[$serial % count($housingTypes)],
                 Property::REQUIRED_BUFFER_MARGIN => $bufferMargins[$serial % count($bufferMargins)],
-//                Property::LENDING_INSTITUTION => $lendingInstitutions[$serial % count($lendingInstitutions)],
-                Property::LENDING_INSTITUTION => 'hdmf',
+                Property::LENDING_INSTITUTION => $lendingInstitution, // Set according to TCP
                 Property::INCOME_REQUIREMENT_MULTIPLIER => $incomeRequirementMultiplier[$serial % count($incomeRequirementMultiplier)],
             ]);
         }
