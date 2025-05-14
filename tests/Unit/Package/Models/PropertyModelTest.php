@@ -1,16 +1,16 @@
 <?php
 
-use Database\Seeders\PropertySeeder;
+use LBHurtado\Mortgage\Enums\Property\{DevelopmentForm, DevelopmentType};
 use LBHurtado\Mortgage\Classes\Property as DomainProperty;
-use LBHurtado\Mortgage\Enums\Property\DevelopmentForm;
-use LBHurtado\Mortgage\Enums\Property\DevelopmentType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use LBHurtado\Mortgage\Classes\LendingInstitution;
-use Brick\Math\Exception\NumberFormatException;
 use LBHurtado\Mortgage\Enums\Property\HousingType;
+use Brick\Math\Exception\NumberFormatException;
 use LBHurtado\Mortgage\Factories\MoneyFactory;
+use LBHurtado\Mortgage\Models\Product;
 use LBHurtado\Mortgage\ValueObjects\Percent;
 use LBHurtado\Mortgage\Models\Property;
+use Database\Seeders\PropertySeeder;
 use Whitecube\Price\Price;
 
 uses(RefreshDatabase::class);
@@ -1133,6 +1133,86 @@ test('it filters using withMeta with array of keys', function () {
         ->all();
 
     expect($results)->toContain('WMULTI1')->not->toContain('WMULTI2');
+});
+
+test('it filters properties by lending institution', function () {
+    // Create properties with different lending institutions
+    Product::factory()->create(['sku' => 'PROD001']);
+    Product::factory()->create(['sku' => 'PROD002']);
+    Product::factory()->create(['sku' => 'PROD003']);
+    Property::factory()->create([
+        'code' => 'LENDINST1',
+        'sku' => 'PROD001',
+        'lending_institution' => 'hdmf',
+    ]);
+
+    Property::factory()->create([
+        'code' => 'LENDINST2',
+        'sku' => 'PROD002',
+        'lending_institution' => 'rcbc',
+    ]);
+
+    Property::factory()->create([
+        'code' => 'LENDINST3',
+        'sku' => 'PROD003',
+    ]);
+
+    // Query only properties linked to the 'hdmf' lending institution
+    $results = Property::query()
+        ->whereIn('meta->lending_institution', array('hdmf'))
+        ->pluck('code')
+        ->all();
+
+    // Assert that only the correct property is returned
+    expect($results)->toContain('LENDINST1')
+        ->not->toContain('LENDINST2')
+        ->not->toContain('LENDINST3');
+});
+
+test('it filters properties by lending institution using scope', function () {
+    // Create properties with different lending institutions
+    Product::factory()->create(['sku' => 'PROD001']);
+    Product::factory()->create(['sku' => 'PROD002']);
+    Product::factory()->create(['sku' => 'PROD003']);
+    Property::factory()->create([
+        'code' => 'LENDINST1',
+        'sku' => 'PROD001',
+        'meta' => ['lending_institution' => 'hdmf'],
+    ]);
+
+    Property::factory()->create([
+        'code' => 'LENDINST2',
+        'sku' => 'PROD002',
+        'meta' => ['lending_institution' => 'rcbc'],
+    ]);
+
+    Property::factory()->create([
+        'code' => 'LENDINST3',
+        'sku' => 'PROD003',
+        'meta' => ['lending_institution' => null], // No lending institution
+    ]);
+
+    // Use the new scope to query properties for 'hdmf'
+    $results = Property::query()
+        ->forLendingInstitution('hdmf')
+        ->pluck('code')
+        ->all();
+
+    // Assert that only the correct property is returned
+    expect($results)->toContain('LENDINST1')
+        ->not->toContain('LENDINST2')
+        ->not->toContain('LENDINST3');
+
+    // Use the scope to query properties for multiple institutions
+    $resultsMultiple = Property::query()
+        ->forLendingInstitution(['hdmf', 'rcbc'])
+        ->pluck('code')
+        ->all();
+
+    // Assert that two properties are returned
+    expect($resultsMultiple)->toContain('LENDINST1')
+        ->toContain('LENDINST2')
+        ->not->toContain('LENDINST3');
 });
 /*** Property::scopeWithMeta() ****/
 

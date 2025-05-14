@@ -31,7 +31,7 @@ class PropertyController
 
         // Use withMeta for meta filtering
         if ($request->filled('lending_institution')) {
-            $query->whereIn('meta->lending_institution', (array) $request->lending_institution);
+            $query->forLendingInstitution($request->lending_institution);
         }
 
         if ($request->filled('min_price')) {

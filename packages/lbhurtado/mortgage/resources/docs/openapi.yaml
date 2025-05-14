@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Loan Matching & Mortgage API
-  version: 1.0.12
+  version: 1.0.13
   description: Strict input definitions for buyer qualification and mortgage computation.
 
 servers:
@@ -17,6 +17,8 @@ tags:
     description: Fetch available property listings
   - name: Lending Institutions
     description: Explore supported lending institutions
+  - name: Products
+    description: Browse sellable product bundles
 
 paths:
   /loan-match:
@@ -419,3 +421,139 @@ paths:
                 properties:
                   message:
                     type: string
+
+  /products:
+    get:
+      tags:
+        - Products
+      summary: List all products with associated properties
+      operationId: listProducts
+      parameters:
+        - in: query
+          name: sku
+          schema:
+            type: string
+            example: product-a
+          description: Filter by product SKU
+        - in: query
+          name: lending_institution
+          schema:
+            type: string
+            example: rcbc
+          description: Filter products by lending institution
+      responses:
+        '200':
+          description: A list of products with related properties
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    sku:
+                      type: string
+                    name:
+                      type: string
+                    brand:
+                      type: string
+                    category:
+                      type: string
+                    description:
+                      type: string
+                    price:
+                      type: number
+                      description: Price in major units (converted from minor)
+                    properties:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                          sku:
+                            type: string
+                          code:
+                            type: string
+                          name:
+                            type: string
+                          total_contract_price:
+                            type: number
+                          appraisal_value:
+                            type: number
+                          lending_institution:
+                            type: string
+
+    /products/{sku}:
+      get:
+        tags:
+          - Products
+        summary: Show a specific product by SKU
+        operationId: showProduct
+        parameters:
+          - in: path
+            name: sku
+            required: true
+            schema:
+              type: string
+            description: SKU of the product
+          - in: query
+            name: lending_institution
+            schema:
+              type: string
+              example: rcbc
+            description: Optional filter by lending institution
+        responses:
+          '200':
+            description: Product details with related properties
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    sku:
+                      type: string
+                    name:
+                      type: string
+                    brand:
+                      type: string
+                    category:
+                      type: string
+                    description:
+                      type: string
+                    price:
+                      type: number
+                      description: Price in major units (converted from minor)
+                    properties:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                          sku:
+                            type: string
+                          code:
+                            type: string
+                          name:
+                            type: string
+                          total_contract_price:
+                            type: number
+                          appraisal_value:
+                            type: number
+                          lending_institution:
+                            type: string
+          '404':
+            description: Product not found
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+                      example: Product 'sku-code' not found.

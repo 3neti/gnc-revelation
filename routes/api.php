@@ -3,6 +3,7 @@
 use LBHurtado\Mortgage\Http\Controllers\{AI\AIController,
     LendingInstitutionController,
     LoanMatchController,
+    ProductController,
     PropertyController};
 use LBHurtado\Mortgage\Http\Controllers\MortgageComputationController;
 use Illuminate\Support\Facades\Response;
@@ -23,6 +24,8 @@ Route::prefix('v1')->group(function () {
     Route::get('properties', [PropertyController::class, 'index'])->name('api.v1.properties');
     Route::get('/lending-institutions', [LendingInstitutionController::class, 'index']);
     Route::get('/lending-institutions/{key}', [LendingInstitutionController::class, 'show']);
+    Route::get('/products', [ProductController::class, 'index'])->middleware('web')->name('api.v1.products');
+    Route::get('/products/{sku}', [ProductController::class, 'show'])->middleware('web')->name('api.v1.products.show');
 });
 
 Route::get('/mortgage/docs/openapi.yaml', function () {

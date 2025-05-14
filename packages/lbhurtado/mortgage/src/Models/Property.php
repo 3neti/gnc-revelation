@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use LBHurtado\Mortgage\Classes\LendingInstitution;
 use LBHurtado\Mortgage\Data\Models\PropertyData;
 use LBHurtado\Mortgage\ValueObjects\Percent;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use LBHurtado\Mortgage\Traits\HasMeta;
 use Spatie\LaravelData\WithData;
@@ -56,6 +57,7 @@ class Property extends Model
         'sku',
         'project_code',
         'total_contract_price',
+//        'lending_institution',
     ];
 
     protected string $dataClass = PropertyData::class;
@@ -93,9 +95,26 @@ class Property extends Model
             ->setProcessingFee($this->processing_fee)
             ->setPercentLoanableValue($this->percent_loanable_value)
             ->setPercentMiscellaneousFees($this->percent_miscellaneous_fees)
-            ->setIncomeRequirementMultiplier($this->percent_disposable_income_requirement)
             ->setLendingInstitution($this->lending_institution)
             ->setIncomeRequirementMultiplier($this->income_requirement_multiplier)
             ;
+    }
+
+    /**
+     * Scope to filter properties by lending institution.
+     *
+     * @param  Builder  $query
+     * @param  array|string|null  $lendingInstitutions
+     * @return Builder
+     */
+    public function scopeForLendingInstitution(Builder $query, array|string|null $lendingInstitutions): Builder
+    {
+        if (empty($lendingInstitutions)) {
+            return $query; // Unfiltered if no lending institutions provided
+        }
+
+        $lendingInstitutions = is_array($lendingInstitutions) ? $lendingInstitutions : [$lendingInstitutions];
+
+        return $query->whereIn('meta->lending_institution', $lendingInstitutions);
     }
 }
