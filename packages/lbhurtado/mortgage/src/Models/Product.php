@@ -22,6 +22,7 @@ use Brick\Money\Money;
  * @property string $name
  * @property string $brand
  * @property string $category
+ * @property string $description
  * @property Price  $price
  *
  * @method int getKey()

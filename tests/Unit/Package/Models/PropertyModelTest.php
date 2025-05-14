@@ -95,11 +95,11 @@ test('it can set total_contract_price with a Price object', function () {
     ;
 });
 
-test('it returns null when total_contract_price is not set', function () {
-    $property = Property::factory()->create();
+test('it returns zero when total_contract_price is not set', function () {
+    $property = Property::factory()->create(['total_contract_price' => null]);
 
     // Assert that the total_contract_price getter returns null if not set
-    expect($property->total_contract_price)->toBeNull();
+    expect($property->total_contract_price->getAmount()->toFloat())->toBe(0.0);
 });
 
 test('it can set total_contract_price with a string value', function () {
@@ -478,11 +478,11 @@ test('it can set appraisal_value with a Price object', function () {
         ->toBe($appraisalValue->inclusive()->getAmount()->toInt());
 });
 
-test('it returns null when appraisal_value is not set', function () {
+test('it returns total_contract_price when appraisal_value is not set', function () {
     $property = Property::factory()->create();
 
     // Assert that the appraisal_value getter returns null if not set
-    expect($property->appraisal_value)->toBeNull();
+    expect($property->appraisal_value->inclusive()->getAmount()->toFloat())->toBe($property->total_contract_price->inclusive()->getAmount()->toFloat());
 });
 
 test('it can set appraisal_value with a string value', function () {
@@ -524,7 +524,7 @@ test('it handles large appraisal_value values correctly', function () {
         ->toBeCloseTo($appraisalValue);
 });
 
-test('it can remove (unset) appraisal_value by passing null', function () {
+test('it defaults to total_contract_price if appraisal_value is set to null', function () {
     $property = Property::factory()->create();
 
     // Set an initial value
@@ -536,7 +536,7 @@ test('it can remove (unset) appraisal_value by passing null', function () {
     $property->save();
 
     // Assert that the appraisal_value is now null
-    expect($property->appraisal_value)->toBeNull();
+    expect($property->appraisal_value->inclusive()->getAmount()->toFloat())->toBe($property->total_contract_price->inclusive()->getAmount()->toFloat());
 });
 /*** Property::APPRAISAL_VALUE ****/
 
@@ -590,11 +590,11 @@ test('it can set processing_fee with a Price object', function () {
         ->toBe($processingFee->inclusive()->getAmount()->toInt());
 });
 
-test('it returns null when processing_fee is not set', function () {
+test('it returns zero when processing_fee is not set', function () {
     $property = Property::factory()->create();
 
     // Assert that the processing_fee getter returns null if not set
-    expect($property->processing_fee)->toBeNull();
+    expect($property->processing_fee->inclusive()->getAmount()->toFloat())->toBe(0.0);
 });
 
 test('it can set processing_fee with a string value', function () {
@@ -648,7 +648,7 @@ test('it can remove (unset) processing_fee by passing null', function () {
     $property->save();
 
     // Assert that the processing_fee is now null
-    expect($property->processing_fee)->toBeNull();
+    expect($property->processing_fee->inclusive()->getAmount()->toFloat())->toBe(0.0);
 });
 /*** Property::PROCESSING_FEE ****/
 
@@ -727,7 +727,7 @@ test('it returns null from getPercentLoanableValueAttribute if no value is set',
     $property = Property::factory()->create();
 
     // Assert that the getter returns null when no value is set
-    expect($property->percent_loanable_value)->toBeNull();
+    expect($property->percent_loanable_value->value())->toBe(1.0);
 });
 
 test('it throws an exception when setting an invalid percent_loanable_value', function () {
@@ -816,7 +816,7 @@ test('it returns null from percent_miscellaneous_fees if no value is set', funct
     $property = Property::factory()->create();
 
     // Assert that the getter returns null when no value is set
-    expect($property->percent_miscellaneous_fees)->toBeNull();
+    expect($property->percent_miscellaneous_fees->value())->toBe(0.0);
 });
 
 test('it throws an exception when setting an invalid percent_miscellaneous_fees', function () {
@@ -941,7 +941,7 @@ test('it returns null from getIncomeRequirementMultiplierAttribute if no value i
     $property = Property::factory()->create();
 
     // Assert that the getter returns null if no value is set
-    expect($property->income_requirement_multiplier)->toBeNull();
+    expect($property->income_requirement_multiplier->value())->toBe(0.35);
 });
 
 test('it throws an exception when setting an invalid income_requirement_multiplier', function () {

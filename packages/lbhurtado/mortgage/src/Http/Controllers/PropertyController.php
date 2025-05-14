@@ -3,10 +3,9 @@
 namespace LBHurtado\Mortgage\Http\Controllers;
 
 use LBHurtado\Mortgage\Data\Models\PropertyData;
+use Illuminate\Http\{JsonResponse, Request};
 use LBHurtado\Mortgage\Models\Property;
 use Spatie\LaravelData\DataCollection;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class PropertyController
 {

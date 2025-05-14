@@ -29,8 +29,11 @@ it('returns the correct response structure from properties endpoint', function (
             '*' => [
                 'code',
                 'name',
+                'type', //new
+                'cluster', //new
                 'status',
-                'total_contract_price',
+                'project_code', //new
+                'total_contract_price', //updated
                 'appraisal_value',
                 'percent_loanable_value',
                 'percent_miscellaneous_fees',

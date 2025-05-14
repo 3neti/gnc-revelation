@@ -62,11 +62,11 @@ trait AdditionalPropertyAttributes
      * @param string $key
      * @return Price|null
      */
-    private function getPriceFromMeta(string $key): ?Price
+    private function getPriceFromMeta(string $key): Price
     {
         $amount = $this->getAttribute('meta')->get($key);
 
-        return $amount !== null ? MoneyFactory::priceOfMinor($amount) : null;
+        return $amount !== null ? MoneyFactory::priceOfMinor($amount) : MoneyFactory::priceZero();
     }
 
     /**
@@ -93,7 +93,7 @@ trait AdditionalPropertyAttributes
     /**
      * Get total_contract_price.
      */
-    public function getTotalContractPriceAttribute(): ?Price
+    public function getTotalContractPriceAttribute(): Price
     {
         return $this->getPriceFromMeta(self::TOTAL_CONTRACT_PRICE);
     }
@@ -109,9 +109,10 @@ trait AdditionalPropertyAttributes
     /**
      * Get appraisal_value.
      */
-    public function getAppraisalValueAttribute(): ?Price
+    public function getAppraisalValueAttribute(): Price
     {
-        return $this->getPriceFromMeta(self::APPRAISAL_VALUE);
+        return $this->getPriceFromMeta(self::APPRAISAL_VALUE)
+            ?? $this->getPriceFromMeta(self::TOTAL_CONTRACT_PRICE);
     }
 
     /**
@@ -188,11 +189,14 @@ trait AdditionalPropertyAttributes
     /**
      * Get percent_loanable_value.
      */
-    public function getPercentLoanableValueAttribute(): ?Percent
+    public function getPercentLoanableValueAttribute(): Percent
     {
         $value = $this->getAttribute('meta')->get(self::PERCENT_LOANABLE_VALUE);
+        $default_loanable_value_multiplier = config('gnc-revelation.default_loanable_value_multiplier');
 
-        return $value !== null ? Percent::ofFraction($value) : null;
+        return $value !== null
+            ? Percent::ofFraction($value)
+            : Percent::ofFraction($default_loanable_value_multiplier);
     }
 
     /**
@@ -215,11 +219,11 @@ trait AdditionalPropertyAttributes
     /**
      * Get percent_miscellaneous_fees.
      */
-    public function getPercentMiscellaneousFeesAttribute(): ?Percent
+    public function getPercentMiscellaneousFeesAttribute(): Percent
     {
         $fee = $this->getAttribute('meta')->get(self::PERCENT_MISCELLANEOUS_FEES);
 
-        return $fee !== null ? Percent::ofFraction($fee) : null;
+        return $fee !== null ? Percent::ofFraction($fee) : Percent::ofFraction(0.0);
     }
 
     /**
@@ -242,9 +246,9 @@ trait AdditionalPropertyAttributes
     /**
      * Get processing_fee.
      */
-    public function getProcessingFeeAttribute(): ?Price
+    public function getProcessingFeeAttribute(): Price
     {
-        return $this->getPriceFromMeta(self::PROCESSING_FEE);
+        return $this->getPriceFromMeta(self::PROCESSING_FEE) ?? MoneyFactory::priceZero();
     }
 
     /**
@@ -317,11 +321,14 @@ trait AdditionalPropertyAttributes
     /**
      * Get income_requirement_multiplier.
      */
-    public function getIncomeRequirementMultiplierAttribute(): ?Percent
+    public function getIncomeRequirementMultiplierAttribute(): Percent
     {
         $multiplier = $this->getAttribute('meta')->get(self::INCOME_REQUIREMENT_MULTIPLIER);
+        $default_income_requirement_multiplier = config('gnc-revelation.default_income_requirement_multiplier');
 
-        return $multiplier !== null ? Percent::ofFraction($multiplier) : null;
+        return $multiplier !== null
+            ? Percent::ofFraction($multiplier)
+            : Percent::ofFraction($default_income_requirement_multiplier);
     }
 
     /**

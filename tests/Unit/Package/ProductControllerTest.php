@@ -2,11 +2,12 @@
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use LBHurtado\Mortgage\Models\{Product, Property};
+use Database\Seeders\ProductSeeder;
 
 uses(RefreshDatabase::class);
 
 it('returns a list of products with their properties', function () {
-    $this->seed(\Database\Seeders\ProductSeeder::class);
+    $this->seed(ProductSeeder::class);
 
     expect(app(Product::class)->all())->toHaveCount(3);
     $response = $this->getJson(route('api.v1.products'));
@@ -14,7 +15,6 @@ it('returns a list of products with their properties', function () {
     $response->assertOk()
         ->assertJsonStructure([
             '*' => [
-                'id',
                 'sku',
                 'name',
                 'brand',
@@ -23,14 +23,23 @@ it('returns a list of products with their properties', function () {
                 'price',
                 'properties' => [
                     '*' => [
-                        'id',
                         'sku',
                         'code',
                         'name',
+                        'type',
+                        'cluster',
+                        'status',
+                        'project_code',
                         'total_contract_price',
                         'appraisal_value',
+                        'development_type',
+                        'development_form',
+                        'housing_type',
+                        'percent_loanable_value',
+                        'percent_miscellaneous_fees',
+                        'required_buffer_margin',
                         'lending_institution',
-                        // ...add more fields here as needed
+                        'income_requirement_multiplier',
                     ]
                 ]
             ]
@@ -40,7 +49,7 @@ it('returns a list of products with their properties', function () {
 });
 
 it('returns a single product by sku with its properties', function () {
-    $this->seed(\Database\Seeders\ProductSeeder::class);
+    $this->seed(ProductSeeder::class);
 
     $sku = 'product-b';
     $response = $this->getJson(route('api.v1.products.show', ['sku' => $sku]));
@@ -52,9 +61,9 @@ it('returns a single product by sku with its properties', function () {
             'brand' => 'Brand A',
             'category' => 'Category Yellow',
             'description' => 'Product B description',
+            'price' => 1_250_000,
         ])
         ->assertJsonStructure([
-            'id',
             'sku',
             'name',
             'brand',
@@ -62,13 +71,31 @@ it('returns a single product by sku with its properties', function () {
             'description',
             'price',
             'properties' => [
-                '*' => ['code', 'name', 'total_contract_price']
+                '*' => [
+                    'sku',
+                    'code',
+                    'name',
+                    'type',
+                    'cluster',
+                    'status',
+                    'project_code',
+                    'total_contract_price',
+                    'appraisal_value',
+                        'development_type',
+                        'development_form',
+                        'housing_type',
+                    'percent_loanable_value',
+                    'percent_miscellaneous_fees',
+                        'required_buffer_margin',
+                    'lending_institution',
+                    'income_requirement_multiplier',
+                ]
             ]
         ]);
 });
 
 it('returns 404 when product is not found', function () {
-    $this->seed(\Database\Seeders\ProductSeeder::class);
+    $this->seed(ProductSeeder::class);
     $response = $this->getJson(route('api.v1.products.show', ['sku' => 'nonexistent-sku']));
 
     $response->assertNotFound()
@@ -128,8 +155,8 @@ it('filters the products list by lending institution and product SKU', function 
 
 it('lists all products if lending institution is not set', function () {
     // Create test data
-    $product1 = Product::factory()->create(['sku' => 'PROD001']);
-    $product2 = Product::factory()->create(['sku' => 'PROD002']);
+    Product::factory()->create(['sku' => 'PROD001']);
+    Product::factory()->create(['sku' => 'PROD002']);
 
     // No session value
     $response = $this->getJson(route('api.v1.products'));

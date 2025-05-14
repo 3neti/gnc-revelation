@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Loan Matching & Mortgage API
-  version: 1.0.13
+  version: 1.0.14
   description: Strict input definitions for buyer qualification and mortgage computation.
 
 servers:
@@ -451,8 +451,6 @@ paths:
                 items:
                   type: object
                   properties:
-                    id:
-                      type: integer
                     sku:
                       type: string
                     name:
@@ -465,26 +463,68 @@ paths:
                       type: string
                     price:
                       type: number
+                      format: float
                       description: Price in major units (converted from minor)
                     properties:
                       type: array
                       items:
                         type: object
                         properties:
-                          id:
-                            type: integer
-                          sku:
-                            type: string
                           code:
                             type: string
                           name:
                             type: string
+                          type:
+                            type: string
+                            nullable: true
+                          cluster:
+                            type: string
+                            nullable: true
+                          status:
+                            type: string
+                            nullable: true
+                          sku:
+                            type: string
+                          project_code:
+                            type: string
+                            nullable: true
                           total_contract_price:
                             type: number
+                            format: float
                           appraisal_value:
                             type: number
+                            format: float
+                          development_type:
+                            type: string
+                            nullable: true
+                          development_form:
+                            type: string
+                            nullable: true
+                          housing_type:
+                            type: string
+                            nullable: true
+                          percent_loanable_value:
+                            type: number
+                            format: float
+                            description: Percentage as a decimal (0.85 = 85%)
+                          percent_miscellaneous_fees:
+                            type: number
+                            format: float
+                            description: Percentage as a decimal (0.085 = 8.5%)
+                          processing_fee:
+                            type: number
+                            format: float
+                          required_buffer_margin:
+                            type: number
+                            format: float
+                            description: Percentage as a decimal (0.10 = 10%)
                           lending_institution:
                             type: string
+                            description: Canonical key (e.g., hdmf, rcbc, cbc)
+                          income_requirement_multiplier:
+                            type: number
+                            format: float
+                            description: Percentage as a decimal (0.35 = 35%)
 
   /products/{sku}:
     get:
@@ -513,8 +553,6 @@ paths:
               schema:
                 type: object
                 properties:
-                  id:
-                    type: integer
                   sku:
                     type: string
                   name:
@@ -527,26 +565,68 @@ paths:
                     type: string
                   price:
                     type: number
+                    format: float
                     description: Price in major units (converted from minor)
                   properties:
                     type: array
                     items:
                       type: object
                       properties:
-                        id:
-                          type: integer
-                        sku:
-                          type: string
                         code:
                           type: string
                         name:
                           type: string
+                        type:
+                          type: string
+                          nullable: true
+                        cluster:
+                          type: string
+                          nullable: true
+                        status:
+                          type: string
+                          nullable: true
+                        sku:
+                          type: string
+                        project_code:
+                          type: string
+                          nullable: true
                         total_contract_price:
                           type: number
+                          format: float
                         appraisal_value:
                           type: number
+                          format: float
+                        development_type:
+                          type: string
+                          nullable: true
+                        development_form:
+                          type: string
+                          nullable: true
+                        housing_type:
+                          type: string
+                          nullable: true
+                        percent_loanable_value:
+                          type: number
+                          format: float
+                          description: Percentage as a decimal (0.85 = 85%)
+                        percent_miscellaneous_fees:
+                          type: number
+                          format: float
+                          description: Percentage as a decimal (0.085 = 8.5%)
+                        processing_fee:
+                          type: number
+                          format: float
+                        required_buffer_margin:
+                          type: number
+                          format: float
+                          description: Percentage as a decimal (0.10 = 10%)
                         lending_institution:
                           type: string
+                          description: Canonical key (e.g., hdmf, rcbc, cbc)
+                        income_requirement_multiplier:
+                          type: number
+                          format: float
+                          description: Percentage as a decimal (0.35 = 35%)
         '404':
           description: Product not found
           content:
@@ -557,3 +637,4 @@ paths:
                   message:
                     type: string
                     example: Product 'sku-code' not found.
+

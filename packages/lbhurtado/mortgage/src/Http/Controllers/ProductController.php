@@ -2,11 +2,11 @@
 
 namespace LBHurtado\Mortgage\Http\Controllers;
 
+use LBHurtado\Mortgage\Data\Models\ProductData;
+use Illuminate\Http\{JsonResponse, Request};
+use Spatie\LaravelData\DataCollection;
 use LBHurtado\Mortgage\Models\Product;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
-use Illuminate\Http\Request;
-
 
 class ProductController extends Controller
 {
@@ -33,7 +33,7 @@ class ProductController extends Controller
             ->get()
         ;
 
-        return response()->json($products);
+        return response()->json((new DataCollection(ProductData::class, $products))->toArray());
     }
 
     /**
@@ -62,7 +62,7 @@ class ProductController extends Controller
             ], 404);
         }
 
-        return response()->json($product);
+        return response()->json(ProductData::fromModel($product)->toArray());
     }
 
 }

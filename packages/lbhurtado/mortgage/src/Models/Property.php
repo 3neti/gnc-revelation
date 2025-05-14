@@ -57,7 +57,6 @@ class Property extends Model
         'sku',
         'project_code',
         'total_contract_price',
-//        'lending_institution',
     ];
 
     protected string $dataClass = PropertyData::class;

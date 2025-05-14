@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use LBHurtado\Mortgage\Models\{Product, Property};
+use LBHurtado\Mortgage\Models\Product;
 use Illuminate\Database\Seeder;
 
 class ProductSeeder extends Seeder
@@ -58,6 +58,7 @@ class ProductSeeder extends Seeder
                         'total_contract_price' => 1_300_000,
                         'appraisal_value' => 1_250_000,
                         'lending_institution' => 'rcbc',
+                        'status' => 'available'
                     ],
                     [
                         'code' => 'property-5',
@@ -65,6 +66,7 @@ class ProductSeeder extends Seeder
                         'total_contract_price' => 1_350_000,
                         'appraisal_value' => 1_250_000,
                         'lending_institution' => 'rcbc',
+                        'status' => 'available'
                     ],
                     [
                         'code' => 'property-6',
@@ -72,6 +74,7 @@ class ProductSeeder extends Seeder
                         'total_contract_price' => 1_400_000,
                         'appraisal_value' => 1_250_000,
                         'lending_institution' => 'rcbc',
+                        'status' => 'available'
                     ],
                 ],
             ],
@@ -89,6 +92,7 @@ class ProductSeeder extends Seeder
                         'total_contract_price' => 2_500_000,
                         'appraisal_value' => 2_500_000,
                         'lending_institution' => 'cbc',
+                        'status' => 'available'
                     ],
                     [
                         'code' => 'property-8',
@@ -96,6 +100,7 @@ class ProductSeeder extends Seeder
                         'total_contract_price' => 2_550_000,
                         'appraisal_value' => 2_500_000,
                         'lending_institution' => 'cbc',
+                        'status' => 'available'
                     ],
                     [
                         'code' => 'property-9',
@@ -103,6 +108,7 @@ class ProductSeeder extends Seeder
                         'total_contract_price' => 2_600_000,
                         'appraisal_value' => 2_500_000,
                         'lending_institution' => 'cbc',
+                        'status' => 'available'
                     ],
                 ],
             ],
