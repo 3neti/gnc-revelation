@@ -97,6 +97,7 @@ test('mortgage computations', function (
     $property = (new Property($total_contract_price))
         ->setLendingInstitution(new LendingInstitution($lending_institution))
     ;
+    expect($property->getPercentDownPayment()->value())->toBe($property->getLendingInstitution()->getPercentDownPayment()->value());
 
     $order = new Order;
 

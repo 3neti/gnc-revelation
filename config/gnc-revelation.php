@@ -77,6 +77,7 @@ return [
     'default_interest_rate' => env('DEFAULT_INTEREST_RATE', 0.0625),
     'default_income_requirement_multiplier' => env('DEFAULT_INCOME_REQUIREMENT_MULTIPLIER', 0.35),
     'default_buffer_margin' => env('DEFAULT_BUFFER_MARGIN', 0.1),
+    'default_percent_down_payment' => env('DEFAULT_PERCENT_DOWN_PAYMENT', 0.0),
     'rounding_mode' => env('MONEY_ROUNDING_MODE', RoundingMode::CEILING),
     'default_currency' => env('DEFAULT_CURRENCY', 'PHP'),
     'property' => [

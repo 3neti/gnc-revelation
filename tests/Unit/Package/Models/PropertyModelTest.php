@@ -975,6 +975,7 @@ test('it converts eloquent Property model to domain Property object', function (
     $devForm = DevelopmentForm::HORIZONTAL;
     $lendingInstitution = 'hdmf';
     $incomeRequirementMultiplier = 35;
+    $percent_down_payment = 10;
 
     $eloquent->update([
         Property::TOTAL_CONTRACT_PRICE => $tcp,
@@ -987,6 +988,7 @@ test('it converts eloquent Property model to domain Property object', function (
         Property::DEVELOPMENT_FORM => $devForm->value,
         Property::LENDING_INSTITUTION => $lendingInstitution,
         Property::INCOME_REQUIREMENT_MULTIPLIER => $incomeRequirementMultiplier,
+        Property::PERCENT_DOWN_PAYMENT => $percent_down_payment,
     ]);
 
     $domain = $eloquent->toDomain();
@@ -1002,10 +1004,9 @@ test('it converts eloquent Property model to domain Property object', function (
         ->and($domain->getDevelopmentForm())->toBe($devForm)
         ->and($domain->getLendingInstitution()->key())->toBe($lendingInstitution)
         ->and($domain->getIncomeRequirementMultiplier()->asPercent())->toBeCloseTo($incomeRequirementMultiplier)
+        ->and($domain->getPercentDownPayment()->asPercent())->toBeCloseTo($percent_down_payment)
     ;
 });
-
-
 
 test('it converts eloquent Property model to domain Property object using seeded data', function () {
     // Run the seeder to populate the database
@@ -1046,7 +1047,7 @@ test('it converts eloquent Property model to domain Property object using seeded
         break; //remove if you want to test all
     }
 });
-///*** Property::toDomain() ****/
+/*** Property::toDomain() ****/
 
 /*** Property::getRouteKeyName() ****/
 test('property uses code as route key', function () {
@@ -1216,3 +1217,81 @@ test('it filters properties by lending institution using scope', function () {
 });
 /*** Property::scopeWithMeta() ****/
 
+/*** Property::PERCENT_DOWN_PAYMENT ***/
+test('it can set and get percent_down_payment as a Percent instance', function () {
+    // Create a Property instance
+    $property = Property::factory()->create();
+
+    // Example Percent instance
+    $downPayment = Percent::ofPercent(10); // 10%
+
+    // Use the setter to set the percent down payment
+    $property->update([Property::PERCENT_DOWN_PAYMENT => $downPayment->value()]);
+    $property->save();
+
+    // Assert that the getter returns the same Percent instance
+    expect($property->percent_down_payment)
+        ->toBeInstanceOf(Percent::class) // Ensures it is a Percent instance
+        ->and($property->percent_down_payment->value())->toBe($downPayment->value()); // Ensures the percent value matches
+});
+
+test('it can set and get percent_down_payment as an integer percentage', function () {
+    // Create a Property instance
+    $property = Property::factory()->create();
+
+    // Example percent down payment as an integer
+    $downPayment = 15; // 15%
+
+    // Use the setter to set the percent down payment
+    $property->update([Property::PERCENT_DOWN_PAYMENT => $downPayment]);
+    $property->save();
+
+    // Assert it is converted to a Percent instance
+    expect($property->percent_down_payment)
+        ->toBeInstanceOf(Percent::class) // Ensures it is a Percent instance
+        ->and($property->percent_down_payment->asPercent())->toBe((float) $downPayment); // Ensures the value matches
+});
+
+test('it can set and get percent_down_payment as a fractional float (value <= 1)', function () {
+    // Create a Property instance
+    $property = Property::factory()->create();
+
+    // Example percent down payment as a fractional float
+    $downPayment = 0.2; // 20%
+
+    // Use the setter
+    $property->update([Property::PERCENT_DOWN_PAYMENT => $downPayment]);
+    $property->save();
+
+    // Assert it is converted to a Percent instance
+    expect($property->percent_down_payment)
+        ->toBeInstanceOf(Percent::class) // Ensures it is a Percent instance
+        ->and($property->percent_down_payment->asPercent())->toBe(20.0); // Ensures the converted value matches
+});
+
+test('it retrieves the default value for percent_down_payment if no value is set', function () {
+    // Create a Property instance
+    $property = Property::factory()->create();
+
+    // Default value as defined in the configuration
+    $defaultDownPayment = config('gnc-revelation.default_percent_down_payment');
+
+    // Assert that the getter returns the default value
+    expect($property->percent_down_payment->value())->toBe($defaultDownPayment);
+
+    $property->update([Property::LENDING_INSTITUTION => 'rcbc']);
+    $property->save();
+
+    $percent_down_payment = $property->lending_institution->getPercentDownPayment()->value();
+    expect($percent_down_payment)->toBe(0.10);
+    expect($property->percent_down_payment->value())->toBe($percent_down_payment);
+});
+
+test('it throws an exception when setting an invalid percent_down_payment', function () {
+    // Create a Property instance
+    $property = Property::factory()->create();
+
+    // Try to set an invalid value for percent down payment
+    $property->setPercentDownPaymentAttribute('invalid_value');
+})->throws(TypeError::class);
+/*** Property::PERCENT_DOWN_PAYMENT ***/

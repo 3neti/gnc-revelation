@@ -48,7 +48,8 @@ class PropertyData extends Data
         public ?LendingInstitution $lending_institution,
         #[WithTransformer(PercentToFloatTransformer::class)]
         public Percent $income_requirement_multiplier,
-
+        #[WithTransformer(PercentToFloatTransformer::class)]
+        public Percent $percent_down_payment,
     ) {}
 
     public static function fromModel(Property $property): self
@@ -71,7 +72,8 @@ class PropertyData extends Data
             processing_fee: $property->processing_fee,
             required_buffer_margin: $property->required_buffer_margin,
             lending_institution: $property->lending_institution, // Expecting a LendingInstitution object
-            income_requirement_multiplier: $property->income_requirement_multiplier // Extract numeric value
+            income_requirement_multiplier: $property->income_requirement_multiplier, // Extract numeric value
+            percent_down_payment: $property->percent_down_payment,
         );
     }
 }

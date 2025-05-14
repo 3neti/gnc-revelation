@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Loan Matching & Mortgage API
-  version: 1.0.14
+  version: 1.0.15
   description: Strict input definitions for buyer qualification and mortgage computation.
 
 servers:
@@ -135,6 +135,12 @@ paths:
                   example: 1000000
                 percent_down_payment:
                   type: number
+                  format: float
+                  nullable: true
+                  description: >
+                    Optional. Down payment as a decimal (e.g., 0.10 = 10%).
+                    If not provided, the system will use the lending institution’s default
+                    (e.g., HDMF = 0%, RCBC = 10%, CBC = 20%).
                   example: 0.10
                 percent_miscellaneous_fee:
                   type: number

@@ -38,6 +38,7 @@ use Whitecube\Price\Price;
  * @property Percent $required_buffer_margin
  * @property LendingInstitution $lending_institution
  * @property Percent $income_requirement_multiplier
+ * @property Percent $percent_down_payment
  *
  * @method int getKey()
  */
@@ -96,6 +97,7 @@ class Property extends Model
             ->setPercentMiscellaneousFees($this->percent_miscellaneous_fees)
             ->setLendingInstitution($this->lending_institution)
             ->setIncomeRequirementMultiplier($this->income_requirement_multiplier)
+            ->setPercentDownPayment($this->percent_down_payment)
             ;
     }
 

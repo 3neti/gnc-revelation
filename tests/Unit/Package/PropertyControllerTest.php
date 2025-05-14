@@ -38,6 +38,8 @@ it('returns the correct response structure from properties endpoint', function (
                 'percent_loanable_value',
                 'percent_miscellaneous_fees',
                 'processing_fee',
+                'required_buffer_margin',
+                'percent_down_payment',
             ],
         ]);
 });

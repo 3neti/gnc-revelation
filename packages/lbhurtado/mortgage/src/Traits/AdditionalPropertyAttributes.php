@@ -25,6 +25,7 @@ trait AdditionalPropertyAttributes
     const REQUIRED_BUFFER_MARGIN = 'required_buffer_margin';
     const LENDING_INSTITUTION = 'lending_institution';
     const INCOME_REQUIREMENT_MULTIPLIER = 'income_requirement_multiplier';
+    const PERCENT_DOWN_PAYMENT = 'percent_down_payment';
 
     public function initializeAdditionalPropertyAttributes(): void
     {
@@ -40,6 +41,7 @@ trait AdditionalPropertyAttributes
             self::PERCENT_MISCELLANEOUS_FEES,
             self::LENDING_INSTITUTION,
             self::INCOME_REQUIREMENT_MULTIPLIER,
+            self::PERCENT_DOWN_PAYMENT,
         ]);
         $this->appends = array_merge($this->appends, [
             self::TOTAL_CONTRACT_PRICE,
@@ -53,6 +55,7 @@ trait AdditionalPropertyAttributes
             self::PERCENT_MISCELLANEOUS_FEES,
             self::LENDING_INSTITUTION,
             self::INCOME_REQUIREMENT_MULTIPLIER,
+            self::PERCENT_DOWN_PAYMENT,
         ]);
     }
 
@@ -347,6 +350,44 @@ trait AdditionalPropertyAttributes
             };
 
             $this->getAttribute('meta')->set(self::INCOME_REQUIREMENT_MULTIPLIER, $percent->value());
+        }
+
+        return $this;
+    }
+
+    /**
+     * Get percent_down_payment.
+     */
+    public function getPercentDownPaymentAttribute(): Percent
+    {
+        $value = $this->getAttribute('meta')->get(self::PERCENT_DOWN_PAYMENT);
+        $defaultPercentDownPayment = $this->lendingInstitution?->getPercentDownPayment()->value()
+            ?? config('gnc-revelation.default_percent_down_payment');
+
+        return $value !== null
+            ? Percent::ofFraction($value)
+            : Percent::ofFraction($defaultPercentDownPayment);
+    }
+
+    /**
+     * Set percent_down_payment.
+     */
+    public function setPercentDownPaymentAttribute(Percent|int|float|null $value): static
+    {
+        if (is_null($value)) {
+            // Remove the attribute if the value is null.
+            $this->getAttribute('meta')->forget(self::PERCENT_DOWN_PAYMENT);
+        } else {
+            // Convert the value into a Percent object.
+            $percent = match (true) {
+                $value instanceof Percent        => $value,
+                is_float($value) && $value <= 1  => Percent::ofFraction($value),
+                is_int($value), is_float($value) => Percent::ofPercent($value),
+                default                          => throw new \InvalidArgumentException('Invalid down payment percent.'),
+            };
+
+            // Set the value in the meta attribute.
+            $this->getAttribute('meta')->set(self::PERCENT_DOWN_PAYMENT, $percent->value());
         }
 
         return $this;
