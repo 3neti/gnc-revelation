@@ -13,7 +13,7 @@ final class EquityRequirementCalculator extends BaseCalculator
 {
     public function calculate(): Equity
     {
-        $affordableLoan = LoanAffordabilityCalculator::fromInputs($this->inputs)
+        $affordableLoan = PresentValueCalculator::fromInputs($this->inputs)
             ->calculate()
             ->inclusive()
             ->getAmount()

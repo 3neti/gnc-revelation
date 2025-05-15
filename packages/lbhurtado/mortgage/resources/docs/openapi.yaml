@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Loan Matching & Mortgage API
-  version: 1.0.15
+  version: 1.0.16
   description: Strict input definitions for buyer qualification and mortgage computation.
 
 servers:
@@ -105,6 +105,16 @@ paths:
                       type: number
                     income_gap:
                       type: number
+                    suggested_down_payment_percent:
+                      type: number
+                      format: float
+                      description: >
+                        Suggested down payment as a fraction (e.g., 0.31 = 31%).
+                        This is the minimum percent required to qualify if the buyer's disposable income
+                        is insufficient.
+                        To retry qualification using this suggestion, submit it as `"percent_down_payment"`
+                        to `/mortgage-compute`.
+                        ⚠️ This value is system-derived. Do **not** recalculate on your own.
                     reason:
                       type: string
 
@@ -205,6 +215,14 @@ paths:
                         type: number
                       suggested_down_payment_percent:
                         type: number
+                        format: float
+                        description: >
+                          Suggested down payment as a fraction (e.g., 0.31 = 31%).
+                          This value is calculated assuming **0% down payment input**, and represents
+                          the minimum equity contribution required to qualify.
+                          To retry qualification using this suggestion, **resubmit** your request with:
+                          `"percent_down_payment": suggested_down_payment_percent`
+                          ⚠️ Do **not** recompute it yourself — this value already includes system logic.
                       reason:
                         type: string
                       mortgage:

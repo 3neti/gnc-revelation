@@ -11,18 +11,16 @@ use App\Modifiers\PresentValueModifier;
 use Whitecube\Price\Price;
 
 #[CalculatorFor(CalculatorType::PRESENT_VALUE)]
-final class LoanAffordabilityCalculator extends BaseCalculator
+final class PresentValueCalculator extends BaseCalculator
 {
     /**
-     * @throws IncomeRequirementMultiplierNotSetException
+     * @throws IncomeRequirementMultiplierNotSetException|\ReflectionException
      */
     public function calculate(): Price
     {
         $term = CalculatorFactory::make(CalculatorType::BALANCE_PAYMENT_TERM, $this->inputs)->calculate();
-//        $interest_rate = $this->inputs->balance_payment->bp_interest_rate->value();//TODO: create an extractor for this
         $interest_rate = ExtractorFactory::make(ExtractorType::INTEREST_RATE, $this->inputs)->extract()->value();
-        $present_value = MonthlyDisposableIncomeCalculator::fromInputs($this->inputs)
-            ->calculate()
+        $present_value = CalculatorFactory::make(CalculatorType::DISPOSABLE_INCOME, $this->inputs)->calculate()
             ->addModifier('present value', PresentValueModifier::class, $term, $interest_rate)
             ->inclusive();
 
