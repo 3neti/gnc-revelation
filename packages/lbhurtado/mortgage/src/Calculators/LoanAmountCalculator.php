@@ -4,6 +4,8 @@ namespace LBHurtado\Mortgage\Calculators;
 
 use LBHurtado\Mortgage\ValueObjects\{DownPayment, FeeCollection, MiscellaneousFee};
 use LBHurtado\Mortgage\Attributes\CalculatorFor;
+use LBHurtado\Mortgage\Enums\ExtractorType;
+use LBHurtado\Mortgage\Factories\ExtractorFactory;
 use LBHurtado\Mortgage\Factories\MoneyFactory;
 use LBHurtado\Mortgage\Enums\CalculatorType;
 use Whitecube\Price\Price;
@@ -19,5 +21,10 @@ final class LoanableAmountCalculator extends BaseCalculator
         ]);
 
         return MoneyFactory::priceWithPrecision($loanable->plus($fees->totalAddOns()));
+    }
+
+    public function toFloat(): float
+    {
+        return $this->calculate()->inclusive()->getAmount()->toFloat();
     }
 }
