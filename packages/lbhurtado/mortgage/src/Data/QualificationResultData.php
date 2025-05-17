@@ -11,6 +11,7 @@ use LBHurtado\Mortgage\Casts\PriceCast;
 use Spatie\LaravelData\Data;
 use Whitecube\Price\Price;
 
+/** @deprecated  */
 class QualificationResultData extends Data
 {
     public function __construct(

@@ -49,6 +49,10 @@ class MortgageResultData extends Data
 
         #[WithTransformer(PriceToFloatTransformer::class)]
         #[WithCast(PriceCast::class)]
+        public Price $loanable_amount,
+
+        #[WithTransformer(PriceToFloatTransformer::class)]
+        #[WithCast(PriceCast::class)]
         public Price $required_equity,
 
         #[WithTransformer(PriceToFloatTransformer::class)]
@@ -57,19 +61,15 @@ class MortgageResultData extends Data
 
         #[WithTransformer(PriceToFloatTransformer::class)]
         #[WithCast(PriceCast::class)]
+        public Price  $miscellaneous_fees,
+
+        #[WithTransformer(PriceToFloatTransformer::class)]
+        #[WithCast(PriceCast::class)]
         public Price $add_on_fees,
 
         #[WithTransformer(PriceToFloatTransformer::class)]
         #[WithCast(PriceCast::class)]
         public Price $cash_out,
-
-        #[WithTransformer(PriceToFloatTransformer::class)]
-        #[WithCast(PriceCast::class)]
-        public Price $loanable_amount,
-
-        #[WithTransformer(PriceToFloatTransformer::class)]
-        #[WithCast(PriceCast::class)]
-        public Price $miscellaneous_fee,
 
         #[WithTransformer(PriceToFloatTransformer::class)]
         #[WithCast(PriceCast::class)]
@@ -93,12 +93,12 @@ class MortgageResultData extends Data
             balance_payment_term: CalculatorFactory::make(CalculatorType::BALANCE_PAYMENT_TERM, $inputs)->calculate(),
             monthly_disposable_income: CalculatorFactory::make(CalculatorType::DISPOSABLE_INCOME, $inputs)->calculate(),
             present_value: CalculatorFactory::make(CalculatorType::PRESENT_VALUE, $inputs)->calculate(),
+            loanable_amount: CalculatorFactory::make(CalculatorType::LOAN_AMOUNT, $inputs)->calculate(),
             required_equity: CalculatorFactory::make(CalculatorType::EQUITY, $inputs)->calculate()->toPrice(),
             monthly_amortization: CalculatorFactory::make(CalculatorType::AMORTIZATION, $inputs)->total(),
+            miscellaneous_fees: CalculatorFactory::make(CalculatorType::MISCELLANEOUS_FEES, $inputs)->calculate(),
             add_on_fees: CalculatorFactory::make(CalculatorType::FEES, $inputs)->total(),
             cash_out: CalculatorFactory::make(CalculatorType::CASH_OUT, $inputs)->calculate()->total,
-            loanable_amount: CalculatorFactory::make(CalculatorType::LOAN_AMOUNT, $inputs)->calculate(),
-            miscellaneous_fee: CalculatorFactory::make(CalculatorType::MISCELLANEOUS_FEES, $inputs)->calculate(),
             income_gap: CalculatorFactory::make(CalculatorType::INCOME_GAP, $inputs)->calculate(),
             percent_down_payment_remedy: CalculatorFactory::make(CalculatorType::REQUIRED_PERCENT_DOWN_PAYMENT, $inputs)->calculate(),
             inputs: $inputs,

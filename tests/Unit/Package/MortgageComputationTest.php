@@ -3,9 +3,6 @@
 use LBHurtado\Mortgage\Classes\{Buyer, LendingInstitution, Order, Property};
 use LBHurtado\Mortgage\Enums\{CalculatorType, ExtractorType, MonthlyFee};
 use LBHurtado\Mortgage\Services\{AgeService, BorrowingRulesService};
-use Jarouche\Financial\InterestRate;
-use LBHurtado\Mortgage\Data\Payloads\MortgageResultPayload;
-use LBHurtado\Mortgage\Data\QualificationResultData;
 use LBHurtado\Mortgage\Factories\CalculatorFactory;
 use LBHurtado\Mortgage\Factories\ExtractorFactory;
 use LBHurtado\Mortgage\Data\MortgageResultData;
@@ -98,7 +95,6 @@ test('multiple mortgage computations', function (
         ->setMonthlyGrossIncome($monthly_gross_income)
         ->addOtherSourcesOfIncome('test', $additional_income)
     ;
-
     expect($buyer->getMonthlyGrossIncome()->inclusive()->getAmount()->toFloat())->toBe($monthly_gross_income + $additional_income);
 
     if ($co_borrower_age) {
@@ -112,7 +108,8 @@ test('multiple mortgage computations', function (
     $property = (new Property($total_contract_price))
         ->setLendingInstitution(new LendingInstitution($lending_institution))
     ;
-    expect($property->getPercentDownPayment()->value())->toBe($property->getLendingInstitution()->getPercentDownPayment()->value());
+    expect($property_percent_down_payment = $property->getPercentDownPayment()->value())
+        ->toBe($lending_institution_percent_down_payment = $property->getLendingInstitution()->getPercentDownPayment()->value());
 
     $order = new Order;
 
@@ -136,129 +133,86 @@ test('multiple mortgage computations', function (
         $order->setPercentDownPayment($percent_down_payment);
     }
 
-    $inputs = InputsData::fromBooking($buyer, $property, $order);
-
     // Act
+    $inputs = InputsData::fromBooking($buyer, $property, $order);
+    $resolved_lending_institution = ExtractorFactory::make(ExtractorType::LENDING_INSTITUTION, $inputs)->extract();
     $resolved_interest_rate = ExtractorFactory::make(ExtractorType::INTEREST_RATE, $inputs)->extract()->value();
-
-    $actual_term_years = CalculatorFactory::make(CalculatorType::BALANCE_PAYMENT_TERM, $inputs)->calculate();
+    $resolved_percent_down_payment = ExtractorFactory::make(ExtractorType::PERCENT_DOWN_PAYMENT, $inputs)->extract()->value();
+    $resolved_percent_miscellaneous_fee = ExtractorFactory::make(ExtractorType::PERCENT_MISCELLANEOUS_FEES, $inputs)->extract()->value();
+    $resolved_total_contract_price = ExtractorFactory::make(ExtractorType::TOTAL_CONTRACT_PRICE, $inputs)->toFloat();
+    $resolved_income_requirement_multiplier = ExtractorFactory::make(ExtractorType::INCOME_REQUIREMENT_MULTIPLIER, $inputs)->extract()->value();
+    $actual_balance_payment_term = CalculatorFactory::make(CalculatorType::BALANCE_PAYMENT_TERM, $inputs)->calculate();
     $actual_income_requirement_multiplier = ExtractorFactory::make(ExtractorType::INCOME_REQUIREMENT_MULTIPLIER, $inputs)->extract()->value();
     $actual_disposable_income_float = CalculatorFactory::make(CalculatorType::DISPOSABLE_INCOME, $inputs)->calculate()->getAmount()->toFloat();
-    $actual_monthly_amortization_float = CalculatorFactory::make(CalculatorType::AMORTIZATION, $inputs)->total()->getAmount()->toFloat();
     $actual_present_value_float = CalculatorFactory::make(CalculatorType::PRESENT_VALUE, $inputs)->calculate()->getAmount()->toFloat();
+    $actual_loanable_amount_float = CalculatorFactory::make(CalculatorType::LOAN_AMOUNT, $inputs)->calculate()->getAmount()->toFloat();
     $actual_equity_float = CalculatorFactory::make(CalculatorType::EQUITY, $inputs)->toFloat();
-    $actual_cash_out = CalculatorFactory::make(CalculatorType::CASH_OUT, $inputs)->calculate()->total->getAmount()->toFloat();
-    $actual_loanable_amount = CalculatorFactory::make(CalculatorType::LOAN_AMOUNT, $inputs)->calculate()->getAmount()->toFloat();
-    $actual_add_on_fees = CalculatorFactory::make(CalculatorType::FEES, $inputs)->total()->getAmount()->toFloat();
-    $actual_miscellaneous_fee = CalculatorFactory::make(CalculatorType::MISCELLANEOUS_FEES, $inputs)->toFloat();
-
-//    dd(
-//        CalculatorFactory::make(CalculatorType::EQUITY, $inputs)->calculate()->toPrice()->inclusive()->getAmount()->toFloat(),
-//        CalculatorFactory::make(CalculatorType::EQUITY, $inputs)->toFloat(),
-//        CalculatorFactory::make(CalculatorType::EQUITY, $inputs)->calculate()->toPrice()->inclusive()->getAmount()->toFloat(),
-//    );
-//    dd($actual_equity_float, $expected_required_equity);
-//    $actual_percent_dp = ExtractorFactory::make(ExtractorType::PERCENT_DOWN_PAYMENT, $inputs)->extract()->value();
-//    $actual_percent_down_payment_remedy = CalculatorFactory::make(CalculatorType::REQUIRED_PERCENT_DOWN_PAYMENT, $inputs)->calculate()->value();
-
-//    dd($actual_equity_float, $expected_required_equity);
-//    dd($actual_cash_out, $expected_cash_out);
-//    dd($actual_monthly_amortization_float, $expected_monthly_amortization);
-//    dd($actual_loanable_amount, $expected_loanable_amount);
-//    dd($actual_disposable_income_float, $expected_disposable_income);
-//    dd($actual_present_value_float, $expected_present_value);
-//    dd($actual_percent_down_payment_remedy, $expected_percent_down_payment_remedy);
+    $actual_monthly_amortization_float = CalculatorFactory::make(CalculatorType::AMORTIZATION, $inputs)->total()->getAmount()->toFloat();
+    $actual_miscellaneous_fee_float = CalculatorFactory::make(CalculatorType::MISCELLANEOUS_FEES, $inputs)->toFloat();
+    $actual_add_on_fees_float = CalculatorFactory::make(CalculatorType::FEES, $inputs)->total()->getAmount()->toFloat();
+    $actual_cash_out_float = CalculatorFactory::make(CalculatorType::CASH_OUT, $inputs)->calculate()->total->getAmount()->toFloat();
+    $actual_income_gap_float = CalculatorFactory::make(CalculatorType::INCOME_GAP, $inputs)->toFloat();
+    $actual_percent_down_payment_remedy_float = CalculatorFactory::make(CalculatorType::REQUIRED_PERCENT_DOWN_PAYMENT, $inputs)->calculate()->value();
 
     // Assert
-    expect($buyer->getMonthlyGrossIncome()->inclusive()->getAmount()->toFloat())->toBe($monthly_gross_income + $additional_income)
-        ->and($actual_term_years)->toBe($expected_balance_payment_term)
+    expect($resolved_lending_institution->key())->toBe($lending_institution)
+        ->and($resolved_interest_rate)->toBe($balance_payment_interest ?? $resolved_lending_institution->getInterestRate()->value())
+        ->and($resolved_percent_down_payment)->toBe($percent_down_payment ?? $resolved_lending_institution->getPercentDownPayment()->value())
+        ->and($resolved_percent_miscellaneous_fee)->toBe(($percent_miscellaneous_fee ?? $property->getPercentMiscellaneousFees()?->value()) ?? $resolved_lending_institution->getPercentMiscellaneousFees()->value())
+        ->and($resolved_total_contract_price)->toBe($total_contract_price)
         ->and($actual_income_requirement_multiplier)->toBeCloseTo($expected_income_requirement_multiplier, 0.01)
+        ->and($actual_balance_payment_term)->toBe($expected_balance_payment_term)
         ->and($actual_disposable_income_float)->toBeCloseTo($expected_disposable_income, 0.01)
         ->and($actual_present_value_float)->toBeCloseTo($expected_present_value, 0.01)
+        ->and($actual_loanable_amount_float)->toBeCloseTo($expected_loanable_amount, 0.01)
         ->and($actual_equity_float)->toBeCloseTo($expected_required_equity, 0.01)
         ->and($actual_monthly_amortization_float)->toBeCloseTo($expected_monthly_amortization, 0.01)
-        ->and($actual_cash_out)->toBeCloseTo($expected_cash_out, 0.01)
-        ->and($actual_loanable_amount)->toBeCloseTo($expected_loanable_amount, 0.01)
-        ->and($actual_add_on_fees)->toBeCloseTo($expected_add_on_fees, 0.01)
-        ->and($actual_miscellaneous_fee)->toBeCloseTo($expected_miscellaneous_fee, 0.01)
-//        ->and($actual_percent_down_payment_remedy)->toBeCloseTo($expected_percent_down_payment_remedy, 0.01)
+        ->and($actual_miscellaneous_fee_float)->toBeCloseTo($expected_miscellaneous_fee, 0.01)
+        ->and($actual_add_on_fees_float)->toBeCloseTo($expected_add_on_fees, 0.01)
+        ->and($actual_cash_out_float)->toBeCloseTo($expected_cash_out, 0.01)
+        ->and($actual_income_gap_float)->toBeCloseTo($expected_income_gap, 0.01)
+        ->and($actual_percent_down_payment_remedy_float)->toBeCloseTo($expected_percent_down_payment_remedy, 0.01)
     ;
 
     $result = MortgageResultData::fromInputs($inputs);
-//    dd('equity', CalculatorFactory::make(CalculatorType::EQUITY, $inputs)->calculate()->toPrice()->inclusive()->getAmount()->toFloat());
-
-//dd($result->required_equity->inclusive()->getAmount()->toFloat());
-//    dd($result->required_equity->getAmount()->toFloat(), $actual_equity_float, $expected_required_equity);
-//    dd($result->miscellaneous_fee->getAmount()->toFloat(), $expected_miscellaneous_fee);
     expect($result)->toBeInstanceOf(MortgageResultData::class)
         ->and($result->lending_institution)->toBeInstanceOf(LendingInstitution::class)
-        ->and($result->lending_institution->key())->toBe($lending_institution)
+        ->and($result->lending_institution->key())->toBe($resolved_lending_institution->key())
         ->and($result->interest_rate)->toBeInstanceOf(Percent::class)
         ->and($result->interest_rate->value())->toBe($resolved_interest_rate)
-
-//        ->and($result->balance_payment_term)->toBeInt()
-//        ->and($result->balance_payment_term)->toBe($expected_balance_payment_term)
-//        ->and($result->monthly_disposable_income)->toBeInstanceOf(Price::class)
-//        ->and($result->monthly_disposable_income->getAmount()->toFloat())->toBeCloseTo($expected_disposable_income, 0.01)
-//        ->and($result->present_value)->toBeInstanceOf(Price::class)
-//        ->and($result->present_value->getAmount()->toFloat())->toBeCloseTo($expected_present_value, 0.01)
-//        ->and($result->required_equity->getAmount()->toFloat())->toBeCloseTo($expected_required_equity, 0.01)
-//        ->and($result->monthly_amortization->getAmount()->toFloat())->toBeCloseTo($expected_monthly_amortization, 0.01)
-//        ->and($result->add_on_fees->getAmount()->toFloat())->toBeCloseTo($expected_add_on_fees, 0.01)
-//        ->and($result->cash_out->getAmount()->toFloat())->toBeCloseTo($expected_cash_out, 0.01)
-//        ->and($result->loanable_amount->getAmount()->toFloat())->toBeCloseTo($expected_loanable_amount, 0.01)
-//        ->and($result->miscellaneous_fee->getAmount()->toFloat())->toBeCloseTo($expected_miscellaneous_fee, 0.01)
-
+        ->and($result->percent_down_payment)->toBeInstanceOf(Percent::class)
+        ->and($result->percent_down_payment->value())->toBe($resolved_percent_down_payment)
+        ->and($result->percent_miscellaneous_fees)->toBeInstanceOf(Percent::class)
+        ->and($result->percent_miscellaneous_fees->value())->toBe($resolved_percent_miscellaneous_fee)
+        ->and($result->total_contract_price)->toBeInstanceOf(Price::class)
+        ->and($result->total_contract_price->inclusive()->getAmount()->toFloat())->toBe($resolved_total_contract_price)
+        ->and($result->income_requirement_multiplier)->toBeInstanceOf(Percent::class)
+        ->and($result->income_requirement_multiplier->value())->toBe($resolved_income_requirement_multiplier)
+        ->and($result->balance_payment_term)->toBeInt()
+        ->and($result->balance_payment_term)->toBe($expected_balance_payment_term)
+        ->and($result->monthly_disposable_income)->toBeInstanceOf(Price::class)
+        ->and($result->monthly_disposable_income->getAmount()->toFloat())->toBeCloseTo($expected_disposable_income, 0.01)
+        ->and($result->present_value)->toBeInstanceOf(Price::class)
+        ->and($result->present_value->getAmount()->toFloat())->toBeCloseTo($expected_present_value, 0.01)
+        ->and($result->loanable_amount)->toBeInstanceOf(Price::class)
+        ->and($result->loanable_amount->getAmount()->toFloat())->toBeCloseTo($expected_loanable_amount, 0.01)
+        ->and($result->required_equity)->toBeInstanceOf(Price::class)
+        ->and($result->required_equity->getAmount()->toFloat())->toBeCloseTo($expected_required_equity, 0.01)
+        ->and($result->monthly_amortization)->toBeInstanceOf(Price::class)
+        ->and($result->monthly_amortization->getAmount()->toFloat())->toBeCloseTo($expected_monthly_amortization, 0.01)
+        ->and($result->miscellaneous_fees)->toBeInstanceOf(Price::class)
+        ->and($result->miscellaneous_fees->getAmount()->toFloat())->toBeCloseTo($expected_miscellaneous_fee, 0.01)
+        ->and($result->add_on_fees)->toBeInstanceOf(Price::class)
+        ->and($result->add_on_fees->getAmount()->toFloat())->toBeCloseTo($expected_add_on_fees, 0.01)
+        ->and($result->cash_out)->toBeInstanceOf(Price::class)
+        ->and($result->cash_out->getAmount()->toFloat())->toBeCloseTo($expected_cash_out, 0.01)
+        ->and($result->income_gap)->toBeInstanceOf(Price::class)
+        ->and($result->income_gap->getAmount()->toFloat())->toBeCloseTo($expected_income_gap, 0.01)
+        ->and($result->percent_down_payment_remedy)->toBeInstanceOf(Percent::class)
+        ->and($result->percent_down_payment_remedy->value())->toBeCloseTo($expected_percent_down_payment_remedy, 0.01)
         ->and($result->inputs)->toBeInstanceOf(InputsData::class)
         ->and($result->inputs->toArray())->toBe($inputs->toArray())
     ;
-
-    $payload = MortgageResultPayload::fromResult($result);
-    expect($payload)->toBeInstanceOf(MortgageResultPayload::class)
-        ->and($payload->inputs->gross_monthly_income)->toBeCloseTo($monthly_gross_income + $additional_income, 0.01)
-        ->and($payload->inputs->income_requirement_multiplier)->toBeCloseTo($expected_income_requirement_multiplier, 0.01)
-        ->and($payload->inputs->total_contract_price)->toBeCloseTo($total_contract_price, 0.01)
-        ->and($payload->inputs->percent_down_payment)->toBeCloseTo($percent_down_payment, 0.01)
-//        ->and($payload->inputs->down_payment_term)->toBeCloseTo(12, 0.01)
-        ->and($payload->inputs->percent_loanable)->toBeCloseTo(0.95, 0.01)//TODO: unfix this
-        ->and($payload->inputs->appraisal_value)->toBeCloseTo($total_contract_price, 0.01)//TODO: unfix this
-        ->and($payload->inputs->discount_amount)->toBeNull()//TODO: unfix this
-        ->and($payload->inputs->low_cash_out)->toBeNull()//TODO: unfix this
-        ->and($payload->inputs->waived_processing_fee)->toBeNull()//TODO: unfix this
-//        ->and($payload->inputs->balance_payment_term)->toBe($expected_balance_payment_term)
-        ->and($payload->term_years)->toBe($expected_balance_payment_term)
-//        ->and($payload->inputs->balance_payment_interest_rate)->toBe($balance_payment_interest)//TODO: check this out
-//        ->and($payload->inputs->percent_miscellaneous_fee)->toBe($percent_miscellaneous_fee)//TODO: check this out
-        ->and($payload->inputs->consulting_fee)->toBeNull()
-        ->and($payload->inputs->processing_fee)->toBeCloseTo($processing_fee, 0.01)
-//        ->and($payload->inputs->monthly_mri)->toBe(0.0 )
-//        ->and($payload->inputs->monthly_fi)->toBe(0.0 )
-        ->and($payload->term_years)->toBe($expected_balance_payment_term)//TODO: redundant?
-        ->and($payload->monthly_disposable_income)->toBeCloseTo($expected_disposable_income, 0.01)
-        ->and($payload->present_value)->toBeCloseTo($expected_present_value, 0.01)
-        ->and($payload->required_equity)->toBeCloseTo($expected_required_equity, 0.01)
-        ->and($payload->monthly_amortization)->toBeCloseTo($expected_monthly_amortization, 0.01)
-        ->and($payload->add_on_fees)->toBeCloseTo($expected_add_on_fees, 0.01)
-        ->and($payload->cash_out)->toBeCloseTo($expected_cash_out, 0.01)
-        ->and($payload->loanable_amount)->toBeCloseTo($expected_loanable_amount, 0.01)
-        ->and($payload->miscellaneous_fee)->toBeCloseTo($expected_miscellaneous_fee, 0.01)
-    ;
-
-    $result = QualificationResultData::fromInputs($inputs);
-//    dd($result->income_gap->inclusive()->getAmount()->toFloat(), $expected_income_gap);
-//    dd($result->suggested_down_payment_percent->value(), $expected_percent_down_payment_remedy);
-//    dd($result->loan_difference->inclusive()->getAmount()->toFloat(), $expected_required_equity);
-    expect($result)->toBeInstanceOf(QualificationResultData::class)
-        ->and($result->mortgage)->toBeInstanceOf(MortgageResultData::class)
-        ->and($result->loan_difference->inclusive()->getAmount()->toFloat())->toBeCloseTo($expected_required_equity)
-        ->and($result->income_gap->inclusive()->getAmount()->toFloat())->toBeCloseTo($expected_income_gap)
-        ->and($result->suggested_down_payment_percent->value())->toBeCloseTo($expected_percent_down_payment_remedy)
-        ->and(in_array($result->reason, [
-            'Sufficient disposable income',
-            'Disposable income below amortization',
-        ]))->toBeTrue()
-    ;
-
 })->with('simple amortization');
 
 test('single mortgage computation', function () {

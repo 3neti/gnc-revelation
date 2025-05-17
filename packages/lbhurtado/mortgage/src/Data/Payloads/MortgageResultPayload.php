@@ -5,6 +5,7 @@ namespace LBHurtado\Mortgage\Data\Payloads;
 use LBHurtado\Mortgage\Data\MortgageResultData;
 use Spatie\LaravelData\Data;
 
+/** @deprecated  */
 class MortgageResultPayload extends Data
 {
     public function __construct(
@@ -32,7 +33,7 @@ class MortgageResultPayload extends Data
             add_on_fees: $result->add_on_fees->getAmount()->toFloat(),
             cash_out: $result->cash_out->getAmount()->toFloat(),
             loanable_amount: $result->loanable_amount->getAmount()->toFloat(),
-            miscellaneous_fee: $result->miscellaneous_fee->getAmount()->toFloat(),
+            miscellaneous_fee: $result->miscellaneous_fees->getAmount()->toFloat(),
         );
     }
 }

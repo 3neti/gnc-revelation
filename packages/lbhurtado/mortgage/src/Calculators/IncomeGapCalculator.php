@@ -21,4 +21,9 @@ class IncomeGapCalculator extends BaseCalculator
 
         return MoneyFactory::price($gap);
     }
+
+    public function toFloat(): float
+    {
+        return $this->calculate()->inclusive()->getAmount()->toFloat();
+    }
 }
