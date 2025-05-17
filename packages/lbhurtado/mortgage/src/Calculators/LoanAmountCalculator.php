@@ -2,12 +2,9 @@
 
 namespace LBHurtado\Mortgage\Calculators;
 
-use LBHurtado\Mortgage\ValueObjects\{DownPayment, FeeCollection, MiscellaneousFee};
+use LBHurtado\Mortgage\Factories\{CalculatorFactory, MoneyFactory};
+use LBHurtado\Mortgage\ValueObjects\{DownPayment, FeeCollection};
 use LBHurtado\Mortgage\Attributes\CalculatorFor;
-use LBHurtado\Mortgage\Enums\ExtractorType;
-use LBHurtado\Mortgage\Factories\CalculatorFactory;
-use LBHurtado\Mortgage\Factories\ExtractorFactory;
-use LBHurtado\Mortgage\Factories\MoneyFactory;
 use LBHurtado\Mortgage\Enums\CalculatorType;
 use Whitecube\Price\Price;
 
@@ -20,7 +17,7 @@ final class LoanAmountCalculator extends BaseCalculator
         $fees = new FeeCollection(addOns: [
             'miscellaneous fee' => CalculatorFactory::make(CalculatorType::MISCELLANEOUS_FEES, $this->inputs)->toFloat(),
         ]);
-//dd('LoanAmountCalculator', $loan->getAmount()->toFloat(), $fees->totalAddOns()->getAmount()->toFloat(), 1400000 * 1.085);
+
         return MoneyFactory::priceWithPrecision($loan->plus($fees->totalAddOns()));
     }
 

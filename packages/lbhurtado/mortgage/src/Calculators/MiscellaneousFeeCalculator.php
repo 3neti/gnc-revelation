@@ -29,6 +29,7 @@ final class MiscellaneousFeeCalculator extends BaseCalculator
     {
         $value = $this->calculate();
 
+        $tcp = ExtractorFactory::make(ExtractorType::TOTAL_CONTRACT_PRICE, $this->inputs)->toFloat();
         $percent_dp = ExtractorFactory::make(ExtractorType::PERCENT_DOWN_PAYMENT, $this->inputs)->extract()->value();
 
         $lending_institution = ExtractorFactory::make(ExtractorType::LENDING_INSTITUTION, $this->inputs)->extract();

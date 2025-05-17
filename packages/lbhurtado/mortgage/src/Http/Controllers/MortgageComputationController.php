@@ -66,7 +66,9 @@ class MortgageComputationController
         }
 
         $inputs = InputsData::fromBooking($buyer, $property, $order);
+
         $result = MortgageResultPayload::fromResult(MortgageResultData::fromInputs($inputs));
+//        dd('asdads');
         $qualification = QualificationResultData::fromInputs($inputs);
 
         return response()->json([

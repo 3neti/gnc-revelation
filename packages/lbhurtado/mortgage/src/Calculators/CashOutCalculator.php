@@ -2,11 +2,11 @@
 
 namespace LBHurtado\Mortgage\Calculators;
 
-use LBHurtado\Mortgage\ValueObjects\{DownPayment, MiscellaneousFee};
+use LBHurtado\Mortgage\Factories\{CalculatorFactory, ExtractorFactory, MoneyFactory};
+use LBHurtado\Mortgage\Enums\{ExtractorType, CalculatorType};
 use LBHurtado\Mortgage\Data\CashOutBreakdownData;
+use LBHurtado\Mortgage\ValueObjects\DownPayment;
 use LBHurtado\Mortgage\Attributes\CalculatorFor;
-use LBHurtado\Mortgage\Factories\MoneyFactory;
-use LBHurtado\Mortgage\Enums\CalculatorType;
 use Whitecube\Price\Price;
 
 #[CalculatorFor(CalculatorType::CASH_OUT)]
@@ -32,13 +32,14 @@ final class CashOutCalculator extends BaseCalculator
     public function partialMiscellaneousFee(): Price
     {
         return MoneyFactory::priceWithPrecision(
-            MiscellaneousFee::fromInputs($this->inputs)->partial()
+            CalculatorFactory::make(CalculatorType::MISCELLANEOUS_FEES, $this->inputs)->partial()
         );
     }
 
     public function processingFee(): Price
     {
-        return $this->inputs->fees->processing_fee;
+        return ExtractorFactory::make(ExtractorType::PROCESSING_FEE, $this->inputs)->extract();
+//        return $this->inputs->fees->processing_fee;
     }
 
     public function total(): Price

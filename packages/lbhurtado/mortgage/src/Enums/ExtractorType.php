@@ -10,4 +10,5 @@ enum ExtractorType: string
     case TOTAL_CONTRACT_PRICE = 'total_contract_price';
     case PERCENT_DOWN_PAYMENT = 'percent_down_payment';
     case PERCENT_MISCELLANEOUS_FEES = 'percent_miscellaneous_fees';
+    case PROCESSING_FEE = 'processing_fee';
 }
