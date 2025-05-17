@@ -3,9 +3,9 @@
 use LBHurtado\Mortgage\Classes\{Buyer, LendingInstitution, Order, Property};
 use LBHurtado\Mortgage\Enums\{CalculatorType, ExtractorType, MonthlyFee};
 use LBHurtado\Mortgage\Services\{AgeService, BorrowingRulesService};
+use LBHurtado\Mortgage\Data\MortgageComputationData;
 use LBHurtado\Mortgage\Factories\CalculatorFactory;
 use LBHurtado\Mortgage\Factories\ExtractorFactory;
-use LBHurtado\Mortgage\Data\MortgageResultData;
 use LBHurtado\Mortgage\Data\Inputs\InputsData;
 use LBHurtado\Mortgage\ValueObjects\Percent;
 use Whitecube\Price\Price;
@@ -174,8 +174,8 @@ test('multiple mortgage computations', function (
         ->and($actual_percent_down_payment_remedy_float)->toBeCloseTo($expected_percent_down_payment_remedy, 0.01)
     ;
 
-    $result = MortgageResultData::fromInputs($inputs);
-    expect($result)->toBeInstanceOf(MortgageResultData::class)
+    $result = MortgageComputationData::fromInputs($inputs);
+    expect($result)->toBeInstanceOf(MortgageComputationData::class)
         ->and($result->lending_institution)->toBeInstanceOf(LendingInstitution::class)
         ->and($result->lending_institution->key())->toBe($resolved_lending_institution->key())
         ->and($result->interest_rate)->toBeInstanceOf(Percent::class)

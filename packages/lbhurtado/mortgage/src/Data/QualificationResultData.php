@@ -27,7 +27,7 @@ class QualificationResultData extends Data
         #[WithCast(PriceCast::class)]
         public Price $monthly_amortization,
 
-        public MortgageResultData $mortgage
+        public MortgageComputationData $mortgage
     ) {}
 
     /** TODO: improve reason */
@@ -41,7 +41,7 @@ class QualificationResultData extends Data
             suggested_down_payment_percent: CalculatorFactory::make(CalculatorType::REQUIRED_PERCENT_DOWN_PAYMENT, $inputs)->calculate(),
             income_required: CalculatorFactory::make(CalculatorType::REQUIRED_INCOME, $inputs)->calculate(),
             monthly_amortization: CalculatorFactory::make(CalculatorType::AMORTIZATION, $inputs)->total(),
-            mortgage: MortgageResultData::fromInputs($inputs),
+            mortgage: MortgageComputationData::fromInputs($inputs),
         );
     }
 }

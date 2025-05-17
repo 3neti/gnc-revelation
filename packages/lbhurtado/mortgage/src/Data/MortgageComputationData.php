@@ -15,7 +15,7 @@ use LBHurtado\Mortgage\Casts\PriceCast;
 use Spatie\LaravelData\Data;
 use Whitecube\Price\Price;
 
-class MortgageResultData extends Data
+class MortgageComputationData extends Data
 {
     public function __construct(
         #[WithTransformer(LendingInstitutionToStringTransformer::class)]

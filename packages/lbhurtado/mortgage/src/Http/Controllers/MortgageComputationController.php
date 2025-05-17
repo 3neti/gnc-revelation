@@ -6,7 +6,7 @@ use LBHurtado\Mortgage\Data\Payloads\MortgageResultPayload;
 use LBHurtado\Mortgage\Classes\{Buyer, Order, Property};
 use LBHurtado\Mortgage\Data\QualificationResultData;
 use LBHurtado\Mortgage\Classes\LendingInstitution;
-use LBHurtado\Mortgage\Data\MortgageResultData;
+use LBHurtado\Mortgage\Data\MortgageComputationData;
 use LBHurtado\Mortgage\Data\Inputs\InputsData;
 use LBHurtado\Mortgage\ValueObjects\Percent;
 use LBHurtado\Mortgage\Enums\MonthlyFee;
@@ -67,7 +67,7 @@ class MortgageComputationController
 
         $inputs = InputsData::fromBooking($buyer, $property, $order);
 
-        $result = MortgageResultPayload::fromResult(MortgageResultData::fromInputs($inputs));
+        $result = MortgageResultPayload::fromResult(MortgageComputationData::fromInputs($inputs));
 //        dd('asdads');
         $qualification = QualificationResultData::fromInputs($inputs);
 

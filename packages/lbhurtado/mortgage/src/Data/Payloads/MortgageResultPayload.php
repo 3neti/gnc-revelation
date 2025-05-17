@@ -2,7 +2,7 @@
 
 namespace LBHurtado\Mortgage\Data\Payloads;
 
-use LBHurtado\Mortgage\Data\MortgageResultData;
+use LBHurtado\Mortgage\Data\MortgageComputationData;
 use Spatie\LaravelData\Data;
 
 /** @deprecated  */
@@ -21,7 +21,7 @@ class MortgageResultPayload extends Data
 //        public float $miscellaneous_fee,
     ) {}
 
-    public static function fromResult(MortgageResultData $result): static
+    public static function fromResult(MortgageComputationData $result): static
     {
         return new static(
             inputs: MortgageInputsPayload::fromInputs($result->inputs),
