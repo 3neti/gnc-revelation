@@ -72,9 +72,8 @@ trait HasFinancialAttributes
     {
         $this->percentMiscellaneousFees = match (true) {
             $value instanceof Percent       => $value,
-            is_int($value)                  => Percent::ofPercent($value),
-            is_float($value) && $value <= 1 => Percent::ofFraction($value),
-            is_float($value)                => Percent::ofPercent($value),
+            is_float($value) && $value <= 1 => Percent::ofFraction($value), // Prioritize fractional floats.
+            is_int($value), is_float($value) => Percent::ofPercent($value),
             is_null($value)                 => null,
             default                         => throw new \InvalidArgumentException("Invalid value for miscellaneous fees."),
         };
@@ -94,7 +93,6 @@ trait HasFinancialAttributes
     {
         if (!is_null($institution)) {
             $this->lendingInstitution = $institution;
-//            $this->setIncomeRequirementMultiplier($institution->getIncomeRequirementMultiplier());
         }
 
         return $this;

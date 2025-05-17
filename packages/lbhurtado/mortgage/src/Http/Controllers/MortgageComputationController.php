@@ -79,7 +79,7 @@ class MortgageComputationController
                 'reason' => $qualification->reason,
                 'mortgage' => [ // Partial extraction for now
                     'monthly_amortization' => $qualification->mortgage->monthly_amortization->inclusive()->getAmount()->toFloat(),
-                    'term_years' => $qualification->mortgage->term_years,
+                    'term_years' => $qualification->mortgage->balance_payment_term,
                 ],
             ],
         ]);

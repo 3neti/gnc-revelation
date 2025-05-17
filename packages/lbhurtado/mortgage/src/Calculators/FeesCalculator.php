@@ -52,4 +52,9 @@ final class FeesCalculator extends BaseCalculator
     {
         return MoneyFactory::priceWithPrecision($this->calculate()->totalAddOns());
     }
+
+    public function toFloat(): float
+    {
+        return $this->total()->getAmount()->toFloat();
+    }
 }

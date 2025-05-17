@@ -11,9 +11,9 @@ class FeeRulesFactory
     public static function make(LendingInstitution $institution): FeeRulesInterface
     {
         return match ($institution->key()) {
-            'hdmf' => new HousingFeeRules(),
-            'rcbc' => new ResidentialFeeRules(),
-            default => new FeeRules(), // fallback default rule
+            'hdmf' => new HousingFeeRules($institution),
+            'rcbc', 'cbc' => new ResidentialFeeRules($institution),
+            default => new FeeRules($institution), // fallback default rule
         };
     }
 }

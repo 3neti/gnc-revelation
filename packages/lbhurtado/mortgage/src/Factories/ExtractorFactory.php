@@ -7,6 +7,7 @@ use LBHurtado\Mortgage\Extractors\{BaseExtractor,
     InterestRateExtractor,
     LendingInstitutionExtractor,
     PercentDownPaymentExtractor,
+    PercentMiscellaneousFeesExtractor,
     TotalContractPriceExtractor};
 use LBHurtado\Mortgage\Attributes\ExtractorFor;
 use LBHurtado\Mortgage\Data\Inputs\InputsData;
@@ -62,7 +63,8 @@ final class ExtractorFactory
             LendingInstitutionExtractor::class,
             InterestRateExtractor::class,
             TotalContractPriceExtractor::class,
-            PercentDownPaymentExtractor::class
+            PercentDownPaymentExtractor::class,
+            PercentMiscellaneousFeesExtractor::class
         ];
 
         foreach ($classes as $class) {

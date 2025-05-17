@@ -22,7 +22,7 @@ interface OrderInterface
     public function getDownPaymentTerm(): ?int;
     public function getBalancePaymentTerm(): ?int;
 
-    public function getPercentMiscellaneousFees(): Percent;
+    public function getPercentMiscellaneousFees(): ?Percent;
 
     // New structure for monthly fees
     public function getMonthlyFees(): FeeCollection;

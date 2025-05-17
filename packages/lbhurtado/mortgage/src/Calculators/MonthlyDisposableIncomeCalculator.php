@@ -15,17 +15,17 @@ final class MonthlyDisposableIncomeCalculator extends BaseCalculator
 {
     public function calculate(): Price
     {
-//        return new Price($this->inputs->buyer()->getJointMonthlyDisposableIncome()->inclusive()); //try updating the percent GMI from parent buyer to co-borrower
-
         $multiplier = ExtractorFactory::make(ExtractorType::INCOME_REQUIREMENT_MULTIPLIER, $this->inputs)->extract()->value();
-
         if ($multiplier === null) {
             throw new IncomeRequirementMultiplierNotSetException();
         }
-//        $gross = clone($this->inputs->income->gross_monthly_income);
-
         $gross = $this->inputs->buyer()->getJointMonthlyGrossIncome();
 
         return $gross->multipliedBy($multiplier);
+    }
+
+    public function toFloat(): float
+    {
+        return $this->calculate()->inclusive()->getAmount()->toFloat();
     }
 }

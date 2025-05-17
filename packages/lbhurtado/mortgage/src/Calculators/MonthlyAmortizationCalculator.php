@@ -27,7 +27,7 @@ final class MonthlyAmortizationCalculator extends BaseCalculator
     {
         $term = $this->getBalancePaymentTermInputInMonths();
         $rate = $this->getBalancePaymentInterestRateInMonths();
-        $ma = LoanableAmountCalculator::fromInputs($this->inputs)
+        $ma = LoanAmountCalculator::fromInputs($this->inputs)
             ->calculate()
             ->addModifier('periodic payment', PeriodicPaymentModifier::class, $term, $rate)
             ->inclusive();

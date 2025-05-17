@@ -11,6 +11,8 @@ class LendingInstitution
 {
     protected string $key;
 
+    protected int $offset;
+
     public function __construct(?string $key = null)
     {
         $key ??= config('gnc-revelation.default_lending_institution', 'hdmf');
@@ -69,7 +71,14 @@ class LendingInstitution
 
     public function offset(): int
     {
-        return $this->get('borrowing_age.offset', 0);
+        return $this->offset ?? $this->get('borrowing_age.offset', 0);
+    }
+
+    public function newOffset(int $offset): self
+    {
+        $this->offset = $offset;
+
+        return $this;
     }
 
     public function maximumTerm(): int
@@ -108,6 +117,19 @@ class LendingInstitution
     public function getPercentDownPayment(): Percent
     {
         $default = $this->get('percent_dp') ?? 0.0;
+
+        return Percent::ofFraction($default);
+    }
+
+    /** TODO: make the return Price */
+    public function getLoanableValueMultiplier(): ?float
+    {
+        return $this->get('loanable_value_multiplier');
+    }
+
+    public function getPercentMiscellaneousFees(): Percent
+    {
+        $default = $this->get('percent_mf') ?? 0.0;
 
         return Percent::ofFraction($default);
     }

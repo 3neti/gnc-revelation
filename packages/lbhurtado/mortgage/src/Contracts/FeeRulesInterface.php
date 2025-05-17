@@ -2,10 +2,13 @@
 
 namespace LBHurtado\Mortgage\Contracts;
 
+use LBHurtado\Mortgage\Classes\LendingInstitution;
 use LBHurtado\Mortgage\ValueObjects\Percent;
 
 interface FeeRulesInterface
 {
+    public function getLendingInstitution(): LendingInstitution;
+
     /**
      * Determine the multiplier for the partial miscellaneous fee.
      *

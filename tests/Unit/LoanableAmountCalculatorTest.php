@@ -30,7 +30,7 @@ it('computes loanable amount using down payment deduction only', function (
     ;
     $inputs = InputsData::fromBooking($buyer, $property, $order);
 
-    $loanable = CalculatorFactory::make(CalculatorType::LOANABLE_AMOUNT, $inputs)
+    $loanable = CalculatorFactory::make(CalculatorType::LOAN_AMOUNT, $inputs)
         ->calculate()
         ->getAmount()
         ->toFloat();

@@ -24,7 +24,7 @@ class MortgageResultPayload extends Data
     {
         return new static(
             inputs: MortgageInputsPayload::fromInputs($result->inputs),
-            term_years: $result->term_years,
+            term_years: $result->balance_payment_term,
             monthly_disposable_income: $result->monthly_disposable_income->getAmount()->toFloat(),
             present_value: $result->present_value->getAmount()->toFloat(),
             required_equity: $result->required_equity->getAmount()->toFloat(),

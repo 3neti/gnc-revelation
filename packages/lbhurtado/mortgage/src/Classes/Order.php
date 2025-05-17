@@ -33,22 +33,42 @@ class Order implements OrderInterface
         $this->monthlyFeeEnums = new Collection();
     }
 
-    public function setPercentDownPayment(Percent|float|int $value): static
+    public function setPercentDownPayment(Percent|float|int|null $value): static
     {
+        // Check for a negative numeric value or a Percent instance with a negative value
         if ((is_numeric($value) && $value < 0) || ($value instanceof Percent && $value->value() < 0)) {
             throw new \InvalidArgumentException("Down payment percent must not be negative.");
         }
 
+        // Match and assign appropriate Percent instance or null
         $this->percentDownPayment = match (true) {
             $value instanceof Percent       => $value,
             is_int($value)                  => Percent::ofPercent($value),
             is_float($value) && $value <= 1 => Percent::ofFraction($value),
             is_float($value)                => Percent::ofPercent($value),
+            is_null($value)                 => null, // Null support added here
             default                         => throw new \InvalidArgumentException("Unsupported value for percent down payment"),
         };
 
         return $this;
     }
+
+//    public function setPercentDownPayment(Percent|float|int $value): static
+//    {
+//        if ((is_numeric($value) && $value < 0) || ($value instanceof Percent && $value->value() < 0)) {
+//            throw new \InvalidArgumentException("Down payment percent must not be negative.");
+//        }
+//
+//        $this->percentDownPayment = match (true) {
+//            $value instanceof Percent       => $value,
+//            is_int($value)                  => Percent::ofPercent($value),
+//            is_float($value) && $value <= 1 => Percent::ofFraction($value),
+//            is_float($value)                => Percent::ofPercent($value),
+//            default                         => throw new \InvalidArgumentException("Unsupported value for percent down payment"),
+//        };
+//
+//        return $this;
+//    }
 
     public function getPercentDownPayment(): ?Percent
     {
@@ -200,8 +220,8 @@ class Order implements OrderInterface
         return $this->interest_rate ?? null;
     }
 
-    public function getPercentMiscellaneousFees(): Percent
-    {
-        return $this->percentMiscellaneousFees ?? Percent::ofFraction(0.0);
-    }
+//    public function getPercentMiscellaneousFees(): Percent
+//    {
+//        return $this->percentMiscellaneousFees ?? Percent::ofFraction(0.0);
+//    }
 }

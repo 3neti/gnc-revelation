@@ -18,7 +18,7 @@ final class EquityRequirementCalculator extends BaseCalculator
             ->inclusive()
             ->getAmount()
             ->toFloat();
-        $requiredLoanable = LoanableAmountCalculator::fromInputs($this->inputs)
+        $requiredLoanable = LoanAmountCalculator::fromInputs($this->inputs)
             ->calculate()
             ->inclusive()
             ->getAmount()
@@ -27,5 +27,10 @@ final class EquityRequirementCalculator extends BaseCalculator
         $gap = max(0, $requiredLoanable - $affordableLoan);
 
         return new Equity(MoneyFactory::priceWithPrecision($gap));
+    }
+
+    public function toFloat(): float
+    {
+        return $this->calculate()->toPrice()->inclusive()->getAmount()->toFloat();
     }
 }

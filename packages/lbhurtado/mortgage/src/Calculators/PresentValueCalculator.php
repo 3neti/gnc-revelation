@@ -26,4 +26,9 @@ final class PresentValueCalculator extends BaseCalculator
 
         return MoneyFactory::price($present_value);
     }
+
+    public function toFloat(): float
+    {
+        return $this->calculate()->inclusive()->getAmount()->toFloat();
+    }
 }

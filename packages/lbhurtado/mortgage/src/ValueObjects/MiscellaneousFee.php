@@ -9,6 +9,7 @@ use LBHurtado\Mortgage\Data\Inputs\InputsData;
 use LBHurtado\Mortgage\Enums\ExtractorType;
 use Brick\Money\Money;
 
+/** @deprecated  */
 class MiscellaneousFee
 {
     protected float $tcp;

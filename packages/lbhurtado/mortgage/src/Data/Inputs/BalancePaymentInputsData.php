@@ -3,6 +3,8 @@
 namespace LBHurtado\Mortgage\Data\Inputs;
 
 use LBHurtado\Mortgage\Contracts\{BuyerInterface, OrderInterface, PropertyInterface};
+use LBHurtado\Mortgage\Data\Transformers\PercentToFloatTransformer;
+use Spatie\LaravelData\Attributes\WithTransformer;
 use LBHurtado\Mortgage\ValueObjects\Percent;
 use Spatie\LaravelData\Data;
 
@@ -11,6 +13,7 @@ class BalancePaymentInputsData extends Data
 {
     public function __construct(
         public int $bp_term,
+        #[WithTransformer(PercentToFloatTransformer::class)]
         public Percent $bp_interest_rate,
     ) {}
 
@@ -20,13 +23,5 @@ class BalancePaymentInputsData extends Data
             bp_term: 0,
             bp_interest_rate: Percent::ofFraction(0)
         );
-//        return new static(
-//            bp_term: 0,
-//            bp_interest_rate: $order->getInterestRate() ?? ($buyer->getInterestRate() ?? $property->getInterestRate())
-//        );
-//        return new static(
-//            bp_term: $order->getBalancePaymentTerm() ?? $buyer->getJointMaximumTermAllowed(),
-//            bp_interest_rate: $order->getInterestRate() ?? ($buyer->getInterestRate() ?? $property->getInterestRate())
-//        );
     }
 }

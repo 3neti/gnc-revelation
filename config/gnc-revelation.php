@@ -35,7 +35,9 @@ return [
             'buffer_margin' => 0.1,
             'income_requirement_multiplier' => 0.35,
             'interest_rate' => 0.0625,
-            'percent_dp' => 0.0
+            'percent_dp' => 0.0,
+            'loanable_value_multiplier' => 1.0,
+            'percent_mf' => 0.0,
         ],
         'rcbc' => [
             'name' => 'Rizal Commercial Banking Corporation',
@@ -50,8 +52,10 @@ return [
             'maximum_paying_age' => 65,
             'buffer_margin' => 0.15,
             'income_requirement_multiplier' => 0.35,
-            'interest_rate' => 0.0625,
-            'percent_dp' => 0.10
+            'interest_rate' => 0.0625,//TODO: make this 8%
+            'percent_dp' => 0.10,
+            'loanable_value_multiplier' => 0.9,
+            'percent_mf' => 0.085,
         ],
         'cbc' => [
             'name' => 'China Banking Corporation',
@@ -66,8 +70,10 @@ return [
             'maximum_paying_age' => 65,
             'buffer_margin' => 0.15,
             'income_requirement_multiplier' => 0.35,
-            'interest_rate' => 0.0625,
-            'percent_dp' => 0.10
+            'interest_rate' => 0.0625,//TODO: make this 7%
+            'percent_dp' => 0.10,
+            'loanable_value_multiplier' => 0.9,
+            'percent_mf' => 0.085,
         ],
     ],
     'default_lending_institution' => env('DEFAULT_LENDING_INSTITUTION', 'hdmf'),
