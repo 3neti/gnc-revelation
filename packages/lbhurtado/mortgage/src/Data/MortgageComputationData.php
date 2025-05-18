@@ -104,4 +104,16 @@ class MortgageComputationData extends Data
             inputs: $inputs,
         );
     }
+
+    public function qualifies(): bool
+    {
+        return CalculatorFactory::make(CalculatorType::LOAN_QUALIFICATION, $this->inputs)->calculate();
+    }
+
+    public function reason(): string
+    {
+        return $this->qualifies() ?
+            'Sufficient disposable income' :
+            'Disposable income below amortization';
+    }
 }

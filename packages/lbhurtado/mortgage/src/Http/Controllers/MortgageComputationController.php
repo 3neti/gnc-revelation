@@ -2,86 +2,53 @@
 
 namespace LBHurtado\Mortgage\Http\Controllers;
 
-use LBHurtado\Mortgage\Data\Payloads\MortgageResultPayload;
-use LBHurtado\Mortgage\Classes\{Buyer, Order, Property};
-use LBHurtado\Mortgage\Data\QualificationResultData;
-use LBHurtado\Mortgage\Classes\LendingInstitution;
 use LBHurtado\Mortgage\Data\MortgageComputationData;
 use LBHurtado\Mortgage\Data\Inputs\InputsData;
-use LBHurtado\Mortgage\ValueObjects\Percent;
-use LBHurtado\Mortgage\Enums\MonthlyFee;
+use Illuminate\Routing\Controller;
 use Illuminate\Http\Request;
 
-class MortgageComputationController
+class MortgageComputationController extends Controller
 {
     public function __invoke(Request $request)
     {
-        $data = $request->validate([
-            'lending_institution' => 'required|string|in:hdmf,rcbc',
-            'total_contract_price' => 'required|numeric|min:100000',
-            'buyer.age' => 'required|integer|min:18|max:65',
-            'buyer.monthly_income' => 'required|numeric|min:1000',
-            'buyer.additional_income' => 'nullable|numeric|min:0',
-            'co_borrower.age' => 'nullable|integer|min:18|max:65',
-            'co_borrower.monthly_income' => 'nullable|numeric|min:1000',
-            'percent_down_payment' => 'nullable|numeric|min:0|max:1',
-            'percent_miscellaneous_fee' => 'nullable|numeric|min:0|max:1',
-            'processing_fee' => 'nullable|numeric|min:0',
-            'add_mri' => 'boolean',
-            'add_fi' => 'boolean',
+        $validated = $request->validate([
+            'lending_institution' => ['required', 'string'],
+            'total_contract_price' => ['required', 'numeric'],
+            'percent_down_payment' => ['nullable', 'numeric'],
+            'percent_miscellaneous_fee' => ['nullable', 'numeric'],
+            'processing_fee' => ['nullable', 'numeric'],
+            'add_mri' => ['required', 'boolean'],
+            'add_fi' => ['required', 'boolean'],
+            'buyer' => ['required', 'array'],
+            'buyer.age' => ['required', 'integer'],
+            'buyer.monthly_income' => ['required', 'numeric'],
+            'buyer.additional_income' => ['required', 'numeric'],
+            'co_borrower' => ['nullable', 'array'],
+            'co_borrower.age' => ['required_with:co_borrower', 'integer'],
+            'co_borrower.monthly_income' => ['required_with:co_borrower', 'numeric'],
         ]);
 
-        $buyer = app(Buyer::class)
-            ->setAge($data['buyer']['age'])
-            ->setMonthlyGrossIncome($data['buyer']['monthly_income'])
-            ->setLendingInstitution(new LendingInstitution($data['lending_institution']))
-            ->addOtherSourcesOfIncome('user', $data['buyer']['additional_income'] ?? 0);
-
-        if (!empty($data['co_borrower']['age'])) {
-            $coBorrower = app(Buyer::class)
-                ->setAge($data['co_borrower']['age'])
-                ->setMonthlyGrossIncome($data['co_borrower']['monthly_income']);
-            $buyer->addCoBorrower($coBorrower);
-        }
-
-        $property = new Property($data['total_contract_price']);
-
-        $order = (new Order())
-            ->setInterestRate(Percent::ofFraction(0.0625)) // optionally allow override
-            ->setPercentMiscellaneousFees(Percent::ofFraction($data['percent_miscellaneous_fee'] ?? 0))
-            ->setProcessingFee($data['processing_fee'] ?? 0)
-            ->setLendingInstitution(new LendingInstitution($data['lending_institution']))
-            ->setTotalContractPrice($data['total_contract_price']);
-
-        if (isset($data['percent_down_payment'])) {
-            $order->setPercentDownPayment($data['percent_down_payment']);
-        }
-
-        if ($data['add_mri'] ?? false) {
-            $order->addMonthlyFee(MonthlyFee::MRI);
-        }
-
-        if ($data['add_fi'] ?? false) {
-            $order->addMonthlyFee(MonthlyFee::FIRE_INSURANCE);
-        }
+        $buyer = app('mortgage.buyer.factory')->make($validated['buyer'], $validated['co_borrower'] ?? null);
+        $property = app('mortgage.property.factory')->make($validated['total_contract_price'], $validated['lending_institution']);
+        $order = app('mortgage.order.factory')->make($validated);
 
         $inputs = InputsData::fromBooking($buyer, $property, $order);
 
-        $result = MortgageResultPayload::fromResult(MortgageComputationData::fromInputs($inputs));
-//        dd('asdads');
-        $qualification = QualificationResultData::fromInputs($inputs);
+        $mortgage_computation = MortgageComputationData::fromInputs($inputs);
+        $payload = $mortgage_computation->toArray();
+        $qualification = (object) $payload;
 
         return response()->json([
-            'payload' => $result->toArray(),
+            'payload' => $payload,
             'qualification' => [
-                'income_gap' => $qualification->income_gap->inclusive()->getAmount()->toFloat(),
-                'loan_difference' => $qualification->loan_difference->inclusive()->getAmount()->toFloat(),
-                'suggested_down_payment_percent' => $qualification->suggested_down_payment_percent->value(),
-                'qualifies' => $qualification->qualifies,
-                'reason' => $qualification->reason,
-                'mortgage' => [ // Partial extraction for now
-                    'monthly_amortization' => $qualification->mortgage->monthly_amortization->inclusive()->getAmount()->toFloat(),
-                    'term_years' => $qualification->mortgage->balance_payment_term,
+                'income_gap' => $qualification->income_gap,
+                'loan_difference' => $qualification->required_equity,
+                'suggested_down_payment_percent' => $qualification->percent_down_payment_remedy,
+                'qualifies' => $mortgage_computation->qualifies(),
+                'reason' => $mortgage_computation->reason(),
+                'mortgage' => [
+                    'monthly_amortization' => $qualification->monthly_amortization,
+                    'term_years' => $qualification->balance_payment_term,
                 ],
             ],
         ]);

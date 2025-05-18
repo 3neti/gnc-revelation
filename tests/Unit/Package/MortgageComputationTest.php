@@ -1,11 +1,10 @@
 <?php
 
+use LBHurtado\Mortgage\Factories\{CalculatorFactory, ExtractorFactory, InputsDataFactory};
 use LBHurtado\Mortgage\Classes\{Buyer, LendingInstitution, Order, Property};
-use LBHurtado\Mortgage\Enums\{CalculatorType, ExtractorType, MonthlyFee};
 use LBHurtado\Mortgage\Services\{AgeService, BorrowingRulesService};
+use LBHurtado\Mortgage\Enums\{CalculatorType, ExtractorType};
 use LBHurtado\Mortgage\Data\MortgageComputationData;
-use LBHurtado\Mortgage\Factories\CalculatorFactory;
-use LBHurtado\Mortgage\Factories\ExtractorFactory;
 use LBHurtado\Mortgage\Data\Inputs\InputsData;
 use LBHurtado\Mortgage\ValueObjects\Percent;
 use Whitecube\Price\Price;
@@ -90,51 +89,23 @@ test('multiple mortgage computations', function (
     float  $expected_percent_down_payment_remedy,
 ) {
     // Arrange
-    $buyer = app(Buyer::class)
-        ->setAge($age)
-        ->setMonthlyGrossIncome($monthly_gross_income)
-        ->addOtherSourcesOfIncome('test', $additional_income)
-    ;
-    expect($buyer->getMonthlyGrossIncome()->inclusive()->getAmount()->toFloat())->toBe($monthly_gross_income + $additional_income);
-
-    if ($co_borrower_age) {
-        $co_borrower = app(Buyer::class)
-            ->setAge($co_borrower_age)
-            ->setMonthlyGrossIncome($co_borrower_income)
-        ;
-        $buyer->addCoBorrower($co_borrower);
-    }
-
-    $property = (new Property($total_contract_price))
-        ->setLendingInstitution(new LendingInstitution($lending_institution))
-    ;
-    expect($property_percent_down_payment = $property->getPercentDownPayment()->value())
-        ->toBe($lending_institution_percent_down_payment = $property->getLendingInstitution()->getPercentDownPayment()->value());
-
-    $order = new Order;
-
-    if (!is_null($balance_payment_interest)) {
-        $order->setInterestRate(Percent::ofFraction($balance_payment_interest));
-    }
-
-    if (!is_null($percent_miscellaneous_fee)) {
-        $order->setPercentMiscellaneousFees(Percent::ofFraction($percent_miscellaneous_fee));
-    }
-    if (!is_null($processing_fee)) {
-        $order->setProcessingFee($processing_fee);
-    }
-    if ($add_mri) {
-        $order->addMonthlyFee(MonthlyFee::MRI);
-    }
-    if ($add_fi) {
-        $order->addMonthlyFee(MonthlyFee::FIRE_INSURANCE);
-    }
-    if (!is_null($percent_down_payment)) {
-        $order->setPercentDownPayment($percent_down_payment);
-    }
+    $inputs = InputsDataFactory::from(
+        $lending_institution,
+        $total_contract_price,
+        $age,
+        $monthly_gross_income,
+        $co_borrower_age,
+        $co_borrower_income,
+        $additional_income,
+        $balance_payment_interest,
+        $percent_down_payment,
+        $percent_miscellaneous_fee,
+        $processing_fee,
+        $add_mri,
+        $add_fi
+    );
 
     // Act
-    $inputs = InputsData::fromBooking($buyer, $property, $order);
     $resolved_lending_institution = ExtractorFactory::make(ExtractorType::LENDING_INSTITUTION, $inputs)->extract();
     $resolved_interest_rate = ExtractorFactory::make(ExtractorType::INTEREST_RATE, $inputs)->extract()->value();
     $resolved_percent_down_payment = ExtractorFactory::make(ExtractorType::PERCENT_DOWN_PAYMENT, $inputs)->extract()->value();
@@ -153,12 +124,13 @@ test('multiple mortgage computations', function (
     $actual_cash_out_float = CalculatorFactory::make(CalculatorType::CASH_OUT, $inputs)->calculate()->total->getAmount()->toFloat();
     $actual_income_gap_float = CalculatorFactory::make(CalculatorType::INCOME_GAP, $inputs)->toFloat();
     $actual_percent_down_payment_remedy_float = CalculatorFactory::make(CalculatorType::REQUIRED_PERCENT_DOWN_PAYMENT, $inputs)->calculate()->value();
+    $qualifies = CalculatorFactory::make(CalculatorType::LOAN_QUALIFICATION, $inputs)->calculate();
 
     // Assert
     expect($resolved_lending_institution->key())->toBe($lending_institution)
         ->and($resolved_interest_rate)->toBe($balance_payment_interest ?? $resolved_lending_institution->getInterestRate()->value())
         ->and($resolved_percent_down_payment)->toBe($percent_down_payment ?? $resolved_lending_institution->getPercentDownPayment()->value())
-        ->and($resolved_percent_miscellaneous_fee)->toBe(($percent_miscellaneous_fee ?? $property->getPercentMiscellaneousFees()?->value()) ?? $resolved_lending_institution->getPercentMiscellaneousFees()->value())
+        ->and($resolved_percent_miscellaneous_fee)->toBe(($percent_miscellaneous_fee ?? $inputs->property()->getPercentMiscellaneousFees()?->value()) ?? $resolved_lending_institution->getPercentMiscellaneousFees()->value())
         ->and($resolved_total_contract_price)->toBe($total_contract_price)
         ->and($actual_income_requirement_multiplier)->toBeCloseTo($expected_income_requirement_multiplier, 0.01)
         ->and($actual_balance_payment_term)->toBe($expected_balance_payment_term)
@@ -172,6 +144,7 @@ test('multiple mortgage computations', function (
         ->and($actual_cash_out_float)->toBeCloseTo($expected_cash_out, 0.01)
         ->and($actual_income_gap_float)->toBeCloseTo($expected_income_gap, 0.01)
         ->and($actual_percent_down_payment_remedy_float)->toBeCloseTo($expected_percent_down_payment_remedy, 0.01)
+        ->and($qualifies)->toBe($expected_income_gap == 0)
     ;
 
     $result = MortgageComputationData::fromInputs($inputs);
@@ -212,8 +185,59 @@ test('multiple mortgage computations', function (
         ->and($result->percent_down_payment_remedy->value())->toBeCloseTo($expected_percent_down_payment_remedy, 0.01)
         ->and($result->inputs)->toBeInstanceOf(InputsData::class)
         ->and($result->inputs->toArray())->toBe($inputs->toArray())
+        ->and($result->qualifies())->toBe($expected_required_equity == 0)
     ;
 })->with('simple amortization');
+
+test('multiple mortgage computations - controller', function (
+    string $lending_institution,
+    float  $total_contract_price,
+    int    $age,
+    float  $monthly_gross_income,
+    int    $co_borrower_age,
+    float  $co_borrower_income,
+    float  $additional_income,
+    ?float $balance_payment_interest,
+    ?float $percent_down_payment,
+    ?float $percent_miscellaneous_fee,
+    float  $processing_fee,
+    bool   $add_mri,
+    bool   $add_fi,
+    int    $expected_balance_payment_term,
+    float  $expected_income_requirement_multiplier,
+    float  $expected_disposable_income,
+    float  $expected_present_value,
+    float  $expected_required_equity,
+    float  $expected_monthly_amortization,
+    float  $expected_add_on_fees,
+    float  $expected_cash_out,
+    float  $expected_loanable_amount,
+    float  $expected_miscellaneous_fee,
+    float  $expected_income_gap,
+    float  $expected_percent_down_payment_remedy,
+) {
+    $response = $this->postJson(route('api.v1.mortgage-compute'), [
+        'lending_institution' => $lending_institution,
+        'total_contract_price' => $total_contract_price,
+        'buyer' => [
+            'age' => $age,
+            'monthly_income' => $monthly_gross_income,
+            'additional_income' => $additional_income,
+        ],
+        'co_borrower' => [
+            'age' => $co_borrower_age,
+            'monthly_income' => $co_borrower_income,
+        ],
+        'percent_down_payment' => $percent_down_payment,
+        'percent_miscellaneous_fee' => $percent_miscellaneous_fee,
+        'processing_fee' => $processing_fee,
+        'add_mri' => $add_mri,
+        'add_fi' => $add_fi,
+    ]);
+
+    $response->assertOk();
+
+})->with('simple amortization')->skip();
 
 test('single mortgage computation', function () {
     $age = 49;

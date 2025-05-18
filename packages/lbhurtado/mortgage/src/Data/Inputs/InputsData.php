@@ -8,6 +8,7 @@ use Spatie\LaravelData\Data;
 class InputsData extends Data
 {
     public function __construct(
+
         protected ?BuyerInterface               $buyer = null,
         protected ?PropertyInterface            $property = null,
         protected ?OrderInterface               $order = null,

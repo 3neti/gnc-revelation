@@ -5,6 +5,7 @@ namespace LBHurtado\Mortgage\Data\Payloads;
 use LBHurtado\Mortgage\Data\Inputs\InputsData;
 use Spatie\LaravelData\Data;
 
+/** @deprecated  */
 class MortgageInputsPayload extends Data
 {
     public function __construct(
