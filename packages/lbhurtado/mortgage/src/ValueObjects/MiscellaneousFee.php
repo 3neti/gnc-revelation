@@ -5,7 +5,7 @@ namespace LBHurtado\Mortgage\ValueObjects;
 use LBHurtado\Mortgage\Contracts\FeeRulesInterface;
 use LBHurtado\Mortgage\Factories\ExtractorFactory;
 use LBHurtado\Mortgage\Factories\FeeRulesFactory;
-use LBHurtado\Mortgage\Data\Inputs\InputsData;
+use LBHurtado\Mortgage\Data\Inputs\MortgageParticulars;
 use LBHurtado\Mortgage\Enums\ExtractorType;
 use Brick\Money\Money;
 
@@ -25,7 +25,7 @@ class MiscellaneousFee
         $this->override_multiplier = $override_multiplier;
     }
 
-    public static function fromInputs(InputsData $inputs, ?FeeRulesInterface $rules = null): self
+    public static function fromInputs(MortgageParticulars $inputs, ?FeeRulesInterface $rules = null): self
     {
         $tcp = $inputs->loanable->total_contract_price->inclusive()->getAmount()->toFloat();
         $percent_mf = $inputs->fees->percent_mf?->value() ?? 0.0;

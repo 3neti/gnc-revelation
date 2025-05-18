@@ -3,44 +3,21 @@
 namespace LBHurtado\Mortgage\Factories;
 
 use LBHurtado\Mortgage\Classes\{Buyer, Order, Property, LendingInstitution};
-use LBHurtado\Mortgage\Data\Inputs\InputsData;
+use LBHurtado\Mortgage\Data\Inputs\MortgageInputsData;
+use LBHurtado\Mortgage\Data\Inputs\MortgageParticulars;
 use LBHurtado\Mortgage\ValueObjects\Percent;
 use LBHurtado\Mortgage\Enums\MonthlyFee;
-use Illuminate\Support\Arr;
 
-class InputsDataFactory
+class MortgageParticularsFactory
 {
-    public static function fromArray(array $data): InputsData
+    public static function fromData(MortgageInputsData $data): MortgageParticulars
     {
-        $lending_institution = Arr::get($data, 'lending_institution');
-        $total_contract_price = Arr::get($data, 'total_contract_price');
-        $age = Arr::get($data, 'buyer.age');
-        $monthly_gross_income = Arr::get($data, 'buyer.monthly_income');
-        $co_borrower_age = Arr::get($data, 'co_borrower.age');
-        $co_borrower_income = Arr::get($data, 'co_borrower.monthly_income');
-        $additional_income = Arr::get($data, 'buyer.additional_income');
-        $balance_payment_interest = Arr::get($data, 'balance_payment_interest');
-        $percent_down_payment = Arr::get($data, 'percent_down_payment');
-        $percent_miscellaneous_fee = Arr::get($data, 'percent_miscellaneous_fee');
-        $processing_fee = Arr::get($data, 'processing_fee');
-        $add_mri = Arr::get($data, 'add_mri');
-        $add_fi = Arr::get($data, 'add_fi');
+        return self::fromArray($data->toArray());
+    }
 
-        return self::from(
-            $lending_institution,
-            $total_contract_price,
-            $age,
-            $monthly_gross_income,
-            $co_borrower_age,
-            $co_borrower_income,
-            $additional_income,
-            $balance_payment_interest,
-            $percent_down_payment,
-            $percent_miscellaneous_fee,
-            $processing_fee,
-            $add_mri,
-            $add_fi
-        );
+    public static function fromArray(array $data): MortgageParticulars
+    {
+        return self::from(...$data);
     }
 
     public static function from(
@@ -57,7 +34,7 @@ class InputsDataFactory
         float  $processing_fee,
         bool   $add_mri,
         bool   $add_fi,
-    ): InputsData
+    ): MortgageParticulars
     {
         $buyer = app(Buyer::class)
             ->setAge($age)
@@ -99,6 +76,6 @@ class InputsDataFactory
             $order->setPercentDownPayment($percent_down_payment);
         }
 
-        return InputsData::fromBooking($buyer, $property, $order);
+        return MortgageParticulars::fromBooking($buyer, $property, $order);
     }
 }

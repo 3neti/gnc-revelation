@@ -2,7 +2,7 @@
 
 namespace LBHurtado\Mortgage\Data\Payloads;
 
-use LBHurtado\Mortgage\Data\Inputs\InputsData;
+use LBHurtado\Mortgage\Data\Inputs\MortgageParticulars;
 use Spatie\LaravelData\Data;
 
 /** @deprecated  */
@@ -32,7 +32,7 @@ class MortgageInputsPayload extends Data
 //        public float $monthly_fi,
     ) {}
 
-    public static function fromInputs(InputsData $inputs): static
+    public static function fromInputs(MortgageParticulars $inputs): static
     {
         return new static(
 //            gross_monthly_income: $inputs->income->gross_monthly_income->inclusive()->getAmount()->toFloat(),

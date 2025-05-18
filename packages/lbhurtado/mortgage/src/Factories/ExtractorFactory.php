@@ -11,7 +11,7 @@ use LBHurtado\Mortgage\Extractors\{BaseExtractor,
     ProcessingFeeExtractor,
     TotalContractPriceExtractor};
 use LBHurtado\Mortgage\Attributes\ExtractorFor;
-use LBHurtado\Mortgage\Data\Inputs\InputsData;
+use LBHurtado\Mortgage\Data\Inputs\MortgageParticulars;
 use LBHurtado\Mortgage\Enums\ExtractorType;
 use RuntimeException;
 use ReflectionClass;
@@ -29,11 +29,11 @@ final class ExtractorFactory
      * Build and return the extractor based on type.
      *
      * @param ExtractorType $type
-     * @param InputsData $inputs
+     * @param MortgageParticulars $inputs
      * @return BaseExtractor
      * @throws \ReflectionException
      */
-    public static function make(ExtractorType $type, InputsData $inputs): BaseExtractor
+    public static function make(ExtractorType $type, MortgageParticulars $inputs): BaseExtractor
     {
         static::discoverExtractors();
 

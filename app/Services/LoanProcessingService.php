@@ -11,7 +11,7 @@ use App\Data\{BalancePaymentScheduleData,
 use LBHurtado\Mortgage\Contracts\{OrderInterface};
 use LBHurtado\Mortgage\Contracts\BuyerInterface;
 use LBHurtado\Mortgage\Contracts\PropertyInterface;
-use LBHurtado\Mortgage\Data\Inputs\InputsData;
+use LBHurtado\Mortgage\Data\Inputs\MortgageParticulars;
 use LBHurtado\Mortgage\Factories\MoneyFactory;
 
 final class LoanProcessingService
@@ -29,7 +29,7 @@ final class LoanProcessingService
 
     public function generate(): LoanProcessingData
     {
-        $inputs = InputsData::fromBooking($this->buyer, $this->property, $this->order);
+        $inputs = MortgageParticulars::fromBooking($this->buyer, $this->property, $this->order);
         $mortgage = new MortgageComputation($inputs);
 
         $qualification = $mortgage->getQualificationResult();

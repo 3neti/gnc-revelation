@@ -13,7 +13,7 @@ use LBHurtado\Mortgage\Calculators\{BalancePaymentTermCalculator,
     RequiredIncomeCalculator,
     RequiredPercentDownPaymentCalculator};
 use LBHurtado\Mortgage\Attributes\CalculatorFor;
-use LBHurtado\Mortgage\Data\Inputs\InputsData;
+use LBHurtado\Mortgage\Data\Inputs\MortgageParticulars;
 use LBHurtado\Mortgage\Enums\CalculatorType;
 use RuntimeException;
 use ReflectionClass;
@@ -31,11 +31,11 @@ final class CalculatorFactory
      * Build and return the calculator based on type.
      *
      * @param CalculatorType $type
-     * @param InputsData $inputs
+     * @param MortgageParticulars $inputs
      * @return BaseCalculator
      * @throws \ReflectionException
      */
-    public static function make(CalculatorType $type, InputsData $inputs): BaseCalculator
+    public static function make(CalculatorType $type, MortgageParticulars $inputs): BaseCalculator
     {
         static::discoverCalculators();
 

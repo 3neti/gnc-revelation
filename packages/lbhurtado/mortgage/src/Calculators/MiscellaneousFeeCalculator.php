@@ -4,7 +4,7 @@ namespace LBHurtado\Mortgage\Calculators;
 
 use Brick\Money\Money;
 use LBHurtado\Mortgage\Attributes\CalculatorFor;
-use LBHurtado\Mortgage\Data\Inputs\InputsData;
+use LBHurtado\Mortgage\Data\Inputs\MortgageParticulars;
 use LBHurtado\Mortgage\Enums\CalculatorType;
 use LBHurtado\Mortgage\Enums\ExtractorType;
 use LBHurtado\Mortgage\Factories\FeeRulesFactory;

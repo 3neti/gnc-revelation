@@ -9,7 +9,7 @@ use LBHurtado\Mortgage\Data\Transformers\PriceToFloatTransformer;
 use Spatie\LaravelData\Attributes\{WithCast, WithTransformer};
 use LBHurtado\Mortgage\Enums\{CalculatorType, ExtractorType};
 use LBHurtado\Mortgage\Classes\LendingInstitution;
-use LBHurtado\Mortgage\Data\Inputs\InputsData;
+use LBHurtado\Mortgage\Data\Inputs\MortgageParticulars;
 use LBHurtado\Mortgage\ValueObjects\Percent;
 use LBHurtado\Mortgage\Casts\PriceCast;
 use Spatie\LaravelData\Data;
@@ -69,19 +69,19 @@ class MortgageComputationData extends Data
 
         #[WithTransformer(PriceToFloatTransformer::class)]
         #[WithCast(PriceCast::class)]
-        public Price $cash_out,
+        public Price               $cash_out,
 
         #[WithTransformer(PriceToFloatTransformer::class)]
         #[WithCast(PriceCast::class)]
-        public Price $income_gap,
+        public Price               $income_gap,
 
         #[WithTransformer(PercentToFloatTransformer::class)]
-        public Percent $percent_down_payment_remedy,
+        public Percent             $percent_down_payment_remedy,
 
-        public InputsData $inputs,
+        public MortgageParticulars $inputs,
     ) {}
 
-    public static function fromInputs(InputsData $inputs): static
+    public static function fromInputs(MortgageParticulars $inputs): static
     {
         return new static(
             lending_institution: ExtractorFactory::make(ExtractorType::LENDING_INSTITUTION, $inputs)->extract(),

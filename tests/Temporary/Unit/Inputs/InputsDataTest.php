@@ -7,7 +7,7 @@ use LBHurtado\Mortgage\Data\Inputs\{DownPaymentInputsData};
 use LBHurtado\Mortgage\Data\Inputs\BalancePaymentInputsData;
 use LBHurtado\Mortgage\Data\Inputs\FeesInputsData;
 use LBHurtado\Mortgage\Data\Inputs\IncomeInputsData;
-use LBHurtado\Mortgage\Data\Inputs\InputsData;
+use LBHurtado\Mortgage\Data\Inputs\MortgageParticulars;
 use LBHurtado\Mortgage\Data\Inputs\LoanableInputsData;
 use LBHurtado\Mortgage\Data\Inputs\MonthlyPaymentAddOnsInputsData;
 use LBHurtado\Mortgage\Services\{AgeService};
@@ -34,9 +34,9 @@ beforeEach(function () {
 });
 
 it('creates valid InputsData from booking', function () {
-    $inputs = InputsData::fromBooking($this->buyer, $this->property, $this->order);
+    $inputs = MortgageParticulars::fromBooking($this->buyer, $this->property, $this->order);
 
-    expect($inputs)->toBeInstanceOf(InputsData::class)
+    expect($inputs)->toBeInstanceOf(MortgageParticulars::class)
         ->and($inputs->income)->toBeInstanceOf(IncomeInputsData::class)
         ->and($inputs->loanable)->toBeInstanceOf(LoanableInputsData::class)
         ->and($inputs->balance_payment)->toBeInstanceOf(BalancePaymentInputsData::class)

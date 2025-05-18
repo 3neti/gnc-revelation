@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Data\QualificationResultData;
-use LBHurtado\Mortgage\Data\Inputs\InputsData;
+use LBHurtado\Mortgage\Data\Inputs\MortgageParticulars;
 use LBHurtado\Mortgage\Enums\CalculatorType;
 use LBHurtado\Mortgage\Factories\CalculatorFactory;
 use LBHurtado\Mortgage\Factories\MoneyFactory;
@@ -11,9 +11,9 @@ use Whitecube\Price\Price;
 
 final class MortgageComputation
 {
-    public function __construct(public InputsData $inputs) {}
+    public function __construct(public MortgageParticulars $inputs) {}
 
-    public static function fromInputs(InputsData $inputs): self
+    public static function fromInputs(MortgageParticulars $inputs): self
     {
         return new self($inputs);
     }

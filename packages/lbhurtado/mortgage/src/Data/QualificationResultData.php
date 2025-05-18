@@ -3,7 +3,7 @@
 namespace LBHurtado\Mortgage\Data;
 
 use LBHurtado\Mortgage\Factories\CalculatorFactory;
-use LBHurtado\Mortgage\Data\Inputs\InputsData;
+use LBHurtado\Mortgage\Data\Inputs\MortgageParticulars;
 use LBHurtado\Mortgage\Enums\CalculatorType;
 use LBHurtado\Mortgage\ValueObjects\Percent;
 use Spatie\LaravelData\Attributes\WithCast;
@@ -31,7 +31,7 @@ class QualificationResultData extends Data
     ) {}
 
     /** TODO: improve reason */
-    public static function fromInputs(InputsData $inputs): static
+    public static function fromInputs(MortgageParticulars $inputs): static
     {
         return new static(
             qualifies: $qualifies = CalculatorFactory::make(CalculatorType::LOAN_QUALIFICATION, $inputs)->calculate(),

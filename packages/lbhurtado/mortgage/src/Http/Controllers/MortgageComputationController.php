@@ -3,7 +3,7 @@
 namespace LBHurtado\Mortgage\Http\Controllers;
 
 use LBHurtado\Mortgage\Data\MortgageComputationData;
-use LBHurtado\Mortgage\Data\Inputs\InputsData;
+use LBHurtado\Mortgage\Data\Inputs\MortgageParticulars;
 use Illuminate\Routing\Controller;
 use Illuminate\Http\Request;
 
@@ -32,7 +32,7 @@ class MortgageComputationController extends Controller
         $property = app('mortgage.property.factory')->make($validated['total_contract_price'], $validated['lending_institution']);
         $order = app('mortgage.order.factory')->make($validated);
 
-        $inputs = InputsData::fromBooking($buyer, $property, $order);
+        $inputs = MortgageParticulars::fromBooking($buyer, $property, $order);
 
         $mortgage_computation = MortgageComputationData::fromInputs($inputs);
         $payload = $mortgage_computation->toArray();

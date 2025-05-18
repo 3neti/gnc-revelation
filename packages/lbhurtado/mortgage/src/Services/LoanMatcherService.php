@@ -6,7 +6,7 @@ use LBHurtado\Mortgage\Data\QualificationResultData;
 use LBHurtado\Mortgage\Contracts\PropertyInterface;
 use LBHurtado\Mortgage\Data\Match\MatchResultData;
 use LBHurtado\Mortgage\Classes\{Buyer, Order};
-use LBHurtado\Mortgage\Data\Inputs\InputsData;
+use LBHurtado\Mortgage\Data\Inputs\MortgageParticulars;
 use Illuminate\Support\Collection;
 
 class LoanMatcherService
@@ -22,7 +22,7 @@ class LoanMatcherService
     {
         return $properties->map(function (PropertyInterface $property) use ($buyer): MatchResultData {
             $order = new Order;
-            $inputs = InputsData::fromBooking($buyer, $property, $order);
+            $inputs = MortgageParticulars::fromBooking($buyer, $property, $order);
             $result = QualificationResultData::fromInputs($inputs);
 
             return new MatchResultData(

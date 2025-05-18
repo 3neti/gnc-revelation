@@ -1,7 +1,7 @@
 <?php
 
 use App\Services\MortgageComputation;
-use LBHurtado\Mortgage\Data\Inputs\InputsData;
+use LBHurtado\Mortgage\Data\Inputs\MortgageParticulars;
 use LBHurtado\Mortgage\ValueObjects\Equity;
 use Tests\Fakes\FlexibleFakeBuyer;
 use Tests\Fakes\FlexibleFakeOrder;
@@ -23,7 +23,7 @@ it('computes monthly amortization accurately', function () {
         income_requirement_multiplier: 0.35,
     );
 
-    $inputs = InputsData::fromBooking($buyer, $property, $order);
+    $inputs = MortgageParticulars::fromBooking($buyer, $property, $order);
     $service = new MortgageComputation($inputs);
     $monthly = $service->getMonthlyAmortization();
     $amount = $monthly->inclusive()->getAmount()->toFloat();
@@ -107,7 +107,7 @@ it('computes monthly amortization based on Excel MA sheet', function (
         income_requirement_multiplier: $gmiMultiplier,
     );
 
-    $inputs = InputsData::fromBooking($buyer, $property, $order);
+    $inputs = MortgageParticulars::fromBooking($buyer, $property, $order);
     $service = new MortgageComputation($inputs);
     $monthly = $service->getMonthlyAmortization();
     $amount = $monthly->inclusive()->getAmount()->toFloat();
@@ -135,7 +135,7 @@ it('computes present value from disposable income (max loanable amount)', functi
         income_requirement_multiplier: $multiplier,
     );
 
-    $inputs = InputsData::fromBooking($buyer, $property, $order);
+    $inputs = MortgageParticulars::fromBooking($buyer, $property, $order);
     $service = new MortgageComputation($inputs);
     $presentValue = $service->getPresentValueFromDisposable();
 
@@ -166,7 +166,7 @@ it('computes required equity correctly when TCP exceeds loanable amount', functi
         income_requirement_multiplier: $multiplier,
     );
 
-    $inputs = InputsData::fromBooking($buyer, $property, $order);
+    $inputs = MortgageParticulars::fromBooking($buyer, $property, $order);
     $service = new MortgageComputation($inputs);
 
     $equity = $service->computeRequiredEquity();
@@ -203,7 +203,7 @@ it('computes required equity correctly with a 10% down payment', function () {
         income_requirement_multiplier: $multiplier,
     );
 
-    $inputs = InputsData::fromBooking($buyer, $property, $order);
+    $inputs = MortgageParticulars::fromBooking($buyer, $property, $order);
     $service = new MortgageComputation($inputs);
     $equity = $service->computeRequiredEquity();
 
@@ -235,7 +235,7 @@ it('returns qualification result for qualified borrower with no equity gap', fun
         income_requirement_multiplier: $multiplier,
     );
 
-    $inputs = InputsData::fromBooking($buyer, $property, $order);
+    $inputs = MortgageParticulars::fromBooking($buyer, $property, $order);
     $service = new MortgageComputation($inputs);
 
     $result = $service->getQualificationResult();
@@ -273,7 +273,7 @@ it('returns qualification result for unqualified borrower with required equity',
         income_requirement_multiplier: $multiplier,
     );
 
-    $inputs = InputsData::fromBooking($buyer, $property, $order);
+    $inputs = MortgageParticulars::fromBooking($buyer, $property, $order);
     $service = new MortgageComputation($inputs);
 
     $result = $service->getQualificationResult();
@@ -312,7 +312,7 @@ it('computes required cash out and balance miscellaneous fee correctly', functio
         percent_miscellaneous_fees: $percentMiscFee,
     );
 
-    $inputs = InputsData::fromBooking($buyer, $property, $order);
+    $inputs = MortgageParticulars::fromBooking($buyer, $property, $order);
     $service = new MortgageComputation($inputs);
     $result = $service->getQualificationResult();
 
@@ -354,7 +354,7 @@ it('computes monthly share of miscellaneous fee correctly', function () {
         percent_miscellaneous_fees: $percentMiscFee,
     );
 
-    $inputs = InputsData::fromBooking($buyer, $property, $order);
+    $inputs = MortgageParticulars::fromBooking($buyer, $property, $order);
     $service = new MortgageComputation($inputs);
 
     $monthlyMF = $service->getMonthlyMiscellaneousFeeShare();
@@ -398,7 +398,7 @@ it('computes monthly amortization breakdown correctly with real add-ons', functi
         monthly_fi: $fire,
     );
 
-    $inputs = InputsData::fromBooking($buyer, $property, $order);
+    $inputs = MortgageParticulars::fromBooking($buyer, $property, $order);
     $service = new MortgageComputation($inputs);
     $breakdown = $service->getMonthlyAmortizationBreakdown();
 
@@ -450,7 +450,7 @@ it('injects monthly amortization breakdown into qualification result', function 
         monthly_fi: $fire,
     );
 
-    $inputs = InputsData::fromBooking($buyer, $property, $order);
+    $inputs = MortgageParticulars::fromBooking($buyer, $property, $order);
     $service = new MortgageComputation($inputs);
     $result = $service->getQualificationResult();
     $breakdown = $result->monthly_amortization_breakdown;

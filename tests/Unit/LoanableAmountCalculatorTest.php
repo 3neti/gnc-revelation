@@ -3,7 +3,7 @@
 use LBHurtado\Mortgage\Classes\{LendingInstitution, Order};
 use LBHurtado\Mortgage\Classes\Buyer;
 use LBHurtado\Mortgage\Classes\Property;
-use LBHurtado\Mortgage\Data\Inputs\InputsData;
+use LBHurtado\Mortgage\Data\Inputs\MortgageParticulars;
 use LBHurtado\Mortgage\Enums\CalculatorType;
 use LBHurtado\Mortgage\Factories\CalculatorFactory;
 use LBHurtado\Mortgage\ValueObjects\Percent;
@@ -28,7 +28,7 @@ it('computes loanable amount using down payment deduction only', function (
         ->setLendingInstitution(new LendingInstitution)
         ->setPercentDownPayment($dpPercent)
     ;
-    $inputs = InputsData::fromBooking($buyer, $property, $order);
+    $inputs = MortgageParticulars::fromBooking($buyer, $property, $order);
 
     $loanable = CalculatorFactory::make(CalculatorType::LOAN_AMOUNT, $inputs)
         ->calculate()
