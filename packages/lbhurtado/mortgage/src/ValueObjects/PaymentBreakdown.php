@@ -3,12 +3,11 @@
 namespace LBHurtado\Mortgage\ValueObjects;
 
 use LBHurtado\Mortgage\Data\Inputs\MortgageParticulars;
+use LBHurtado\Mortgage\Factories\ExtractorFactory;
+use LBHurtado\Mortgage\Enums\ExtractorType;
 use Brick\Math\RoundingMode;
 use Brick\Money\Money;
-use LBHurtado\Mortgage\Enums\ExtractorType;
-use LBHurtado\Mortgage\Factories\ExtractorFactory;
 
-/** TODO: change the name of this class */
 class PaymentBreakdown
 {
     protected Money $tcp;

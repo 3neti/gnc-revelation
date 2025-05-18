@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Loan Matching & Mortgage API
-  version: 1.0.16
+  version: 1.0.17
   description: Strict input definitions for buyer qualification and mortgage computation.
 
 servers:
@@ -194,16 +194,7 @@ paths:
                 type: object
                 properties:
                   payload:
-                    type: object
-                    properties:
-                      term_years:
-                        type: integer
-                      monthly_amortization:
-                        type: number
-                      cash_out:
-                        type: number
-                      loanable_amount:
-                        type: number
+                    $ref: '#/components/schemas/MortgageComputationData'
                   qualification:
                     type: object
                     properties:
@@ -211,7 +202,7 @@ paths:
                         type: boolean
                       income_gap:
                         type: number
-                      loan_difference:
+                      required_equity:
                         type: number
                       suggested_down_payment_percent:
                         type: number
@@ -228,7 +219,7 @@ paths:
                       mortgage:
                         type: object
                         properties:
-                          term_years:
+                          balance_payment_term:
                             type: integer
                           monthly_amortization:
                             type: number
@@ -662,3 +653,42 @@ paths:
                     type: string
                     example: Product 'sku-code' not found.
 
+components:
+  schemas:
+    MortgageComputationData:
+      type: object
+      properties:
+        lending_institution:
+          type: string
+        interest_rate:
+          type: number
+        percent_down_payment:
+          type: number
+        percent_miscellaneous_fees:
+          type: number
+        total_contract_price:
+          type: number
+        income_requirement_multiplier:
+          type: number
+        balance_payment_term:
+          type: integer
+        monthly_disposable_income:
+          type: number
+        present_value:
+          type: number
+        loanable_amount:
+          type: number
+        required_equity:
+          type: number
+        monthly_amortization:
+          type: number
+        miscellaneous_fees:
+          type: number
+        add_on_fees:
+          type: number
+        cash_out:
+          type: number
+        income_gap:
+          type: number
+        percent_down_payment_remedy:
+          type: number

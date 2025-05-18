@@ -5,8 +5,8 @@ use LBHurtado\Mortgage\Classes\{Buyer, LendingInstitution, Order, Property};
 use LBHurtado\Mortgage\Services\{AgeService, BorrowingRulesService};
 use LBHurtado\Mortgage\Enums\{CalculatorType, ExtractorType};
 use LBHurtado\Mortgage\Data\Inputs\MortgageInputsData;
-use LBHurtado\Mortgage\Data\MortgageComputationData;
 use LBHurtado\Mortgage\Data\Inputs\MortgageParticulars;
+use LBHurtado\Mortgage\Data\MortgageComputationData;
 use LBHurtado\Mortgage\ValueObjects\Percent;
 use Whitecube\Price\Price;
 

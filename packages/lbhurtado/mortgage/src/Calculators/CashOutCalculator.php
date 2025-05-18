@@ -4,8 +4,8 @@ namespace LBHurtado\Mortgage\Calculators;
 
 use LBHurtado\Mortgage\Factories\{CalculatorFactory, ExtractorFactory, MoneyFactory};
 use LBHurtado\Mortgage\Enums\{ExtractorType, CalculatorType};
-use LBHurtado\Mortgage\Data\CashOutBreakdownData;
 use LBHurtado\Mortgage\ValueObjects\PaymentBreakdown;
+use LBHurtado\Mortgage\Data\CashOutBreakdownData;
 use LBHurtado\Mortgage\Attributes\CalculatorFor;
 use Whitecube\Price\Price;
 
@@ -39,7 +39,6 @@ final class CashOutCalculator extends BaseCalculator
     public function processingFee(): Price
     {
         return ExtractorFactory::make(ExtractorType::PROCESSING_FEE, $this->inputs)->extract();
-//        return $this->inputs->fees->processing_fee;
     }
 
     public function total(): Price
