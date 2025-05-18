@@ -3,8 +3,8 @@
 namespace LBHurtado\Mortgage\Factories;
 
 use LBHurtado\Mortgage\Classes\{Buyer, Order, Property, LendingInstitution};
-use LBHurtado\Mortgage\Data\Inputs\MortgageInputsData;
 use LBHurtado\Mortgage\Data\Inputs\MortgageParticulars;
+use LBHurtado\Mortgage\Data\Inputs\MortgageInputsData;
 use LBHurtado\Mortgage\ValueObjects\Percent;
 use LBHurtado\Mortgage\Enums\MonthlyFee;
 

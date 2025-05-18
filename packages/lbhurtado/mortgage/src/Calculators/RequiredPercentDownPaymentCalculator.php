@@ -29,8 +29,10 @@ class RequiredPercentDownPaymentCalculator extends BaseCalculator
 
         $percent_dp = ExtractorFactory::make(ExtractorType::PERCENT_DOWN_PAYMENT, $this->inputs)->extract()->value();
 
-        // Suggest percent as next whole percent (e.g., 30.01% → 31%)
-        $percent = max(ceil(($required_equity / $tcp) * 100), $percent_dp);
+        // Determine the suggested down payment as the next whole percent (e.g., 30.01% becomes 31%), or 0% if the ratio is negligible (< 1%)
+        $percent = ($required_equity / $tcp) < 0.01
+            ? 0.00
+            : max(ceil(($required_equity / $tcp) * 100), $percent_dp);
 
         // Replace with the original percent dp
         $this->inputs->order()->setPercentDownPayment($original_percent_dp);

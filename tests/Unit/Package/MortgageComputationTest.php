@@ -150,7 +150,8 @@ test('multiple mortgage computations', function (
         ->and($qualifies)->toBe($expected_income_gap == 0)
     ;
 
-    $result = MortgageComputationData::fromInputs($mortgage_particulars);
+    $result = MortgageComputationData::fromParticulars($mortgage_particulars);
+
     expect($result)->toBeInstanceOf(MortgageComputationData::class)
         ->and($result->lending_institution)->toBeInstanceOf(LendingInstitution::class)
         ->and($result->lending_institution->key())->toBe($resolved_lending_institution->key())
@@ -219,28 +220,51 @@ test('multiple mortgage computations - controller', function (
     float  $expected_income_gap,
     float  $expected_percent_down_payment_remedy,
 ) {
-    $response = $this->postJson(route('api.v1.mortgage-compute'), [
-        'lending_institution' => $lending_institution,
-        'total_contract_price' => $total_contract_price,
-        'buyer' => [
-            'age' => $age,
-            'monthly_income' => $monthly_gross_income,
-            'additional_income' => $additional_income,
-        ],
-        'co_borrower' => [
-            'age' => $co_borrower_age,
-            'monthly_income' => $co_borrower_income,
-        ],
-        'percent_down_payment' => $percent_down_payment,
-        'percent_miscellaneous_fee' => $percent_miscellaneous_fee,
-        'processing_fee' => $processing_fee,
-        'add_mri' => $add_mri,
-        'add_fi' => $add_fi,
-    ]);
-
+    $mortgage_input_data = MortgageInputsData::from(compact(
+            'lending_institution',
+            'total_contract_price',
+            'age',
+            'monthly_gross_income',
+            'co_borrower_age',
+            'co_borrower_income',
+            'additional_income',
+            'balance_payment_interest',
+            'percent_down_payment',
+            'percent_miscellaneous_fee',
+            'processing_fee',
+            'add_mri',
+            'add_fi')
+    );
+    $response = $this->postJson(route('api.v1.mortgage-compute'), $mortgage_input_data->toArray());
     $response->assertOk();
 
-})->with('simple amortization')->skip();
+    $response->assertJson(fn ($json) =>
+    $json->has('payload')
+        ->where('payload.balance_payment_term', fn ($value) => $value == $expected_balance_payment_term)
+        ->where('payload.income_requirement_multiplier', $expected_income_requirement_multiplier)
+        ->where('payload.monthly_disposable_income', fn ($value) => $value == $expected_disposable_income) // Loose comparison
+        ->where('payload.present_value', fn ($value) => $value == $expected_present_value)
+        ->where('payload.required_equity', fn ($value) => $value == $expected_required_equity)
+        ->where('payload.monthly_amortization', fn ($value) => $value == $expected_monthly_amortization)
+        ->where('payload.add_on_fees', fn ($value) => $value == $expected_add_on_fees)
+        ->where('payload.cash_out', fn ($value) => $value == $expected_cash_out)
+        ->where('payload.loanable_amount', fn ($value) => $value == $expected_loanable_amount)
+        ->where('payload.miscellaneous_fees', fn ($value) => $value == $expected_miscellaneous_fee)
+        ->where('payload.income_gap', fn ($value) => $value == $expected_income_gap)
+        ->where('payload.percent_down_payment_remedy', fn ($value) => $value == $expected_percent_down_payment_remedy)
+        ->has('qualification', fn ($json) =>
+        $json->where('income_gap', fn ($value) => $value == $expected_income_gap)
+            ->where('required_equity', fn ($value) => $value == $expected_required_equity)
+            ->where('suggested_down_payment_percent', fn ($value) => $value == $expected_percent_down_payment_remedy)
+            ->where('qualifies', $expected_income_gap == 0)
+            ->where('reason', $expected_income_gap == 0 ? 'Sufficient disposable income' : 'Disposable income below amortization')
+        ->has('mortgage', fn ($json) =>
+            $json->where('monthly_amortization', fn ($value) => $value == $expected_monthly_amortization)
+                ->where('balance_payment_term', fn ($value) => $value == $expected_balance_payment_term)
+            )
+        )
+    );
+})->with('simple amortization');
 
 test('single mortgage computation', function () {
     $age = 49;

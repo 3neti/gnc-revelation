@@ -5,7 +5,7 @@ namespace LBHurtado\Mortgage\Calculators;
 use LBHurtado\Mortgage\Factories\{CalculatorFactory, ExtractorFactory, MoneyFactory};
 use LBHurtado\Mortgage\Enums\{ExtractorType, CalculatorType};
 use LBHurtado\Mortgage\Data\CashOutBreakdownData;
-use LBHurtado\Mortgage\ValueObjects\DownPayment;
+use LBHurtado\Mortgage\ValueObjects\PaymentBreakdown;
 use LBHurtado\Mortgage\Attributes\CalculatorFor;
 use Whitecube\Price\Price;
 
@@ -25,7 +25,7 @@ final class CashOutCalculator extends BaseCalculator
     public function downPayment(): Price
     {
         return MoneyFactory::priceWithPrecision(
-            DownPayment::fromInputs($this->inputs)->amount()
+            PaymentBreakdown::fromInputs($this->inputs)->amount()
         );
     }
 

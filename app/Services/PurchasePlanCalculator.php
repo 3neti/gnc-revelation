@@ -7,18 +7,18 @@ use App\DataObjects\MortgageTerm;
 use Brick\Math\RoundingMode;
 use Brick\Money\Money;
 use LBHurtado\Mortgage\ValueObjects\{Equity};
-use LBHurtado\Mortgage\ValueObjects\DownPayment;
+use LBHurtado\Mortgage\ValueObjects\PaymentBreakdown;
 use LBHurtado\Mortgage\ValueObjects\FeeCollection;
 use Whitecube\Price\Price;
 
 class PurchasePlanCalculator
 {
     public function __construct(
-        public DownPayment $downPayment,
-        public float $interestRate,
-        public MortgageTerm $term,
-        public FeeCollection $fees = new FeeCollection(),
-        public float $disposableMultiplier = 0.35,
+        public PaymentBreakdown $downPayment,
+        public float            $interestRate,
+        public MortgageTerm     $term,
+        public FeeCollection    $fees = new FeeCollection(),
+        public float            $disposableMultiplier = 0.35,
     ) {}
 
     public function monthlyAmortization(): Price

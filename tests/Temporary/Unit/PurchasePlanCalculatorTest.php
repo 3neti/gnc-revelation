@@ -2,7 +2,7 @@
 
 use App\DataObjects\MortgageTerm;
 use App\Services\PurchasePlanCalculator;
-use LBHurtado\Mortgage\ValueObjects\DownPayment;
+use LBHurtado\Mortgage\ValueObjects\PaymentBreakdown;
 
 dataset('rdg qualification cases', function () {
     return [
@@ -76,7 +76,7 @@ it('evaluates RDG borrower qualification using PurchasePlanCalculator', function
     bool $expectedToQualify,
     float $precision
 ) {
-    $dp = new DownPayment($tcp, 0);
+    $dp = new PaymentBreakdown($tcp, 0);
 
     $calc = new PurchasePlanCalculator(
         downPayment: $dp,

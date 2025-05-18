@@ -3,7 +3,7 @@
 namespace LBHurtado\Mortgage\Calculators;
 
 use LBHurtado\Mortgage\Factories\{CalculatorFactory, MoneyFactory};
-use LBHurtado\Mortgage\ValueObjects\{DownPayment, FeeCollection};
+use LBHurtado\Mortgage\ValueObjects\{PaymentBreakdown, FeeCollection};
 use LBHurtado\Mortgage\Attributes\CalculatorFor;
 use LBHurtado\Mortgage\Enums\CalculatorType;
 use Whitecube\Price\Price;
@@ -13,7 +13,7 @@ final class LoanAmountCalculator extends BaseCalculator
 {
     public function calculate(): Price
     {
-        $loan = DownPayment::fromInputs($this->inputs)->loanable();
+        $loan = PaymentBreakdown::fromInputs($this->inputs)->loanable();
         $fees = new FeeCollection(addOns: [
             'miscellaneous fee' => CalculatorFactory::make(CalculatorType::MISCELLANEOUS_FEES, $this->inputs)->toFloat(),
         ]);

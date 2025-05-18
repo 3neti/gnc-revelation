@@ -9,7 +9,7 @@ use LBHurtado\Mortgage\Enums\ExtractorType;
 use LBHurtado\Mortgage\Factories\ExtractorFactory;
 
 /** TODO: change the name of this class */
-class DownPayment
+class PaymentBreakdown
 {
     protected Money $tcp;
     protected float $percent;
