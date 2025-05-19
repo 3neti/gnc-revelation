@@ -109,13 +109,13 @@ class Property implements PropertyInterface
         return $this->housing_type;
     }
 
-    public function setRequiredBufferMargin(Percent|float|int $value): static
+    public function setRequiredBufferMargin(Percent|float|int|null $value): static
     {
         $this->required_buffer_margin = match (true) {
             $value instanceof Percent       => $value,
-            is_int($value)                  => Percent::ofPercent($value),
             is_float($value) && $value <= 1 => Percent::ofFraction($value),
-            is_float($value)                => Percent::ofPercent($value),
+            is_int($value), is_float($value) => Percent::ofPercent($value),
+            is_null($value)                 => null, // Handle null by setting required_buffer_margin to null
             default                         => throw new \InvalidArgumentException("Invalid buffer margin."),
         };
 
@@ -124,7 +124,7 @@ class Property implements PropertyInterface
 
     public function getRequiredBufferMargin(): Percent
     {
-        return $this->required_buffer_margin;
+        return $this->required_buffer_margin ?? Percent::ofPercent(0.0);
     }
 
     public function getMarketSegment(): MarketSegment

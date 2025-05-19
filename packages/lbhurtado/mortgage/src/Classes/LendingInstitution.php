@@ -133,4 +133,11 @@ class LendingInstitution
 
         return Percent::ofFraction($default);
     }
+
+    public function getBufferMargin(): Percent
+    {
+        $value = $this->get('buffer_margin') ?? 0.0;
+
+        return Percent::ofFraction($value);
+    }
 }
