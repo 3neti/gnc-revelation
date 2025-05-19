@@ -10,11 +10,13 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "frittenkeez/laravel-vouchers": "^0.6.0",
         "inertiajs/inertia-laravel": "^2.0",
         "jarouche/financial": "^2.1",
         "laravel/framework": "^12.0",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.10.1",
+        "lorisleiva/laravel-actions": "^2.9",
         "openai-php/laravel": "^0.11.0",
         "spatie/laravel-data": "^4.14",
         "spatie/laravel-schemaless-attributes": "^2.5",

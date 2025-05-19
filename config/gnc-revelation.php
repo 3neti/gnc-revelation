@@ -151,4 +151,9 @@ return [
             ],
         ]
     ],
+    'onboarding' => [
+        'field_name' => env('ONBOARDING_FIELD_NAME', 'code'),
+        'url' => env('ONBOARDING_URL', 'https://seqrcode.net/campaign-checkin/9ef24572-2908-4835-9e76-efdeae7aa797'),
+    ],
+
 ];

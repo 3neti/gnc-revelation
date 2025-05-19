@@ -1,8 +1,14 @@
 openapi: 3.1.0
 info:
   title: Loan Matching & Mortgage API
-  version: 1.0.17
-  description: Strict input definitions for buyer qualification and mortgage computation.
+  version: 1.0.20
+  description: |
+    This API supports loan qualification and onboarding automation.
+
+    Common flow:
+    1. POST `/mortgage-compute` to calculate qualification.
+    2. If qualified, POST to `/loan-profiles` to persist a reference profile.
+    3. Use `/loan-profiles/onboard/{reference_code}` to start onboarding via KYC.
 
 servers:
   - url: https://gnc-revelation-main-ndpjj4.laravel.cloud/api/v1
@@ -19,6 +25,8 @@ tags:
     description: Explore supported lending institutions
   - name: Products
     description: Browse sellable product bundles
+  - name: Loan Profiles
+    description: Manage loan qualification profiles and onboarding flows
 
 paths:
   /loan-match:
@@ -123,6 +131,10 @@ paths:
       tags:
         - Mortgage Computation
       summary: Compute mortgage result and qualification
+      description: >
+        Computes the amortization, equity, and loan qualification status of a prospective borrower.
+        If the response includes `"qualified": true`, the system may optionally call `/loan-profiles`
+        to persist the qualification snapshot, and then offer an onboarding link via `/loan-profiles/onboard/{reference_code}`.
       operationId: computeMortgage
       requestBody:
         required: true
@@ -653,6 +665,83 @@ paths:
                     type: string
                     example: Product 'sku-code' not found.
 
+  /loan-profiles:
+    post:
+      tags:
+        - Loan Profiles
+      summary: Create a new loan profile and return the result with a reference code
+      description: >
+        Persists a qualified mortgage profile for tracking, onboarding, or follow-up.
+        Returns a unique reference code that can be used with other endpoints
+        such as `/loan-profiles/{reference_code}` or `/loan-profiles/onboard/{reference_code}`.
+      operationId: createLoanProfile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MortgageInputsData'
+      responses:
+        '200':
+          description: Created loan profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoanProfile'
+
+  /loan-profiles/{reference_code}:
+    get:
+      tags:
+        - Loan Profiles
+      summary: Retrieve a specific loan profile using its reference code
+      operationId: showLoanProfile
+      parameters:
+        - in: path
+          name: reference_code
+          required: true
+          schema:
+            type: string
+          description: The reference code associated with the loan profile
+      responses:
+        '200':
+          description: Loan profile found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoanProfile'
+        '404':
+          description: Loan profile not found
+
+  /loan-profiles/onboard/{reference_code}:
+    get:
+      tags:
+        - Loan Profiles
+      summary: Return onboarding URL based on loan profile reference code
+      description: >
+        Returns a redirect URL to the eKYC onboarding system with the loan profile’s reference code.
+        Use this to begin the formal onboarding process once a buyer is qualified.
+      operationId: onboardLoanProfile
+      parameters:
+        - in: path
+          name: reference_code
+          required: true
+          schema:
+            type: string
+          description: Reference code of the loan profile
+      responses:
+        '200':
+          description: Onboarding link returned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url:
+                    type: string
+                    example: https://onboard.example.com?reference_code=ABCD-1234
+        '404':
+          description: Loan profile not found
+
 components:
   schemas:
     MortgageComputationData:
@@ -692,3 +781,76 @@ components:
           type: number
         percent_down_payment_remedy:
           type: number
+
+    LoanProfile:
+      type: object
+      properties:
+        reference_code:
+          type: string
+        lending_institution:
+          type: string
+        total_contract_price:
+          type: number
+        inputs:
+          type: object
+          additionalProperties: true
+        computation:
+          type: object
+          additionalProperties: true
+        qualified:
+          type: boolean
+        required_equity:
+          type: number
+        income_gap:
+          type: number
+        suggested_down_payment_percent:
+          type: number
+        reason:
+          type: string
+        reserved_at:
+          type: string
+          format: date-time
+    MortgageInputsData:
+      type: object
+      required:
+        - lending_institution
+        - total_contract_price
+        - age
+        - monthly_gross_income
+        - processing_fee
+        - add_mri
+        - add_fi
+      properties:
+        lending_institution:
+          type: string
+          enum: [hdmf, rcbc, cbc]
+        total_contract_price:
+          type: number
+        age:
+          type: integer
+        monthly_gross_income:
+          type: number
+        co_borrower_age:
+          type: integer
+          nullable: true
+        co_borrower_income:
+          type: number
+          nullable: true
+        additional_income:
+          type: number
+          nullable: true
+        balance_payment_interest:
+          type: number
+          nullable: true
+        percent_down_payment:
+          type: number
+          nullable: true
+        percent_miscellaneous_fee:
+          type: number
+          nullable: true
+        processing_fee:
+          type: number
+        add_mri:
+          type: boolean
+        add_fi:
+          type: boolean

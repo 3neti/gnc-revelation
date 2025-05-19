@@ -5,6 +5,9 @@ use LBHurtado\Mortgage\Http\Controllers\{AI\AIController,
     LoanMatchController,
     ProductController,
     PropertyController};
+use LBHurtado\Mortgage\Actions\CreateLoanProfile;
+use LBHurtado\Mortgage\Actions\OnboardLoanProfile;
+use LBHurtado\Mortgage\Actions\ShowLoanProfile;
 use LBHurtado\Mortgage\Http\Controllers\MortgageComputationController;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Route;
@@ -26,6 +29,9 @@ Route::prefix('v1')->group(function () {
     Route::get('/lending-institutions/{key}', [LendingInstitutionController::class, 'show']);
     Route::get('/products', [ProductController::class, 'index'])->middleware('web')->name('api.v1.products');
     Route::get('/products/{sku}', [ProductController::class, 'show'])->middleware('web')->name('api.v1.products.show');
+    Route::post('/loan-profiles', CreateLoanProfile::class)->name('api.v1.loan-profiles.store');
+    Route::get('/loan-profiles/{reference_code}', ShowLoanProfile::class)->name('api.v1.loan-profiles.show');
+    Route::get('/loan-profiles/onboard/{reference_code}', OnboardLoanProfile::class)->name('api.v1.loan-profiles.onboard');
 });
 
 Route::get('/mortgage/docs/openapi.yaml', function () {
