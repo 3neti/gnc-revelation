@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Loan Matching & Mortgage API
-  version: 1.0.20
+  version: 1.0.21
   description: |
     This API supports loan qualification and onboarding automation.
 
@@ -132,9 +132,7 @@ paths:
         - Mortgage Computation
       summary: Compute mortgage result and qualification
       description: >
-        Computes the amortization, equity, and loan qualification status of a prospective borrower.
-        If the response includes `"qualified": true`, the system may optionally call `/loan-profiles`
-        to persist the qualification snapshot, and then offer an onboarding link via `/loan-profiles/onboard/{reference_code}`.
+        Calculates amortization, equity, and loan qualification. If qualified, use `/loan-profiles` to store the profile and `/loan-profiles/onboard/{reference_code}` to begin KYC onboarding. Ideal for building guided buyer journeys and automation.`.
       operationId: computeMortgage
       requestBody:
         required: true
