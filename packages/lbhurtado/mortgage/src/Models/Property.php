@@ -84,21 +84,46 @@ class Property extends Model
 
     public function toDomain(): \LBHurtado\Mortgage\Classes\Property
     {
-        return (new \LBHurtado\Mortgage\Classes\Property(
+        $property = new \LBHurtado\Mortgage\Classes\Property(
             $this->total_contract_price->inclusive()->getAmount()->toFloat(),
             $this->development_type,
             $this->development_form,
             $this->housing_type,
-        ))
-            ->setRequiredBufferMargin($this->required_buffer_margin)
-            ->setAppraisalValue($this->appraisal_value)
-            ->setProcessingFee($this->processing_fee)
-            ->setPercentLoanableValue($this->percent_loanable_value)
-            ->setPercentMiscellaneousFees($this->percent_miscellaneous_fees)
-            ->setLendingInstitution($this->lending_institution)
-            ->setIncomeRequirementMultiplier($this->income_requirement_multiplier)
-            ->setPercentDownPayment($this->percent_down_payment)
-            ;
+        );
+
+        if (isset($this->required_buffer_margin) && $this->required_buffer_margin !== null) {
+            $property->setRequiredBufferMargin($this->required_buffer_margin);
+        }
+
+        if (isset($this->appraisal_value) && $this->appraisal_value !== null) {
+            $property->setAppraisalValue($this->appraisal_value);
+        }
+
+        if (isset($this->processing_fee) && $this->processing_fee !== null) {
+            $property->setProcessingFee($this->processing_fee);
+        }
+
+        if (isset($this->percent_loanable_value) && $this->percent_loanable_value !== null) {
+            $property->setPercentLoanableValue($this->percent_loanable_value);
+        }
+
+        if (isset($this->percent_miscellaneous_fees) && $this->percent_miscellaneous_fees !== null) {
+            $property->setPercentMiscellaneousFees($this->percent_miscellaneous_fees);
+        }
+
+        if (isset($this->lending_institution) && $this->lending_institution !== null) {
+            $property->setLendingInstitution($this->lending_institution);
+        }
+
+        if (isset($this->income_requirement_multiplier) && $this->income_requirement_multiplier !== null) {
+            $property->setIncomeRequirementMultiplier($this->income_requirement_multiplier);
+        }
+
+        if (isset($this->percent_down_payment) && $this->percent_down_payment !== null) {
+            $property->setPercentDownPayment($this->percent_down_payment);
+        }
+
+        return $property;
     }
 
     /**
