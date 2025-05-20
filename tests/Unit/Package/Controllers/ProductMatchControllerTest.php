@@ -21,14 +21,9 @@ it('matches products for a valid request', function () {
     $payload = [
         'age' => 30,
         'monthly_income' => 50_000,
-        'additional_income' => [
-            'name' => 'Side Hustle',
-            'amount' => 10_000,
-        ],
-        'co_borrower' => [
-            'age' => 28,
-            'monthly_income' => 20_000,
-        ],
+        'additional_income' => 10_000,
+        'co_borrower_age' => 28,
+        'co_borrower_income' => 20_000,
         'lending_institution' => 'rcbc',
         'price_limit' => 1_200_000,
     ];

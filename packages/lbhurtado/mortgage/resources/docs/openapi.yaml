@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Product Matching
-  version: 1.0.30
+  version: 1.0.32
   description: |
     This API supports loan qualification and onboarding automation.
 
@@ -53,36 +53,31 @@ paths:
                 monthly_income:
                   type: number
                   example: 25000
+                  minimum: 10000
                 additional_income:
-                  type: object
+                  type: number
                   nullable: true
-                  properties:
-                    name:
-                      type: string
-                      example: Part-time job
-                    amount:
-                      type: number
-                      example: 3000
-                co_borrower:
-                  type: object
+                  example: 5000
+                co_borrower_age:
+                  type: integer
                   nullable: true
-                  properties:
-                    age:
-                      type: integer
-                      example: 38
-                      minimum: 18
-                      maximum: 65
-                    monthly_income:
-                      type: number
-                      example: 18000
+                  example: 38
+                  minimum: 18
+                  maximum: 60
+                co_borrower_income:
+                  type: number
+                  nullable: true
+                  example: 18000
                 lending_institution:
                   type: string
                   nullable: true
                   enum: [hdmf, rcbc, cbc]
+                  description: Possible values for lending institution. Can be omitted.
                 price_limit:
                   type: number
                   nullable: true
                   example: 1500000
+                  minimum: 800000
       responses:
         '200':
           description: A list of product bundles the buyer qualifies for
@@ -140,98 +135,86 @@ paths:
             schema:
               type: object
               required:
-                - lending_institution
                 - total_contract_price
-                - buyer
-                - add_mri
-                - add_fi
+                - age
+                - monthly_gross_income
               properties:
                 lending_institution:
                   type: string
+                  nullable: true
                   enum: [hdmf, rcbc, cbc]
+                  description: >
+                    The institution providing the loan. Possible values are "hdmf", "rcbc", or "cbc". Can be omitted.
                 total_contract_price:
                   type: number
                   example: 1000000
+                  description: The total value of the contract for the property.
+                age:
+                  type: integer
+                  example: 35
+                  description: The age of the primary borrower.
+                monthly_gross_income:
+                  type: number
+                  example: 50000
+                  description: The monthly gross income of the primary borrower.
+                co_borrower_age:
+                  type: integer
+                  nullable: true
+                  example: 40
+                  description: Co-borrower's age, if applicable.
+                co_borrower_income:
+                  type: number
+                  nullable: true
+                  example: 20000
+                  description: Co-borrower's monthly gross income, if applicable.
+                additional_income:
+                  type: number
+                  nullable: true
+                  example: 10000
+                  description: Any additional income of the primary borrower.
+                balance_payment_interest:
+                  type: number
+                  format: float
+                  nullable: true
+                  example: 0.05
+                  description: >
+                    Optional. Specifies the interest rate for balance payment as a decimal
+                    (e.g., 0.05 = 5%). If not provided, the default interest rate will be used.
                 percent_down_payment:
                   type: number
                   format: float
                   nullable: true
-                  description: >
-                    Optional. Down payment as a decimal (e.g., 0.10 = 10%).
-                    If not provided, the system will use the lending institution’s default
-                    (e.g., HDMF = 0%, RCBC = 10%, CBC = 20%).
                   example: 0.10
+                  description: >
+                    Optional. Down payment as a decimal (e.g., 0.10 = 10%). If not provided,
+                    defaults to the lender's requirements.
                 percent_miscellaneous_fee:
                   type: number
+                  format: float
+                  nullable: true
                   example: 0.085
+                  description: >
+                    Optional. Percentage for miscellaneous fees (e.g., taxes and other costs).
+                    Defaults to 8.5% (0.085) if not provided.
                 processing_fee:
                   type: number
+                  nullable: true
                   example: 10000
+                  description: >
+                    Processing fee applied for the loan. Defaults will be used if omitted.
                 add_mri:
                   type: boolean
+                  nullable: true
+                  example: true
+                  description: >
+                    Whether to include Mortgage Redemption Insurance (MRI) as part of the computation.
                 add_fi:
                   type: boolean
-                buyer:
-                  type: object
-                  required: [age, monthly_income, additional_income]
-                  properties:
-                    age:
-                      type: integer
-                      example: 45
-                    monthly_income:
-                      type: number
-                      example: 25000
-                    additional_income:
-                      type: number
-                      example: 0
-                co_borrower:
-                  type: object
                   nullable: true
-                  properties:
-                    age:
-                      type: integer
-                      example: 50
-                    monthly_income:
-                      type: number
-                      example: 18000
-      responses:
-        '200':
-          description: Computed mortgage result and qualification
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  payload:
-                    $ref: '#/components/schemas/MortgageComputationData'
-                  qualification:
-                    type: object
-                    properties:
-                      qualified:
-                        type: boolean
-                      income_gap:
-                        type: number
-                      required_equity:
-                        type: number
-                      suggested_down_payment_percent:
-                        type: number
-                        format: float
-                        description: >
-                          Suggested down payment as a fraction (e.g., 0.31 = 31%).
-                          This value is calculated assuming **0% down payment input**, and represents
-                          the minimum equity contribution required to qualify.
-                          To retry qualification using this suggestion, **resubmit** your request with:
-                          `"percent_down_payment": suggested_down_payment_percent`
-                          ⚠️ Do **not** recompute it yourself — this value already includes system logic.
-                      reason:
-                        type: string
-                      mortgage:
-                        type: object
-                        properties:
-                          balance_payment_term:
-                            type: integer
-                          monthly_amortization:
-                            type: number
+                  example: true
+                  description: >
+                    Whether to include Fire Insurance (FI) as part of the computation.
+
 
   /properties:
     get:
@@ -810,13 +793,9 @@ components:
     MortgageInputsData:
       type: object
       required:
-        - lending_institution
         - total_contract_price
         - age
         - monthly_gross_income
-        - processing_fee
-        - add_mri
-        - add_fi
       properties:
         lending_institution:
           type: string

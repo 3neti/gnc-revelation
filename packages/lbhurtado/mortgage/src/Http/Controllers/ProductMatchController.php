@@ -21,12 +21,9 @@ class ProductMatchController extends Controller
         $data = $request->validate([
             'age' => 'required|integer|min:18|max:65',
             'monthly_income' => 'required|numeric|min:10000',
-            'additional_income' => 'nullable|array',
-            'additional_income.name' => 'required_with:additional_income|string',
-            'additional_income.amount' => 'required_with:additional_income|numeric|min:0',
-            'co_borrower' => 'nullable|array',
-            'co_borrower.age' => 'required_with:co_borrower|integer|min:18|max:65',
-            'co_borrower.monthly_income' => 'required_with:co_borrower|numeric|min:1000',
+            'additional_income' => 'nullable|numeric|min:0',
+            'co_borrower_age' => 'nullable|integer|min:18|max:60',
+            'co_borrower_income' => 'required_with:co_borrower_age|numeric|min:1000',
             'lending_institution' => 'nullable|string|in:hdmf,rcbc,cbc',//TODO: update this in the future
             'price_limit' => 'nullable|numeric|min:800000'
         ]);
@@ -36,24 +33,16 @@ class ProductMatchController extends Controller
             ->setAge($data['age'])
             ->setMonthlyGrossIncome($data['monthly_income']);
 
-        if (!empty($data['co_borrower'])) {
+        if (!empty($data['co_borrower_age'])) {
             $co_borrower = app(Buyer::class)
-                ->setAge($data['co_borrower']['age'])
-                ->setMonthlyGrossIncome($data['co_borrower']['monthly_income']);
+                ->setAge($data['co_borrower_age'])
+                ->setMonthlyGrossIncome($data['co_borrower_income']);
             $buyer->addCoBorrower($co_borrower);
         }
 
         // Add additional income if provided
         if (!empty($data['additional_income'])) {
-            $buyer->addOtherSourcesOfIncome($data['additional_income']['name'], $data['additional_income']['amount']);
-        }
-
-        // Add co-borrower if provided
-        if (!empty($data['co_borrower'])) {
-            $coBorrower = app(Buyer::class);
-            $coBorrower->setAge($data['co_borrower']['age']);
-            $coBorrower->setMonthlyGrossIncome($data['co_borrower']['monthly_income']);
-            $buyer->addCoBorrower($coBorrower);
+            $buyer->addOtherSourcesOfIncome('extra', $data['additional_income']);
         }
 
         $price_limit = Arr::get($data, 'price_limit');

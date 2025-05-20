@@ -21,26 +21,29 @@ class MortgageParticularsFactory
     }
 
     public static function from(
-        string $lending_institution,
-        float  $total_contract_price,
-        int    $age,
-        float  $monthly_gross_income,
-        int    $co_borrower_age,
-        float  $co_borrower_income,
-        float  $additional_income,
-        ?float $balance_payment_interest,
-        ?float $percent_down_payment,
-        ?float $percent_miscellaneous_fee,
-        float  $processing_fee,
-        bool   $add_mri,
-        bool   $add_fi,
+        ?string $lending_institution,
+        float   $total_contract_price,
+        int     $age,
+        float   $monthly_gross_income,
+        ?int    $co_borrower_age,
+        ?float  $co_borrower_income,
+        ?float  $additional_income,
+        ?float  $balance_payment_interest,
+        ?float  $percent_down_payment,
+        ?float  $percent_miscellaneous_fee,
+        ?float  $processing_fee,
+        ?bool   $add_mri,
+        ?bool   $add_fi,
     ): MortgageParticulars
     {
         $buyer = app(Buyer::class)
             ->setAge($age)
             ->setMonthlyGrossIncome($monthly_gross_income)
-            ->addOtherSourcesOfIncome('test', $additional_income)
         ;
+
+        if (!is_null($additional_income)) {
+            $buyer->addOtherSourcesOfIncome('test', $additional_income);
+        }
 
         if ($co_borrower_age) {
             $co_borrower = app(Buyer::class)
