@@ -2,6 +2,7 @@
 
 namespace LBHurtado\Mortgage\Http\Controllers;
 
+use LBHurtado\Mortgage\Data\MortgageComputationData;
 use LBHurtado\Mortgage\Transformers\MatchResultTransformer;
 use LBHurtado\Mortgage\Models\Property as PropertyModel;
 use LBHurtado\Mortgage\Contracts\PropertyInterface;
@@ -10,10 +11,12 @@ use LBHurtado\Mortgage\Data\Match\MatchResultData;
 use LBHurtado\Mortgage\Classes\Buyer;
 use Illuminate\Http\Request;
 
+/** @deprecated */
 class LoanMatchController extends Controller
 {
     public function __invoke(Request $request): array
     {
+        /** TODO: filter products and not property */
         $data = $request->validate([
             'age' => 'required|integer|min:18|max:65',
             'monthly_income' => 'required|numeric|min:1000',
@@ -61,8 +64,20 @@ class LoanMatchController extends Controller
 
         $results = (new LoanMatcherService())
             ->match($buyer, $properties)
-            ->filter(fn (MatchResultData $result) => $result->qualified)
+            ->filter(fn (MortgageComputationData $result) => $result->qualifies())
+            ->map(function (MortgageComputationData $result) {
+                // Clone the result to avoid mutating the original object
+                $filteredResult = clone $result;
+
+                // Unset the 'inputs' property
+                unset($filteredResult->inputs);
+
+                return $filteredResult;
+            })
+
             ->values();
+
+        dd($results->toArray());
 
         return MatchResultTransformer::collection($results);
     }

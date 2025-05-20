@@ -15,20 +15,24 @@ use Whitecube\Price\Price;
 
 class MortgageComputationData extends Data
 {
+    public bool $qualifies;
+    public string $reason;
+    public string $product_code;
+
     public function __construct(
         #[WithTransformer(LendingInstitutionToStringTransformer::class)]
         #[WithCast(LendingInstitutionCast::class)]
         public LendingInstitution                           $lending_institution,
 
-        #[WithTransformer(PriceToFloatTransformer::class)]
+        #[WithTransformer(PercentToFloatTransformer::class)]
         #[WithCast(PercentCast::class)]
         public Percent                                      $interest_rate,
 
-        #[WithTransformer(PriceToFloatTransformer::class)]
+        #[WithTransformer(PercentToFloatTransformer::class)]
         #[WithCast(PercentCast::class)]
         public Percent                                      $percent_down_payment,
 
-        #[WithTransformer(PriceToFloatTransformer::class)]
+        #[WithTransformer(PercentToFloatTransformer::class)]
         public Percent                                      $percent_miscellaneous_fees,
 
         #[WithTransformer(PriceToFloatTransformer::class)]
@@ -83,8 +87,15 @@ class MortgageComputationData extends Data
         #[WithCast(PercentCast::class)]
         public Percent                                      $percent_down_payment_remedy,
 
+        #[WithTransformer(PriceToFloatTransformer::class)]
+        #[WithCast(PriceCast::class)]
+        public Price                                        $required_income,
+
         public MortgageParticulars                          $inputs,
-    ) {}
+    ) {
+        $this->qualifies = $this->qualifies();
+        $this->reason = $this->reason();
+    }
 
     public static function fromParticulars(MortgageParticulars $mortgage_particulars): static
     {
@@ -106,19 +117,32 @@ class MortgageComputationData extends Data
             cash_out: CalculatorFactory::make(CalculatorType::CASH_OUT, $mortgage_particulars)->calculate()->total,
             income_gap: CalculatorFactory::make(CalculatorType::INCOME_GAP, $mortgage_particulars)->calculate(),
             percent_down_payment_remedy: CalculatorFactory::make(CalculatorType::REQUIRED_PERCENT_DOWN_PAYMENT, $mortgage_particulars)->calculate(),
+            required_income: CalculatorFactory::make(CalculatorType::REQUIRED_INCOME, $mortgage_particulars)->calculate(),
             inputs: $mortgage_particulars,
         );
     }
 
-    public function qualifies(): bool
+    protected function qualifies(): bool
     {
         return CalculatorFactory::make(CalculatorType::LOAN_QUALIFICATION, $this->inputs)->calculate();
     }
 
-    public function reason(): string
+    protected function reason(): string
     {
-        return $this->qualifies() ?
+        return $this->qualifies ?
             'Sufficient disposable income' :
             'Disposable income below amortization';
     }
+
+    public function setProductCode(string $product_code): static
+    {
+        $this->product_code = $product_code;
+
+        return $this;
+    }
+
+//    public function getProductCode(): string
+//    {
+//        return $this->product_code;
+//    }
 }

@@ -24,11 +24,11 @@ class CreateLoanProfile
             'inputs' => $inputsData->toArray(),
             'computation' => $computation->toArray(),
 
-            'qualified' => $computation->qualifies(),
+            'qualified' => $computation->qualifies,
             'required_equity' => $computation->required_equity->getAmount()->toFloat(),
             'income_gap' => $computation->income_gap->getAmount()->toFloat(),
             'suggested_down_payment_percent' => $computation->percent_down_payment_remedy->value(),
-            'reason' => $computation->reason(),
+            'reason' => $computation->reason,
 
             'reserved_at' => null,
         ]);

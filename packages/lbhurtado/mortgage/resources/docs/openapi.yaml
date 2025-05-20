@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
-  title: Loan Matching & Mortgage API
-  version: 1.0.21
+  title: Product Matching
+  version: 1.0.30
   description: |
     This API supports loan qualification and onboarding automation.
 
@@ -15,8 +15,8 @@ servers:
     description: Production server
 
 tags:
-  - name: Loan Matching
-    description: Match a buyer to eligible loan products
+  - name: Product Matching
+    description: Match a buyer to eligible products
   - name: Mortgage Computation
     description: Compute amortization, equity, and loan qualification
   - name: Properties
@@ -29,12 +29,12 @@ tags:
     description: Manage loan qualification profiles and onboarding flows
 
 paths:
-  /loan-match:
+  /product-match:
     post:
       tags:
-        - Loan Matching
-      summary: Match buyer to qualified loan products from available properties
-      operationId: matchLoanProducts
+        - Product Matching
+      summary: Match buyer to eligible product bundles based on affordability
+      operationId: matchProductBundles
       requestBody:
         required: true
         content:
@@ -52,79 +52,78 @@ paths:
                   maximum: 65
                 monthly_income:
                   type: number
-                  example: 18000
+                  example: 25000
                 additional_income:
-                  type: number
+                  type: object
                   nullable: true
-                  example: 10000
+                  properties:
+                    name:
+                      type: string
+                      example: Part-time job
+                    amount:
+                      type: number
+                      example: 3000
                 co_borrower:
                   type: object
                   nullable: true
                   properties:
                     age:
                       type: integer
-                      example: 35
+                      example: 38
                       minimum: 18
                       maximum: 65
                     monthly_income:
                       type: number
-                      example: 15000
-                development_form:
+                      example: 18000
+                lending_institution:
                   type: string
                   nullable: true
-                  enum: [ horizontal, vertical ]
-                  example: horizontal
-                project_code:
-                  type: string
+                  enum: [hdmf, rcbc, cbc]
+                price_limit:
+                  type: number
                   nullable: true
-                  example: "TLP001"
-                house_type:
-                  type: string
-                  nullable: true
-                  enum:
-                    - condominium
-                    - duplex
-                    - row_house
-                    - single_attached
-                    - single_detached
-                    - quadruplex
-                    - townhouse
-                    - twin_homes
-                  example: row_house
+                  example: 1500000
       responses:
         '200':
-          description: A list of matched properties the buyer qualifies for
+          description: A list of product bundles the buyer qualifies for
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    qualified:
-                      type: boolean
-                    product_code:
-                      type: string
-                    monthly_amortization:
-                      type: number
-                    income_required:
-                      type: number
-                    suggested_equity:
-                      type: number
-                    income_gap:
-                      type: number
-                    suggested_down_payment_percent:
-                      type: number
-                      format: float
-                      description: >
-                        Suggested down payment as a fraction (e.g., 0.31 = 31%).
-                        This is the minimum percent required to qualify if the buyer's disposable income
-                        is insufficient.
-                        To retry qualification using this suggestion, submit it as `"percent_down_payment"`
-                        to `/mortgage-compute`.
-                        ⚠️ This value is system-derived. Do **not** recalculate on your own.
-                    reason:
-                      type: string
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        qualified:
+                          type: boolean
+                          example: true
+                        product_code:
+                          type: string
+                          example: "product-a"
+                        monthly_amortization:
+                          type: number
+                          example: 6543.21
+                        income_required:
+                          type: number
+                          example: 21000
+                        suggested_equity:
+                          type: number
+                          example: 150000
+                        income_gap:
+                          type: number
+                          example: 3000
+                        suggested_down_payment_percent:
+                          type: number
+                          format: float
+                          example: 0.25
+                        reason:
+                          type: string
+                          example: "Income insufficient for full loan. Suggest higher down payment."
 
   /mortgage-compute:
     post:

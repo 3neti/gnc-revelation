@@ -23,8 +23,8 @@ class MortgageComputationController extends Controller
                 'income_gap' => $qualification->income_gap,
                 'required_equity' => $qualification->required_equity,
                 'suggested_down_payment_percent' => $qualification->percent_down_payment_remedy,
-                'qualifies' => $mortgage_computation->qualifies(),
-                'reason' => $mortgage_computation->reason(),
+                'qualifies' => $mortgage_computation->qualifies,
+                'reason' => $mortgage_computation->reason,
                 'mortgage' => [
                     'monthly_amortization' => $qualification->monthly_amortization,
                     'balance_payment_term' => $qualification->balance_payment_term,

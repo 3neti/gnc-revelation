@@ -2,6 +2,7 @@
 
 namespace LBHurtado\Mortgage\Services;
 
+use LBHurtado\Mortgage\Data\MortgageComputationData;
 use LBHurtado\Mortgage\Data\QualificationResultData;
 use LBHurtado\Mortgage\Contracts\PropertyInterface;
 use LBHurtado\Mortgage\Data\Match\MatchResultData;
@@ -20,20 +21,23 @@ class LoanMatcherService
      */
     public function match(Buyer $buyer, Collection $properties): Collection
     {
-        return $properties->map(function (PropertyInterface $property) use ($buyer): MatchResultData {
-            $order = new Order;
-            $inputs = MortgageParticulars::fromBooking($buyer, $property, $order);
-            $result = QualificationResultData::fromInputs($inputs);
+        return $properties->map(function (PropertyInterface $property) use ($buyer): MortgageComputationData {
+            $mortgage_particulars = MortgageParticulars::fromBooking($buyer, $property, new Order);
 
-            return new MatchResultData(
-                qualified: $result->qualifies,
-                product_code: method_exists($property, 'getCode') ? $property->getCode() : 'N/A',
-                monthly_amortization: $result->monthly_amortization,
-                income_required: $result->income_required,
-                suggested_equity: $result->loan_difference,
-                gap: $result->income_gap->inclusive()->getAmount()->toFloat(),
-                reason: $result->reason
-            );
+            $result = MortgageComputationData::fromParticulars($mortgage_particulars);
+
+
+            return $result;
+
+//            return new MatchResultData(
+//                qualified: $result->qualifies(),
+//                product_code: method_exists($property, 'getCode') ? $property->getCode() : 'N/A',
+//                monthly_amortization: $result->monthly_amortization,
+//                income_required: $result->monthly_disposable_income,
+//                required_equity: $result->required_equity,
+//                income_gap: $result->income_gap,
+//                reason: $result->reason()
+//            );
         });
     }
 

@@ -39,6 +39,8 @@ use Whitecube\Price\Price;
  * @property LendingInstitution $lending_institution
  * @property Percent $income_requirement_multiplier
  * @property Percent $percent_down_payment
+ * @property Product $product
+ * @property Project $project
  *
  * @method int getKey()
  */
@@ -62,6 +64,8 @@ class Property extends Model
 
     protected string $dataClass = PropertyData::class;
 
+    protected bool $use_typical_price = false;
+
     public static function newFactory(): PropertyFactory
     {
         return PropertyFactory::new();
@@ -84,8 +88,13 @@ class Property extends Model
 
     public function toDomain(): \LBHurtado\Mortgage\Classes\Property
     {
+        $price = $this->getUseTypicalPrice()
+            ? $this->product->price
+            : $this->total_contract_price
+        ;
+
         $property = new \LBHurtado\Mortgage\Classes\Property(
-            $this->total_contract_price->inclusive()->getAmount()->toFloat(),
+            $price->inclusive()->getAmount()->toFloat(),
             $this->development_type,
             $this->development_form,
             $this->housing_type,
@@ -142,5 +151,17 @@ class Property extends Model
         $lendingInstitutions = is_array($lendingInstitutions) ? $lendingInstitutions : [$lendingInstitutions];
 
         return $query->whereIn('meta->lending_institution', $lendingInstitutions);
+    }
+
+    public function setUseTypicalPrice(bool $use_typical_price): static
+    {
+        $this->use_typical_price = $use_typical_price;
+
+        return $this;
+    }
+
+    public function getUseTypicalPrice(): bool
+    {
+        return $this->use_typical_price;
     }
 }

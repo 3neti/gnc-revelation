@@ -4,6 +4,7 @@ namespace LBHurtado\Mortgage\Transformers;
 
 use LBHurtado\Mortgage\Data\Match\MatchResultData;
 
+/** @deprecated  */
 class MatchResultTransformer
 {
     public static function transform(MatchResultData $match): array
@@ -15,8 +16,8 @@ class MatchResultTransformer
 
             'monthly_amortization' => $match->monthly_amortization->inclusive()->getAmount()->toFloat(),
             'income_required' => $match->income_required->inclusive()->getAmount()->toFloat(),
-            'suggested_equity' => $match->suggested_equity->inclusive()->getAmount()->toFloat(),
-            'income_gap' => $match->gap,
+            'suggested_equity' => $match->required_equity->inclusive()->getAmount()->toFloat(),
+            'income_gap' => $match->income_gap,
         ];
     }
 

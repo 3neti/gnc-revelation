@@ -5,6 +5,7 @@ namespace LBHurtado\Mortgage\Factories;
 use LBHurtado\Mortgage\Calculators\{BaseCalculator, CashOutCalculator, EquityRequirementCalculator, FeesCalculator, LoanAmountCalculator};
 use LBHurtado\Mortgage\Calculators\{BalancePaymentTermCalculator,
     IncomeGapCalculator,
+    IncomeRequirementCalculator,
     MiscellaneousFeeCalculator,
     PresentValueCalculator,
     LoanQualificationCalculator,
@@ -74,7 +75,8 @@ final class CalculatorFactory
             LoanQualificationCalculator::class,
             RequiredPercentDownPaymentCalculator::class,
             BalancePaymentTermCalculator::class,
-            MiscellaneousFeeCalculator::class
+            MiscellaneousFeeCalculator::class,
+            IncomeRequirementCalculator::class,
         ];
 
         foreach ($classes as $class) {

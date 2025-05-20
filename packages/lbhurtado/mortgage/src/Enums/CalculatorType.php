@@ -17,4 +17,5 @@ enum CalculatorType: string
     case REQUIRED_PERCENT_DOWN_PAYMENT = 'required_percent_down_payment';
     case BALANCE_PAYMENT_TERM = 'balance_payment_term';
     case MISCELLANEOUS_FEES = 'miscellaneous_fees';
+    case INCOME_REQUIREMENT = 'income_requirement';
 }

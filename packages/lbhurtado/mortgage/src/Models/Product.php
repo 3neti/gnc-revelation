@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use LBHurtado\Mortgage\Factories\MoneyFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use LBHurtado\Mortgage\Traits\HasMeta;
 use Whitecube\Price\Price;
@@ -62,5 +63,22 @@ class Product extends Model implements FiltersByLendingInstitutionInterface
                 default => MoneyFactory::of($value)->getMinorAmount()->toInt(),
             },
         );
+    }
+
+    /**
+     * Scope to filter by price in major units.
+     *
+     * @param  Builder  $query
+     * @param  int|null  $priceLimitInMajorUnits
+     * @return Builder
+     */
+    public function scopeFilterByPrice(Builder $query, int|null $priceLimitInMajorUnits)
+    {
+        $priceLimitInMinorUnits = $priceLimitInMajorUnits * 100; // Convert to minor units
+
+        return is_null($priceLimitInMajorUnits)
+            ? $query
+            : $query->where('price', '<=', $priceLimitInMinorUnits)
+            ;
     }
 }

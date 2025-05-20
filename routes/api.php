@@ -4,6 +4,7 @@ use LBHurtado\Mortgage\Http\Controllers\{AI\AIController,
     LendingInstitutionController,
     LoanMatchController,
     ProductController,
+    ProductMatchController,
     PropertyController};
 use LBHurtado\Mortgage\Actions\CreateLoanProfile;
 use LBHurtado\Mortgage\Actions\OnboardLoanProfile;
@@ -22,6 +23,7 @@ Route::get('/user', function (Request $request) {
 
 Route::prefix('v1')->group(function () {
     Route::post('loan-match', LoanMatchController::class)->name('api.v1.loan-match');
+    Route::post('product-match', ProductMatchController::class)->name('api.v1.product-match');
     Route::post('mortgage-compute', MortgageComputationController::class)
         ->name('api.v1.mortgage-compute');
     Route::get('properties', [PropertyController::class, 'index'])->name('api.v1.properties');
