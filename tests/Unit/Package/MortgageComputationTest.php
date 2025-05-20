@@ -19,9 +19,9 @@ dataset('simple amortization', [
     /** start HDMF scenario with deficiency */
     'hdmf 1.0M in 21 yrs @ 6.25% by a 49yo w/ [35%] ₱17,000 gmi; nil dp; 0.0% mf; ₱ _0k pf no add-ons w/o co-borrower w/o +inc' => [ 'hdmf', 1_000_000, 49, 17_000, 00, 17_000, 0_000,  null, null,  null, 00_000.00, false, false, 21, 0.35,  5_950.0,   833_878.13, 166_121.87,  7_135.34,   0.00,       0.00, 1_000_000.00, 00_000.00, 1_185.34, 0.17, 20_386.69 ],
         /** 17% down payment remedy */
-    'hdmf 1.0M in 21 yrs @ 6.25% by a 49yo w/ [35%] ₱17,000 gmi; 17% dp; 0.0% mf; ₱ _0k pf no add-ons w/o co-borrower w/o +inc' => [ 'hdmf', 1_000_000, 49, 17_000, 00, 17_000, 0_000,  null,  0.17,  null, 00_000.00, false, false, 21, 0.35,  5_950.0,   833_878.13,      0.0,  5_922.33,   0.00,       170_000.0, 830_000.00, 00_000.00,  0.00,  0.17, 16_920.94 ],
+    'hdmf 1.0M in 21 yrs @ 6.25% by a 49yo w/ [35%] ₱17,000 gmi; 17% dp; 0.0% mf; ₱ _0k pf no add-ons w/o co-borrower w/o +inc' => [ 'hdmf', 1_000_000, 49, 17_000, 00, 17_000, 0_000,  null,  0.17, null, 00_000.00, false, false, 21, 0.35,  5_950.0,   833_878.13,        0.0,  5_922.33,   0.00,       170_000.0, 830_000.00, 00_000.00,  0.00,  0.17, 16_920.94 ],
         /** additional income  remedy */
-    'hdmf 1.0M in 21 yrs @ 6.25% by a 49yo w/ [35%] ₱17,000 gmi; nil dp; 0.0% mf; ₱ _0k pf no add-ons w/o co-borrower w/  +inc' => [ 'hdmf', 1_000_000, 49, 17_000, 00, 17_000, 3_386,  null, null,  null, 00_000.00, false, false, 21, 0.35,  7_135.1,   999_967.03,     32.97,  7_135.34,   0.00,       0.00, 1_000_000.00, 00_000.00,     0.24,  0.00, 20_386.69 ],
+    'hdmf 1.0M in 21 yrs @ 6.25% by a 49yo w/ [35%] ₱17,000 gmi; nil dp; 0.0% mf; ₱ _0k pf no add-ons w/o co-borrower w/  +inc' => [ 'hdmf', 1_000_000, 49, 17_000, 00, 17_000, 3_386,  null, null,  null, 00_000.00, false, false, 21, 0.35,  7_135.1,   999_967.03,      32.97,  7_135.34,   0.00,       0.00, 1_000_000.00, 00_000.00,     0.24,  0.00, 20_386.69 ],
 
     'hdmf 1.0M in 23 yrs @ 6.25% by a 47yo w/ [35%] ₱21,000 gmi; nil dp; 0.0% mf; ₱ _0k pf no add-ons w/o co-borrower w/o +inc' => [ 'hdmf', 1_000_000, 47, 21_000, 00, 21_000, 0_000,  null, null, 0.000, 00_000.00, false, false, 23, 0.35,  7_350.0, 1_074_757.85,       0.00,  6_838.75,   0.00,       0.00, 1_000_000.00, 00_000.00,     0.00, 0.00, 19_539.29 ],
     'hdmf 1.1M in 22 yrs @ 6.25% by a 48yo w/ [35%] ₱19,000 gmi; nil dp; 0.0% mf; ₱ _0k pf no add-ons w/o co-borrower w/o +inc' => [ 'hdmf', 1_100_000, 48, 19_000, 00, 19_000, 0_000,  null, null, 0.000, 00_000.00, false, false, 22, 0.35,  6_650.0,   952_820.39, 147_179.61,  7_677.21,   0.00,       0.00, 1_100_000.00, 00_000.00, 1_027.21, 0.14, 21_934.89 ],
@@ -60,6 +60,8 @@ dataset('simple amortization', [
     'rcbc 1.4M in 19 yrs @ 6.25% by a 45yo w/ [35%] ₱25,000 gmi; nil dp; 0.0% mf; ₱ _0k pf no add-ons w/o co-borrower w/o +inc' => [ 'rcbc', 1_400_000, 45, 25_000, 00, 25_000, 0_000,    null, null, 0.000, 00_000.00, false, false, 19, 0.35,  8_750.0, 1_166_047.51,  93_952.49,  9_455.02,   0.00,  140_000.0, 1_260_000.00, 00_000.00,   705.02, 0.17, 27_014.34 ],
     'rcbc 1.4M in 19 yrs @ 6.25% by a 45yo w/ [35%] ₱25,000 gmi; _0% dp; 0.0% mf; ₱ _0k pf no add-ons w/  co-borrower w/o +inc' => [ 'rcbc', 1_400_000, 45, 25_000, 50, 25_000, 0_000,    null, 0.00, 0.000, 00_000.00, false, false, 14, 0.35, 17_500.0, 1_956_159.44,       0.00, 12_524.54,   0.00,       0.00, 1_400_000.00, 00_000.00,     0.00, 0.00, 35_784.40 ],
     'rcbc 1.4M in 19 yrs @ 6.25% by a 45yo w/ [35%] ₱25,000 gmi; nil dp; 0.0% mf; ₱ _0k pf no add-ons w/  co-borrower w/o +inc' => [ 'rcbc', 1_400_000, 45, 25_000, 50, 25_000, 0_000,    null, null, 0.000, 00_000.00, false, false, 14, 0.35, 17_500.0, 1_956_159.44,       0.00, 11_272.09,   0.00,  140_000.0, 1_260_000.00, 00_000.00,     0.00, 0.00, 32_205.97 ],
+
+    'rcbc 1.4M in 19 yrs @ 6.25% by a 45yo w/ [35%] ₱25,000 gmi; nil dp; null mf; ₱ _0k pf no add-ons w/  co-borrower w/o +inc' => [ 'rcbc', 1_400_000, 45, 25_000, 50, 25_000, 0_000,    null, null,  null, 00_000.00, false, false, 14, 0.35, 17_500.0, 1_956_159.44,       0.00, 12_336.67,   0.00,  140_000.0, 1_379_000.00, 119_000.00,     0.00, 0.00, 35_247.63 ],
 ]);
 
 test('multiple mortgage computations', function (
@@ -130,6 +132,12 @@ test('multiple mortgage computations', function (
     $actual_percent_down_payment_remedy_float = CalculatorFactory::make(CalculatorType::REQUIRED_PERCENT_DOWN_PAYMENT, $mortgage_particulars)->calculate()->value();
     $actual_income_requirement = CalculatorFactory::make(CalculatorType::INCOME_REQUIREMENT, $mortgage_particulars)->toFloat();
     $qualifies = CalculatorFactory::make(CalculatorType::LOAN_QUALIFICATION, $mortgage_particulars)->calculate();
+
+//    dd($resolved_percent_miscellaneous_fee, ($percent_miscellaneous_fee ?? $mortgage_particulars->property()->getPercentMiscellaneousFees()?->value()) ?? $resolved_lending_institution->getPercentMiscellaneousFees()->value());
+//    dd($actual_loanable_amount_float, $expected_loanable_amount);
+//    dd($actual_monthly_amortization_float, $expected_monthly_amortization);
+//    dd($actual_miscellaneous_fee_float, $expected_miscellaneous_fee);
+//    dd($actual_income_requirement, $expected_income_requirement);
 
     // Assert
     expect($resolved_lending_institution->key())->toBe($lending_institution)

@@ -26,6 +26,7 @@ class ProductSeeder extends Seeder
                         'name' => 'Property 1',
                         'total_contract_price' => 850_000,
                         'appraisal_value' => 850_000,
+                        'percent_miscellaneous_fees' => 0.000,
                         'lending_institution' => 'hdmf',
                     ],
                     [
@@ -33,6 +34,7 @@ class ProductSeeder extends Seeder
                         'name' => 'Property 2',
                         'total_contract_price' => 855_000,
                         'appraisal_value' => 850_000,
+                        'percent_miscellaneous_fees' => 0.000,
                         'lending_institution' => 'hdmf',
                     ],
                     [
@@ -40,6 +42,7 @@ class ProductSeeder extends Seeder
                         'name' => 'Property 3',
                         'total_contract_price' => 860_000,
                         'appraisal_value' => 850_000,
+                        'percent_miscellaneous_fees' => 0.000,
                         'lending_institution' => 'hdmf',
                     ],
                 ],
@@ -57,6 +60,7 @@ class ProductSeeder extends Seeder
                         'name' => 'Property 4',
                         'total_contract_price' => 1_300_000,
                         'appraisal_value' => 1_250_000,
+                        'percent_miscellaneous_fees' => 0.085,
                         'lending_institution' => 'rcbc',
                         'status' => 'available'
                     ],
@@ -65,6 +69,7 @@ class ProductSeeder extends Seeder
                         'name' => 'Property 5',
                         'total_contract_price' => 1_350_000,
                         'appraisal_value' => 1_250_000,
+                        'percent_miscellaneous_fees' => 0.085,
                         'lending_institution' => 'rcbc',
                         'status' => 'available'
                     ],
@@ -73,6 +78,7 @@ class ProductSeeder extends Seeder
                         'name' => 'Property 6',
                         'total_contract_price' => 1_400_000,
                         'appraisal_value' => 1_250_000,
+                        'percent_miscellaneous_fees' => 0.085,
                         'lending_institution' => 'rcbc',
                         'status' => 'available'
                     ],
@@ -91,6 +97,7 @@ class ProductSeeder extends Seeder
                         'name' => 'Property 7',
                         'total_contract_price' => 2_500_000,
                         'appraisal_value' => 2_500_000,
+                        'percent_miscellaneous_fees' => 0.085,
                         'lending_institution' => 'cbc',
                         'status' => 'available'
                     ],
@@ -99,6 +106,7 @@ class ProductSeeder extends Seeder
                         'name' => 'Property 8',
                         'total_contract_price' => 2_550_000,
                         'appraisal_value' => 2_500_000,
+                        'percent_miscellaneous_fees' => 0.085,
                         'lending_institution' => 'cbc',
                         'status' => 'available'
                     ],
@@ -107,6 +115,7 @@ class ProductSeeder extends Seeder
                         'name' => 'Property 9',
                         'total_contract_price' => 2_600_000,
                         'appraisal_value' => 2_500_000,
+                        'percent_miscellaneous_fees' => 0.085,
                         'lending_institution' => 'cbc',
                         'status' => 'available'
                     ],
